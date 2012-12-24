@@ -8,6 +8,7 @@ extern void isr_Edma3CCError(unsigned int intnum);
 extern void isr_Edma3Completion(unsigned int intnum); 
 extern void isr_HSMMCSD(unsigned int intnum);
 extern void isr_RTC(unsigned int intnum);
+extern void isr_DCANLine0(unsigned intnum);
 
 
 /*
@@ -52,10 +53,18 @@ static void RTCAINTCConfigure(void)
 }
 
 
+static void DCANINTConfigure(void){
+   IntRegister(SYS_INT_DCAN0_INT0,isr_DCANLine0);
+   IntPrioritySet(SYS_INT_DCAN0_INT0,INT_PRIORITY_DCAN0_LINE0,AINTC_HOSTINT_ROUTE_IRQ);
+   IntSystemEnable(SYS_INT_DCAN0_INT0);  
+}
+
+
 void perAINTCConfigure(){
    EDMAAINTCConfigure();
    MMCSDAINTCConfigure();
    RTCAINTCConfigure();
+   DCANINTConfigure();
 }
 
 

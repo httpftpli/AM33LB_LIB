@@ -1,5 +1,5 @@
 /**
- * \file   beaglebone.h
+ * \file   flatform.h
  *
  * \brief  This file contains prototype declarations of functions which 
  *         performs EVM configurations.
@@ -47,6 +47,27 @@
 extern "C" {
 #endif
 
+
+/*
+** Values that can be passed to 'CANInit' API as 'mode'
+*/
+#define CAN_MODE_NORMAL                0
+#define CAN_MODE_TEST_LOOPBACK         1
+#define CAN_MODE_TEST_LOOPBACK_SILENT  2
+
+
+/*return val of 'CANSend_noblock'*/
+
+#define CAN_SEND_OK             1
+#define CAN_SEND_PRE_SENDING    -1
+
+typedef struct {
+   unsigned int id:29;
+   unsigned int dir:1;
+   unsigned int xtd:1;
+   unsigned int dlc;
+   unsigned int data[2];
+}CAN_FRAME;
 
 /*****************************************************************************
 **                    FUNCTION PROTOTYPES
@@ -97,10 +118,11 @@ extern void RTCModuleClkConfig(void);
 extern void HSMMCSDModuleClkConfig(void);
 extern void I2C0ModuleClkConfig(void);
 extern void I2C1ModuleClkConfig(void);
-extern void I2CPinMuxSetup(unsigned int instance);
 extern void GpioPinMuxSetup(unsigned int offsetAddr,
                             unsigned int padConfValue);
-
+extern void CANInit(unsigned int baseAdd,unsigned int mode,
+                    unsigned int clkInFreq,unsigned int bitRate);
+extern unsigned int CANSend_noblock(unsigned int baseAddr,CAN_FRAME *frame);
 extern void perAINTCConfigure(void);
 
 extern void platformInit();
@@ -131,6 +153,10 @@ extern unsigned int EDMARequestXferArray(unsigned int trigMode,
                            unsigned int dstAddr,
                            unsigned int bytenumber,
                            unsigned int handlerIndex); 
+
+extern void DCANModuleClkConfig(void);
+extern void DCANMsgRAMInit(unsigned int instanceNum);
+extern void CANRegistRcvedHandler(void (*handler)(unsigned int index,CAN_FRAME *frame));
 
 
 #ifdef __cplusplus

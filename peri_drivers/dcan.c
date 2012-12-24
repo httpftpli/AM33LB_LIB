@@ -43,6 +43,7 @@
 
 #include "hw_types.h"
 #include "dcan.h"
+#include "soc_AM335x.h"
 
 /*******************************************************************************
 *                       INTERNAL MACRO DEFINITIONS
@@ -53,6 +54,9 @@
 #define MSG_VALID_X_MASK       (0x0000FFFFu)
 #define NEW_DATA_X_MASK        (0x0000FFFFu)
 #define INT_PEND_X_MASK        (0x0000FFFFu)
+
+
+
 
 /*******************************************************************************
 *                        API FUNCTION DEFINITIONS
@@ -133,6 +137,7 @@ void DCANBitTimingConfig(unsigned int baseAdd, unsigned int btrValue)
  **/
 void DCANReset(unsigned int baseAdd)
 {
+    DCANInitModeSet(baseAdd);
     /* Set the SWR bit of DCAN_CTL register */
     HWREG(baseAdd + DCAN_CTL) |= DCAN_CTL_SWR;
 
@@ -690,32 +695,18 @@ unsigned int DCANTxRqstStatusGet(unsigned int baseAdd, unsigned int msgNum)
     return(HWREG(baseAdd + DCAN_TXRQ(regNum)) & (1 << offSet));
 }
 
-/**
- * \brief   This API will return the lowest message object number whose transmit 
- *          request status is not set from DCAN_TXRQ(n) register.
- *          Where n = 12,34,56,78.
- *
- * \param   baseAdd             Base Address of the DCAN Module Registers.
- *
- * \return  Returns the transmit request status from DCAN_TXRQ(n) register.
- *          Where n = 12,34,56,78.
- *
- * \note    This API is similar to 'DCANTxRqstStatusGet'. Only difference is
- *          that the user need not send the message number to read the TxRqst 
- *          status of that message number. This API will return the lowest 
- *          message object number whose TxRqst status is not set.
- *
- **/
-unsigned int DCANTxRqstStatGet(unsigned int baseAdd)
+
+
+unsigned int DCANFreeMsgObjGet(unsigned int baseAdd,unsigned int begin)
 {
-    unsigned int index = 1;
+    unsigned int index = begin;
     unsigned int regNum;
     unsigned int offSet;
 
     while(index < 128)
     {
-        regNum = (index - 1) / 32;
-        offSet = (index - 1) % 32;
+        regNum = (index-1) / 32;
+        offSet = (index-1) % 32;
 
         if(!(HWREG(baseAdd + DCAN_TXRQ(regNum)) & (1 << offSet)))
         {
@@ -936,26 +927,10 @@ void DCANIntMuxConfig(unsigned int baseAdd, unsigned int intLine,
     HWREG(baseAdd + DCAN_INTMUX(regNum)) |= (msgNum << offSet);
 }
 
-/**
- * \brief   This API will validate a message object. 
- *
- * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   regNum              Interface register number used.
- *
- * 'regNum' can take the following values \n
- *    DCAN_IF1_REG - IF register 1 is used \n
- *    DCAN_IF2_REG - IF register 2 is used \n
- *
- * \return  None. 
- *
- **/
-void DCANMsgObjValidate(unsigned int baseAdd, unsigned int regNum)
-{
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
 
-    /* Validate the message object */
-    HWREG(baseAdd + DCAN_IFARB(regNum)) |= DCAN_IFARB_MSGVAL;
+ void  DCANIFMsgValidate(unsigned int baseAdd, unsigned int IFnum)
+{
+    HWREG(baseAdd + DCAN_IFARB(IFnum)) |= DCAN_IFARB_MSGVAL;
 }
 
 /**
@@ -1011,13 +986,13 @@ void DCANMsgObjInvalidate(unsigned int baseAdd, unsigned int regNum)
  *
  **/
 void DCANCommandRegSet(unsigned int baseAdd, unsigned int cmdFlags,
-                       unsigned int objNum, unsigned int regNum)
+                       unsigned int objNum, unsigned int IFnum)
 {
     /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
+    while(DCANIFBusyStatusGet(baseAdd, IFnum));
 
     /* Clear the DCAN_IFCMD register fields */
-    HWREG(baseAdd + DCAN_IFCMD(regNum)) &= ~(DCAN_IFCMD_DMAACTIVE | 
+    HWREG(baseAdd + DCAN_IFCMD(IFnum)) &= ~(DCAN_IFCMD_DMAACTIVE | 
                                              DCAN_IFCMD_DATAA | 
                                              DCAN_IFCMD_DATAB | 
                                              DCAN_IFCMD_TXRQST_NEWDAT | 
@@ -1029,10 +1004,10 @@ void DCANCommandRegSet(unsigned int baseAdd, unsigned int cmdFlags,
                                              DCAN_IFCMD_WR_RD);
 
     /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
+    while(DCANIFBusyStatusGet(baseAdd, IFnum));
 
     /* Set the DCAN_IFCMD register fields represented by cmdFlags */
-    HWREG(baseAdd + DCAN_IFCMD(regNum)) |= ((cmdFlags & 
+    HWREG(baseAdd + DCAN_IFCMD(IFnum)) |= ((cmdFlags & 
                                            (DCAN_IFCMD_DMAACTIVE | 
                                             DCAN_IFCMD_DATAA | 
                                             DCAN_IFCMD_DATAB | 
@@ -1045,136 +1020,31 @@ void DCANCommandRegSet(unsigned int baseAdd, unsigned int cmdFlags,
                                             (objNum & DCAN_IFCMD_MESSAGENUMBER));
 }
 
-/**
- * \brief   This API will return the status of Busy field from DCAN_IFCMD 
- *          register. 
- *
- * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   regNum              Interface register number used.
- *
- * 'regNum' can take the following values \n
- *    DCAN_IF1_REG - Interface register 1 is used \n
- *    DCAN_IF2_REG - Interface register 2 is used \n
- *
- * \return  Returns the Busy bit status from the DCAN_IFCMD register.
- *          User can use the below macros to check the status \n
- *          DCAN_IF_BUSY - Transfer between IF register and message RAM is 
- *                         in progress.
- *          DCAN_IF_NOT_BUSY - No Transfer between IF register and message RAM.
- *
- **/
-unsigned int DCANIFBusyStatusGet(unsigned int baseAdd, unsigned int regNum)
+
+
+BOOL DCANIFBusyStatusGet(unsigned int baseAdd, unsigned int IFnum)
 {
     /* Returns the status of BUSY field from DCAN_IF_CMD register */
-    return(HWREG(baseAdd + DCAN_IFCMD(regNum)) & DCAN_IFCMD_BUSY);
+    return !!(HWREG(baseAdd + DCAN_IFCMD(IFnum)) & DCAN_IFCMD_BUSY);
 }
 
-/**
- * \brief   This API will set the message identifier length and number.
- *
- * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   msgId               Message identifier number.
- * \param   idLength            Identifier length.
- * \param   regNum              Interface register number used.
- *
- * 'idLength' can take the following values \n
- *    DCAN_11_BIT_ID - 11 bit identifier is used \n
- *    DCAN_29_BIT_ID - 29 bit identifier is used \n
- *
- * 'regNum' can take the following values \n
- *    DCAN_IF1_REG - Interface register 1 is used \n
- *    DCAN_IF2_REG - Interface register 2 is used \n
- *
- * \return  None.
- *
- **/
-void DCANMsgIdSet(unsigned int baseAdd, unsigned int msgId, 
-                  unsigned int idLength, unsigned int regNum)
-{
-
-    if(idLength == DCAN_11_BIT_ID)
-    {
-        msgId <<= DCAN_STD_ID_SHIFT;
-    }
-  
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
-
-    /* Clear the Msk field of DCAN_IFARB register */
-    HWREG(baseAdd + DCAN_IFARB(regNum)) &= ~(DCAN_IFARB_MSK | DCAN_IFARB_XTD);
-
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
-
-    /* Set the Msk field with the ID value */
-    HWREG(baseAdd + DCAN_IFARB(regNum)) |= ((msgId & DCAN_IFARB_MSK) | 
-                                            (idLength & DCAN_IFARB_XTD));
+void DCANIFDataSet(unsigned int baseAdd,unsigned IFnum,void *data,unsigned int dlc){
+     while(DCANIFBusyStatusGet(baseAdd, IFnum));
+     HWREG(baseAdd + DCAN_IFDATA(IFnum)) = ((unsigned int*)data)[0];
+     HWREG(baseAdd + DCAN_IFDATB(IFnum)) = ((unsigned int*)data)[1];
+     HWREG(baseAdd + DCAN_IFMCTL(IFnum)) =  (HWREG(baseAdd + DCAN_IFMCTL(IFnum))&0xfffffff0)+dlc;
 }
 
-/**
- * \brief   This API will set the direction for the message object.
- *
- * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   msgDir              Message direction for the message object.
- * \param   regNum              Interface register number used.
- *
- * 'msgDir' can take the following values \n
- *    DCAN_TX_DIR - Message object set to transmit a message \n
- *    DCAN_RX_DIR - Message object set to receive a message \n
- *
- * 'regNum' can take the following values \n
- *    DCAN_IF1_REG - Interface register 1 is used \n
- *    DCAN_IF2_REG - Interface register 2 is used \n
- *
- * \return  None.
- *
- **/
-void DCANMsgDirectionSet(unsigned int baseAdd, unsigned int msgDir, 
-                         unsigned int regNum)
-{
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
-
-    /* Clear the Dir field of DCAN_IFARB register */
-    HWREG(baseAdd + DCAN_IFARB(regNum)) &= ~DCAN_IFARB_DIR;
-
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
-
-    /* Set the Dir field with the user sent value */
-    HWREG(baseAdd + DCAN_IFARB(regNum)) |= (msgDir & DCAN_IFARB_DIR);
+void DCANIFArbSet(unsigned baseAdd,unsigned int IFnum,unsigned int arb){
+    while(DCANIFBusyStatusGet(baseAdd, IFnum));
+    unsigned val = HWREG(baseAdd + DCAN_IFARB(IFnum));
+    val &= 0x7fffffff;
+    HWREG(baseAdd + DCAN_IFARB(IFnum)) = arb | val;
 }
 
-/**
- * \brief   This API will write data bytes to the IF Data registers.
- *
- * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   dataPtr             Pointer used to fetch data bytes.
- * \param   regNum              Interface register number used.
- * 
- * 'regNum' can take the following values \n
- *    DCAN_IF1_REG - IF register 1 is used \n
- *    DCAN_IF2_REG - IF register 2 is used \n
- *
- * \return  None.
- *
- **/
-void DCANDataWrite(unsigned int baseAdd, unsigned int* dataPtr, 
-                   unsigned int regNum)
-{
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
 
-    /* Write the lower 4 data bytes to IFDATA register */
-    HWREG(baseAdd + DCAN_IFDATA(regNum)) = *dataPtr++;
 
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
-
-    /* Write the higher 4 data bytes to IFDATB register */
-    HWREG(baseAdd + DCAN_IFDATB(regNum)) = *dataPtr;
-}
-
+ 
 /**
  * \brief   This API will read the data bytes from the IF Data registers.
  *
@@ -1189,8 +1059,7 @@ void DCANDataWrite(unsigned int baseAdd, unsigned int* dataPtr,
  * \return  None.
  *
  **/
-void DCANDataRead(unsigned int baseAdd, unsigned int* data, 
-                  unsigned int regNum)
+void DCANIFDataRead(unsigned int baseAdd,unsigned int regNum, unsigned int* data )
 {
     /* Read the data bytes from the DCAN_IFDATA register */
     *data++ = HWREG(baseAdd + DCAN_IFDATA(regNum));
@@ -1199,39 +1068,17 @@ void DCANDataRead(unsigned int baseAdd, unsigned int* data,
     *data = HWREG(baseAdd + DCAN_IFDATB(regNum));
 }
 
-/**
- * \brief   This API will set the data length code.
- *
- * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   dlc                 Data length code.
- * \param   regNum              Interface register number used.
- *
- * 'dlc' can take the below values \n
- *    dlc can range between 1-8 for 1-8 data bytes \n
- *    dlc value lying between 9-15 will configure it for 8 data bytes \n 
- * 
- * 'regNum' can take the following values \n
- *    DCAN_IF1_REG - IF register 1 is used \n
- *    DCAN_IF2_REG - IF register 2 is used \n
- *
- * \return  None.
- *
- **/
-void DCANDataLengthCodeSet(unsigned int baseAdd, unsigned int dlc, 
-                           unsigned int regNum)
-{
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
 
-    /* Clear the DLC field of DCAN_IFMCTL register */
-    HWREG(baseAdd + DCAN_IFMCTL(regNum)) &= ~DCAN_IFMCTL_DATALENGTHCODE;
 
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
-
-    /* Set the DLC field with the user sent value */
-    HWREG(baseAdd + DCAN_IFMCTL(regNum)) |= (dlc & DCAN_IFMCTL_DATALENGTHCODE);
+unsigned int  DCANIFArbRead(unsigned int baseAdd,unsigned int ifNUM){
+  return  HWREG(baseAdd + DCAN_IFARB(ifNUM));
 }
+
+unsigned short  DCANIFDlcRead(unsigned int baseAdd,unsigned int ifNUM){
+   return (unsigned short)HWREG(baseAdd + DCAN_IFMCTL(ifNUM))&DCAN_IFMCTL_DATALENGTHCODE;
+}
+
+
 
 /**
  * \brief   This API will enable the Message object interrupts of the DCAN 
@@ -1253,16 +1100,19 @@ void DCANDataLengthCodeSet(unsigned int baseAdd, unsigned int dlc,
  * \return  None.
  *
  **/
-void DCANMsgObjIntEnable(unsigned int baseAdd, unsigned int intFlags, 
-                         unsigned int regNum)
+void DCANIFMsgIntEnable(unsigned int baseAdd,unsigned int IFnum,
+                                unsigned int intFlags)
 {
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
+    unsigned int val = HWREG(baseAdd + DCAN_IFMCTL(IFnum));
+    val &= ~(DCAN_IFMCTL_TXIE | DCAN_IFMCTL_RXIE);
+    val |= (intFlags & (DCAN_IFMCTL_TXIE | DCAN_IFMCTL_RXIE));
 
     /* Enable Message object interrupts */
-    HWREG(baseAdd + DCAN_IFMCTL(regNum)) |= (intFlags & 
-                                            (DCAN_IFMCTL_TXIE | 
-                                             DCAN_IFMCTL_RXIE));
+    HWREG(baseAdd + DCAN_IFMCTL(IFnum)) = val;
+}
+
+void DCANIFMCtrSet(unsigned int baseAdd,unsigned int IFnum,unsigned int val){
+   HWREG(baseAdd + DCAN_IFMCTL(IFnum)) = val;
 }
 
 /**
@@ -1297,39 +1147,15 @@ void DCANMsgObjIntDisable(unsigned int baseAdd, unsigned int intFlags,
                                               DCAN_IFMCTL_RXIE));
 }
 
-/**
- * \brief   This API will configure the end of block settings for the DCAN
- *          peripheral.
- *
- * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   eob                 Configure End of block.
- * \param   regNum              Interface register number used.
- *
- * 'eob' can take the following values \n
- *    DCAN_END_OF_BLOCK_ENABLE - Enable end of block \n
- *    DCAN_END_OF_BLOCK_DISABLE - Disable end of block \n
- *
- * 'regNum' can take the following values \n
- *    DCAN_IF1_REG - IF register 1 is used \n
- *    DCAN_IF2_REG - IF register 2 is used \n
- *
- * \return  None.
- *
- **/
-void DCANFIFOEndOfBlockControl(unsigned int baseAdd, unsigned int eob, 
-                               unsigned int regNum)
+
+void DCANIFFifoEndOfBlockControl(unsigned int baseAdd,unsigned int regNum,
+                                         BOOL end)
 {
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
 
-    /* Clear the EOB field of DCAN_IFMCTL register */
-    HWREG(baseAdd + DCAN_IFMCTL(regNum)) &= ~DCAN_IFMCTL_EOB;
-
-    /* Wait in loop until busy bit is cleared */
-    while(DCANIFBusyStatusGet(baseAdd, regNum));
-
-    /* Set the EOB field with the user sent value */
-    HWREG(baseAdd + DCAN_IFMCTL(regNum)) |= (eob & DCAN_IFMCTL_EOB);
+    unsigned int val = HWREG(baseAdd + DCAN_IFMCTL(regNum));
+    val &= ~(1<<DCAN_IFMCTL_EOB_SHIFT);
+    val |= !!end << DCAN_IFMCTL_EOB_SHIFT;
+    HWREG(baseAdd + DCAN_IFMCTL(regNum)) = val;
 }
 
 /**
@@ -1618,32 +1444,15 @@ void DCANNewDataControl(unsigned int baseAdd, unsigned int newDat,
     HWREG(baseAdd + DCAN_IFMCTL(regNum)) |= (newDat & DCAN_IFMCTL_NEWDAT);
 }
 
-/**
- * \brief   This API will control the Acceptance mask feature.
- *
- * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   uMask               Acceptance mask control. 
- * \param   regNum              Interface register set used.
- *
- * 'uMask' can take the following values \n
- *    DCAN_MASK_USED - Acceptance mask used \n
- *    DCAN_MASK_IGNORED - Acceptance mask ignored \n
- *
- * 'regNum' can take the following values \n
- *    DCAN_IF1_REG - Interface register set 1 is used \n
- *    DCAN_IF2_REG - Interface register set 2 is used \n
- *
- * \return  None.
- *
- **/
-void DCANUseAcceptanceMaskControl(unsigned int baseAdd, unsigned int uMask, 
-                                  unsigned int regNum)
-{
-    /* Clear the UMask bit of DCAN_IFMCTL register */
-    HWREG(baseAdd + DCAN_IFMCTL(regNum)) &= ~(DCAN_IFMCTL_UMASK);
 
-    /* Set the UMask bit of DCAN_IFMCTL register with the user sent value */
-    HWREG(baseAdd + DCAN_IFMCTL(regNum)) |= (uMask & DCAN_IFMCTL_UMASK);
+void DCANIFAccMaskControl(unsigned int baseAdd,unsigned int IFnum,
+                          BOOL  uMask)
+{
+   
+    unsigned int val =  HWREG(baseAdd + DCAN_IFMCTL(IFnum));
+    val &= ~(1 << DCAN_IFMCTL_UMASK_SHIFT);
+    val |= !!uMask << DCAN_IFMCTL_UMASK_SHIFT ;
+    HWREG(baseAdd + DCAN_IFMCTL(IFnum)) = val;
 }
 
 /**
@@ -1677,5 +1486,188 @@ void DCANTransmitRequestControl(unsigned int baseAdd, unsigned int txRqst,
     /* Set the TxRqst bit with the user sent value */
     HWREG(baseAdd + DCAN_IFMCTL(regNum)) |= (txRqst & DCAN_IFMCTL_TXRQST);
 }
+
+/*********************above is regist level abstract function****************/
+
+
+/**
+ * \brief   This function will update the sampling point based on time 
+ *          segment values \n
+ *
+ * \return  Updated sample point value \n
+ *
+ **/
+static int canUpdatSamPt(const struct _dcan_hw_params *ptr,
+                  int sampl_pt, int tseg, int *tseg1, int *tseg2)
+{
+    *tseg2 = tseg + 1 - (sampl_pt * (tseg + 1)) / 1000;
+
+    if(*tseg2 < ptr->tseg2Min)
+    {
+        *tseg2 = ptr->tseg2Min;
+    }
+
+    if(*tseg2 > ptr->tseg2Max)
+    {
+        *tseg2 = ptr->tseg2Max;
+    }
+
+    *tseg1 = tseg - *tseg2;
+
+    if (*tseg1 > ptr->tseg1Max)
+    {
+        *tseg1 = ptr->tseg1Max;
+        *tseg2 = tseg - *tseg1;
+    }
+
+    return(1000 * (tseg + 1 - *tseg2) / (tseg + 1));
+}
+
+
+static unsigned int CANbitTimeCalculator(struct _dcan_hw_params *btc,
+                               struct _dcan_bittiming *bt,
+                               unsigned int clkFreq)
+{
+    int sampl_pt, spt_error = 1000, tsegall, tseg = 0, tseg1 = 0, tseg2 = 0;
+    int brp = 0, spt = 0, best_tseg = 0, best_brp = 0;
+    long error = 0, best_error = 1000000000;
+    unsigned int errVal = NO_BIT_RATE_ERR;
+    unsigned long rate, timeQuanta;
+
+    if(bt->bitRate > 800000)
+    {
+        sampl_pt = 750;
+    }
+
+    else if(bt->bitRate > 500000)
+    {
+        sampl_pt = 800;
+    }
+
+    else
+    {
+        sampl_pt = 875;
+    }
+
+    for(tseg = (btc->tseg1Max + btc->tseg2Max) * 2 + 1;
+        tseg >= (btc->tseg1Min + btc->tseg2Min) * 2; tseg--)
+    {
+        tsegall = 1 + tseg / 2;
+        /* Compute all possible tseg choices (tseg=tseg1+tseg2) */
+        brp = clkFreq / (tsegall * bt->bitRate) + tseg % 2;
+        /* chose brp step which is possible in system */
+        brp = (brp / btc->brpInc) * btc->brpInc;
+        if((brp < btc->brpMin) || (brp > btc->brpMax))
+            continue;
+        rate = clkFreq / (brp * tsegall);
+        error = bt->bitRate - rate;
+        /* tseg brp biterror */
+        if(error < 0)
+            error = -error;
+        if(error > best_error)
+            continue;
+        best_error = error;
+        if(error == 0)
+        {
+            spt = canUpdatSamPt(btc, sampl_pt, tseg / 2,
+                                 &tseg1, &tseg2);
+            error = sampl_pt - spt;
+            if(error < 0)
+                error = -error;
+            if(error > spt_error)
+                continue;
+            spt_error = error;
+        }
+        best_tseg = tseg / 2;
+        best_brp = brp;
+        if(error == 0)
+            break;
+    }
+
+    if(best_error)
+    {
+        /* Error in one-tenth of a percent */
+        error = (best_error * 1000) / bt->bitRate;
+        if(error > CAN_CALC_MAX_ERROR)
+        {
+            errVal = BIT_RATE_ERR_MAX;
+        }
+        else 
+        {
+            errVal = BIT_RATE_ERR_WARN;
+        }
+    }
+
+    /* real sample point */
+    bt->samplePnt = canUpdatSamPt(btc, sampl_pt, best_tseg,
+                                      &tseg1, &tseg2);
+
+    timeQuanta = best_brp * 1000000000UL;
+
+    bt->tq = timeQuanta;
+    bt->propSeg = tseg1 / 2;
+    bt->phaseSeg1 = tseg1 - bt->propSeg;
+    bt->phaseSeg2 = tseg2;
+    bt->sjw = 1;
+    bt->brp = best_brp;
+    /* real bit-rate */
+    bt->bitRate = clkFreq / (bt->brp * (tseg1 + tseg2 + 1));
+
+    return errVal;
+}
+
+unsigned int CANSetBitTiming(unsigned int baseAdd, unsigned int clkFreq,
+                             unsigned int bitRate)
+{
+    unsigned int errVal = 0, btrValue = 0, tSeg1 = 0, tSeg2 = 0;
+    struct _dcan_bittiming bit_time_values;
+    struct _dcan_hw_params *btc;
+    struct _dcan_bittiming *bt;
+
+    static struct _dcan_hw_params dcan_hw_params = {
+    /* tseg1Min = */ 1,
+    /* tseg1Max = */ 16,
+    /* tseg2Min = */ 1,
+    /* tseg2Max = */ 8,
+    /* sjwMax   = */ 4,
+    /* brpMin   = */ 1,
+    /* brpMax   = */ 1024,
+    /* brpInc   = */ 1,
+    };
+
+    bt = &bit_time_values;
+    btc = &dcan_hw_params;
+
+    bt->bitRate = bitRate;
+
+    errVal = CANbitTimeCalculator(btc, bt, clkFreq);
+
+    /* Calculate Time Segment2 value */
+    tSeg2 = (bt->phaseSeg2 - 1);
+
+    /* Calculate Time Segment1 value */
+    tSeg1 = (bt->phaseSeg1 + bt->propSeg - 1);
+
+    /* Write the BRP value */
+    btrValue |= ((bt->brp - 1) & DCAN_BTR_BRP);
+
+    /* Write the BRPE value */
+    btrValue |= (((bt->brp - 1) & EXTRACT_BRPE_VAL) << BRPE_SHIFT);
+
+    /* Write the Time Segment2 value */
+    btrValue |= ((tSeg2 << DCAN_BTR_TSEG2_SHIFT) & DCAN_BTR_TSEG2);
+
+    /* Write the Time Segment1 value */
+    btrValue |= ((tSeg1 << DCAN_BTR_TSEG1_SHIFT) & DCAN_BTR_TSEG1);
+
+    /* Set the BTR value to the DCAN bittiming register */
+    DCANBitTimingConfig(baseAdd, btrValue);
+
+    return errVal;
+}
+
+
+
+
 
 /****************************** END OF FILE ***********************************/

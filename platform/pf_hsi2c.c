@@ -46,38 +46,6 @@
 #include "hw_cm_per.h"
 #include "hw_types.h"
 
-void I2CPinMuxSetup(unsigned int instance)
-{
-    if(instance == 0)
-    {
-         HWREG(SOC_CONTROL_REGS + CONTROL_CONF_I2C0_SDA)  =
-                (CONTROL_CONF_I2C0_SDA_CONF_I2C0_SDA_RXACTIVE  |
-                 CONTROL_CONF_I2C0_SDA_CONF_I2C0_SDA_SLEWCTRL  | 
-                 CONTROL_CONF_I2C0_SDA_CONF_I2C0_SDA_PUTYPESEL   );
-
-         HWREG(SOC_CONTROL_REGS + CONTROL_CONF_I2C0_SCL)  =
-                (CONTROL_CONF_I2C0_SCL_CONF_I2C0_SCL_RXACTIVE  |
-                 CONTROL_CONF_I2C0_SCL_CONF_I2C0_SCL_SLEWCTRL  | 
-                 CONTROL_CONF_I2C0_SCL_CONF_I2C0_SCL_PUTYPESEL );
-
-    } 
-    else if(instance == 1)
-    {
-                               /* I2C_SCLK */   
-         HWREG(SOC_CONTROL_REGS + CONTROL_CONF_SPI0_D1)  = 
-              (CONTROL_CONF_SPI0_D1_CONF_SPI0_D1_PUTYPESEL |
-               CONTROL_CONF_SPI0_D1_CONF_SPI0_D1_RXACTIVE  |
-               CONTROL_CONF_SPI0_D1_CONF_SPI0_D1_SLEWCTRL  |
-               CONTROL_CONF_MUXMODE(2));                     
-                              /* I2C_SDA */
-         HWREG(SOC_CONTROL_REGS + CONTROL_CONF_SPI0_CS0) = 
-              (CONTROL_CONF_SPI0_CS0_CONF_SPI0_CS0_PUTYPESEL |
-               CONTROL_CONF_SPI0_CS0_CONF_SPI0_CS0_RXACTIVE  |
-               CONTROL_CONF_SPI0_D1_CONF_SPI0_D1_SLEWCTRL    |
-               CONTROL_CONF_MUXMODE(2));
-    }
-
-}
 
 /**
  * \brief   This function will configure the required clocks for I2C1 instance.

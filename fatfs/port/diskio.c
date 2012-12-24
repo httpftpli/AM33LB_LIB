@@ -170,8 +170,6 @@ DRESULT disk_read(
       // translate the arguments here
       //TODO finsi usb
       return RES_PARERR;
-      break;
-
    default:
       return RES_PARERR;
    }

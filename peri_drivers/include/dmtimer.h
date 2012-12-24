@@ -170,6 +170,10 @@ extern "C" {
 #define DMTIMER_IS_RESET_ONGOING             (DMTIMER_TIOCP_CFG_SOFTRESET_ONGOING)
 
 /******************************************************************************/
+
+
+
+
 /*
 ** Structure to store the DM timer context
 */

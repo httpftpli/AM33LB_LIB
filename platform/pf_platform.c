@@ -16,6 +16,7 @@
 #include "pf_mux.h"
 #include "debug.h"
 #include "hw_cm_per.h"
+#include "hw_control_AM335x.h"
 
 extern void EDMAModuleClkConfig(void);
 
@@ -56,16 +57,19 @@ static void PinMuxSetup(void){
   MUX_VAL(CONTROL_PADCONF_SPI0_CS1, (IEN | OFF | MODE5 )) /* MMC0_SDCD_MUX0 */\
   MUX_VAL(CONTROL_PADCONF_GPMC_AD0,(IEN | PU | MODE1)) /* MMC1_DAT0_MUX2 */\
   MUX_VAL(CONTROL_PADCONF_GPMC_AD1,(IEN | PU | MODE1)) /* MMC1_DAT1_MUX2 */\
-   MUX_VAL(CONTROL_PADCONF_GPMC_AD2,(IEN | PU | MODE1)) /* MMC1_DAT2_MUX2 */\
-   MUX_VAL(CONTROL_PADCONF_GPMC_AD3,(IEN | PU | MODE1)) /* MMC1_DAT3_MUX2 */\
-   MUX_VAL(CONTROL_PADCONF_GPMC_AD4,(IEN | PU | MODE1)) /* MMC1_DAT4_MUX2 */\
-   MUX_VAL(CONTROL_PADCONF_GPMC_AD5,(IEN | PU | MODE1)) /* MMC1_DAT5_MUX2 */\
-   MUX_VAL(CONTROL_PADCONF_GPMC_AD6,(IEN | PU | MODE1)) /* MMC1_DAT6_MUX2 */\
-   MUX_VAL(CONTROL_PADCONF_GPMC_AD7,(IEN | PU | MODE1)) /* MMC1_DAT7_MUX2 */\
-   MUX_VAL(CONTROL_PADCONF_GPMC_CSN1,(IEN | PU | MODE2)) /* MMC1_CLK_MUX0 */\
-   MUX_VAL(CONTROL_PADCONF_GPMC_CSN2,(IEN | PU | MODE2)) /* MMC1_CMD_MUX0 */\
-  MUX_VAL(CONTROL_PADCONF_GPMC_A2, (IDIS | PD | MODE6 )) /* EHRPWM1A_MUX1 */
+  MUX_VAL(CONTROL_PADCONF_GPMC_AD2,(IEN | PU | MODE1)) /* MMC1_DAT2_MUX2 */\
+  MUX_VAL(CONTROL_PADCONF_GPMC_AD3,(IEN | PU | MODE1)) /* MMC1_DAT3_MUX2 */\
+  MUX_VAL(CONTROL_PADCONF_GPMC_AD4,(IEN | PU | MODE1)) /* MMC1_DAT4_MUX2 */\
+  MUX_VAL(CONTROL_PADCONF_GPMC_AD5,(IEN | PU | MODE1)) /* MMC1_DAT5_MUX2 */\
+  MUX_VAL(CONTROL_PADCONF_GPMC_AD6,(IEN | PU | MODE1)) /* MMC1_DAT6_MUX2 */\
+  MUX_VAL(CONTROL_PADCONF_GPMC_AD7,(IEN | PU | MODE1)) /* MMC1_DAT7_MUX2 */\
+  MUX_VAL(CONTROL_PADCONF_GPMC_CSN1,(IEN | PU | MODE2)) /* MMC1_CLK_MUX0 */\
+  MUX_VAL(CONTROL_PADCONF_GPMC_CSN2,(IEN | PU | MODE2)) /* MMC1_CMD_MUX0 */\
+  MUX_VAL(CONTROL_PADCONF_GPMC_A2, (IDIS | PD | MODE6 )) /* EHRPWM1A_MUX1 */\
+  MUX_VAL(CONTROL_PADCONF_UART1_CTSN, (IEN | OFF | MODE2 )) /* DCAN0_TX_MUX2 */\
+  MUX_VAL(CONTROL_PADCONF_UART1_RTSN, (IEN | OFF | MODE2 )) /* DCAN0_RX_MUX2 */
 }
+
 /*
 ** This function will setup the MMU. The function maps three regions -
 ** 1. DDR
@@ -134,6 +138,7 @@ static void EDMAInit(){
    }
 }
 
+
 static void L3L4ClockInit(void){
    /*domain power state transition*/
    HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) =
@@ -195,25 +200,6 @@ static void L3L4ClockInit(void){
             CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_CAN_CLK)));
 }
 
-static void DCAN0ModuleClkConfig(void){
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_DCAN0_CLKCTRL) = 
-                                  CM_PER_DCAN0_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_DCAN0_CLKCTRL) & 
-                         CM_PER_DCAN0_CLKCTRL_MODULEMODE) != 
-                         CM_PER_DCAN0_CLKCTRL_MODULEMODE_ENABLE);
-}
-
-static void DCAN1ModuleClkConfig(void){
-    HWREG(SOC_CM_PER_REGS + CM_PER_DCAN1_CLKCTRL) = 
-                                  CM_PER_DCAN1_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_DCAN1_CLKCTRL) & 
-                         CM_PER_DCAN1_CLKCTRL_MODULEMODE) != 
-                         CM_PER_DCAN1_CLKCTRL_MODULEMODE_ENABLE);
-}
-
 
 
 void platformInit(void) {
@@ -225,6 +211,9 @@ void platformInit(void) {
    UARTStdioInit(); 
    PinMuxSetup();
    EDMAInit();
+   DCANModuleClkConfig();
+   DCANMsgRAMInit(0);
+   DCANMsgRAMInit(1);
    HSMMCSDModuleClkConfig();
    perAINTCConfigure();   
    IntMasterIRQEnable();

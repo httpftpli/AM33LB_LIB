@@ -45,6 +45,7 @@
 #define __DCAN_H__
 
 #include "hw_dcan.h"
+#include "type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -544,6 +545,17 @@ extern "C" {
 #define DCAN_MASK_IGNORED                   (DCAN_IFMCTL_UMASK_IGNORED)
 
 /******************************************************************************/
+
+/* Macros used by CANBitTimeCalculator */
+#define CAN_CALC_MAX_ERROR       (50u)
+#define BIT_RATE_ERR_WARN        (2u)
+#define BIT_RATE_ERR_MAX         (1u)
+#define EXTRACT_BRPE_VAL         (0x3C0u)
+#define NO_BIT_RATE_ERR          (3u)
+#define BRPE_SHIFT               (10u)
+
+
+
 /*
 ** Values that can be passed to 'DCANTransmitRequestControl' API as 'txRqst'
 */
@@ -551,6 +563,42 @@ extern "C" {
 #define DCAN_TRANSMIT_REQUESTED             (DCAN_IFMCTL_TXRQST)
 /* Transmission not requested */
 #define DCAN_TRANSMIT_NOT_REQUESTED         (DCAN_IFMCTL_TXRQST_NOREQUESTED)
+
+
+#define DCAN_IF_READ           DCAN_IF2_REG
+#define DCAN_IF_WRITE          DCAN_IF1_REG
+
+/*
+** Structure used by the CAN Bit time calculator. Will hold values related to 
+** bit-time configuration.
+*/
+struct _dcan_bittiming{
+    unsigned int bitRate;          /* Bit-rate in bits/second */
+    unsigned int samplePnt;        /* Sample point in one-tenth of a percent */
+    unsigned long tq;              /* Time quanta (tq) in nanoseconds */
+    unsigned int propSeg;          /* Propagation segment in tq */
+    unsigned int phaseSeg1;        /* Phase buffer segment 1 in tq */
+    unsigned int phaseSeg2;        /* Phase buffer segment 2 in tq */
+    unsigned int sjw;              /* Synchronisation jump width in tq */
+    unsigned int brp;              /* Bit-rate prescaler */
+};
+
+/*
+** Structure used by the CAN Bit time calculator. Will hold values related to 
+** bit-time configuration.
+*/
+struct _dcan_hw_params{
+    unsigned int tseg1Min;        /* Time segement 1 = prop_seg + phase_seg1 */
+    unsigned int tseg1Max;
+    unsigned int tseg2Min;        /* Time segement 2 = phase_seg2 */
+    unsigned int tseg2Max;
+    unsigned int sjwMax;          /* Synchronisation jump width */
+    unsigned int brpMin;          /* Bit-rate prescaler */
+    unsigned int brpMax;
+    unsigned int brpInc;
+};
+
+
 
 /******************************************************************************/
 /*                        DCAN API PROTOTYPES                                 */
@@ -586,11 +634,11 @@ extern void DCANAutoBusOnTimeValSet(unsigned int baseAdd, unsigned int timeVal);
 extern unsigned int DCANAutoBusOnTimeValGet(unsigned int baseAdd);
 extern unsigned int DCANTxRqstXStatusGet(unsigned int baseAdd);
 extern unsigned int DCANTxRqstStatusGet(unsigned int baseAdd, unsigned int msgNum);
-extern unsigned int DCANTxRqstStatGet(unsigned int baseAdd);
+extern unsigned int DCANFreeMsgObjGet(unsigned int baseAdd,unsigned begin);
 extern unsigned int DCANNewDataXStatusGet(unsigned int baseAdd);
 extern unsigned int DCANNewDataStatusGet(unsigned int baseAdd, unsigned int msgNum);
 extern unsigned int DCANNewDataStatGet(unsigned int baseAdd);
-extern void DCANMsgObjValidate(unsigned int baseAdd, unsigned int regNum);
+
 extern void DCANMsgObjInvalidate(unsigned baseAdd, unsigned int regNum);
 extern void DCANCommandRegSet(unsigned int baseAdd, unsigned int cmdFlags,
                               unsigned int objNum, unsigned int regNum);
@@ -600,22 +648,24 @@ extern unsigned int DCANMsgValidXStatusGet(unsigned int baseAdd);
 extern unsigned int DCANMsgValidStatusGet(unsigned int baseAdd, unsigned int msgNum);
 extern void DCANIntMuxConfig(unsigned int baseAdd, unsigned int intLine, 
                              unsigned int msgNum);
-extern unsigned int DCANIFBusyStatusGet(unsigned int baseAdd, unsigned int regNum);
-extern void DCANMsgIdSet(unsigned int baseAdd, unsigned int msgId,
-                         unsigned int idLength, unsigned int regNum);
-extern void DCANMsgDirectionSet(unsigned int baseAdd, unsigned int msgDir,
-                         unsigned int regNum);
-extern void DCANDataWrite(unsigned int baseAdd, unsigned int* dataPtr,
-                   unsigned int regNum);
-extern void DCANDataRead(unsigned int baseAdd, unsigned int* data, unsigned int regNum);
-extern void DCANDataLengthCodeSet(unsigned int baseAdd, unsigned int dlc,
-                           unsigned int regNum);
-extern void DCANMsgObjIntEnable(unsigned int baseAdd, unsigned int intFlags,
-                         unsigned int regNum);
+
+extern  void DCANIFMsgValidate(unsigned int baseAdd, unsigned int IFnum);
+extern  BOOL DCANIFBusyStatusGet(unsigned int baseAdd, unsigned int IFnum);
+extern  void DCANIFDataRead(unsigned int baseAdd, unsigned int IFnum, unsigned int* data);
+extern  unsigned int  DCANIFArbRead(unsigned int baseAdd,unsigned int IFnum);
+extern  unsigned short  DCANIFDlcRead(unsigned int baseAdd,unsigned int IFnum);
+extern  void DCANIFDataSet(unsigned int baseAdd,unsigned regNum,void *data,unsigned int dlc);
+extern  void DCANIFArbSet(unsigned int baseAdd,unsigned int IFnum,unsigned int arb);
+extern  void DCANIFFifoEndOfBlockControl(unsigned int baseAdd, unsigned int IFnum, BOOL end);
+extern  void DCANIFAccMaskControl(unsigned int baseAdd,unsigned int IFnum,
+                          BOOL uMask);
+extern  void DCANIFMsgIntEnable(unsigned int baseAdd,unsigned int IFnum, unsigned int intFlags);
+extern  void DCANIFMCtrSet(unsigned int baseAdd,unsigned int IFnum,unsigned int val);
+
+
 extern void DCANMsgObjIntDisable(unsigned int baseAdd, unsigned int intFlags,
                           unsigned int regNum);
-extern void DCANFIFOEndOfBlockControl(unsigned int baseAdd, unsigned int eob,
-                              unsigned int regNum);
+
 extern void DCANMsgObjectMskConfig(unsigned int baseAdd, unsigned int idMsk,
                             unsigned int msgDir, unsigned int extId,
                             unsigned int regNum);
@@ -630,10 +680,13 @@ extern unsigned int DCANIFMsgCtlStatusGet(unsigned int baseAdd, unsigned int reg
 extern void DCANClrIntPnd(unsigned int baseAdd, unsigned int regNum);
 extern void DCANNewDataControl(unsigned int baseAdd, unsigned int newDat,
                         unsigned int regNum);
-extern void DCANUseAcceptanceMaskControl(unsigned int baseAdd, unsigned int uMask,
-                                  unsigned int regNum);
 extern void DCANTransmitRequestControl(unsigned int baseAdd, unsigned int txRqst,
                                 unsigned int regNum);
+
+
+extern unsigned int CANSetBitTiming(unsigned int baseAdd, unsigned int clkFreq,
+                             unsigned int bitRate);
+
 #ifdef __cplusplus
 }
 #endif
