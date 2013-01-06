@@ -40,8 +40,13 @@
 */
 
 
-#ifndef _BEALGEBONE_H_
-#define _BEAGLEBONE_H_
+#ifndef _PLATFORM_H_
+#define _PLATFORM_H_
+
+#include "type.h"
+#include "pf_qep.h"
+#include "pf_hsi2c.h"
+#include "pf_rx8025.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -158,6 +163,8 @@ extern void DCANModuleClkConfig(void);
 extern void DCANMsgRAMInit(unsigned int instanceNum);
 extern void CANRegistRcvedHandler(void (*handler)(unsigned int index,CAN_FRAME *frame));
 
+
+void PWMSSModuleClkConfig(unsigned int instanceNum);
 
 #ifdef __cplusplus
 }

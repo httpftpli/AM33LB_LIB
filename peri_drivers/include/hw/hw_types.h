@@ -81,6 +81,25 @@ typedef unsigned char tBoolean;
         HWREGB(((unsigned int)(x) & 0xF0000000) | 0x02000000 |               \
                (((unsigned int)(x) & 0x000FFFFF) << 5) | ((b) << 2))
 
+inline void  HWREGBITARRAY(unsigned int addr, unsigned int bit,
+                           unsigned int bitnum, unsigned int val) 
+{
+   unsigned int reg = HWREG(addr);
+   reg &= ~((1UL << (bitnum + 1) - 1) << bit);
+   reg |= val << bit;
+   HWREG(addr) = reg;
+}
+
+inline void  HWREGHBITARRAY(unsigned int addr, unsigned int bit,
+                           unsigned int bitnum, unsigned int val) 
+{
+   unsigned short reg = HWREGH(addr);
+   reg &= ~((1UL << (bitnum + 1) - 1) << bit);
+   reg |= val << bit;
+   HWREGH(addr) = reg;
+}
+
+
 #define TRUE    1
 #define FALSE   0
 

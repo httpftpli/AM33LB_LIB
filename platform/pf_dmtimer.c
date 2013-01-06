@@ -387,3 +387,5 @@ void DMTimer7ModuleClkConfig(void)
            (CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_L4LS_GCLK |
             CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER7_GCLK)));
 }
+
+

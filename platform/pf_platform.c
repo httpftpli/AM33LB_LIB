@@ -67,7 +67,14 @@ static void PinMuxSetup(void){
   MUX_VAL(CONTROL_PADCONF_GPMC_CSN2,(IEN | PU | MODE2)) /* MMC1_CMD_MUX0 */\
   MUX_VAL(CONTROL_PADCONF_GPMC_A2, (IDIS | PD | MODE6 )) /* EHRPWM1A_MUX1 */\
   MUX_VAL(CONTROL_PADCONF_UART1_CTSN, (IEN | OFF | MODE2 )) /* DCAN0_TX_MUX2 */\
-  MUX_VAL(CONTROL_PADCONF_UART1_RTSN, (IEN | OFF | MODE2 )) /* DCAN0_RX_MUX2 */
+  MUX_VAL(CONTROL_PADCONF_UART1_RTSN, (IEN | OFF | MODE2 )) /* DCAN0_RX_MUX2 */\
+  MUX_VAL(CONTROL_PADCONF_I2C0_SDA, (IEN | OFF | MODE0 )) /* I2C0_SDA */\
+  MUX_VAL(CONTROL_PADCONF_I2C0_SCL, (IEN | OFF | MODE0 )) /* I2C0_SCL */\
+  MUX_VAL(CONTROL_PADCONF_SPI0_D1, (IEN | OFF | MODE2 )) /* I2C1_SDA_MUX3 */\
+  MUX_VAL(CONTROL_PADCONF_SPI0_CS0, (IEN | OFF | MODE2 )) /* I2C1_SCL_MUX3 */\
+  MUX_VAL(CONTROL_PADCONF_LCD_DATA4, (IEN | OFF | MODE3 )) /* EQEP2A_IN_MUX0 */\
+  MUX_VAL(CONTROL_PADCONF_LCD_DATA5, (IEN | OFF | MODE3 )) /* EQEP2B_IN_MUX0 */
+
 }
 
 /*
@@ -214,6 +221,10 @@ void platformInit(void) {
    DCANModuleClkConfig();
    DCANMsgRAMInit(0);
    DCANMsgRAMInit(1);
+   I2C0ModuleClkConfig();
+   I2C1ModuleClkConfig();
+   DMTimer2ModuleClkConfig();  //dtimer2 for tick
+   PWMSSModuleClkConfig(2);    //PWMSS for qep2
    HSMMCSDModuleClkConfig();
    perAINTCConfigure();   
    IntMasterIRQEnable();

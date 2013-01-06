@@ -8,7 +8,9 @@ extern void isr_Edma3CCError(unsigned int intnum);
 extern void isr_Edma3Completion(unsigned int intnum); 
 extern void isr_HSMMCSD(unsigned int intnum);
 extern void isr_RTC(unsigned int intnum);
-extern void isr_DCANLine0(unsigned intnum);
+extern void isr_DCANLine0(unsigned int intnum);
+extern void isr_DTimer2(unsigned int intnum);
+extern void isr_qep(unsigned intnum);
 
 
 /*
@@ -59,12 +61,28 @@ static void DCANINTConfigure(void){
    IntSystemEnable(SYS_INT_DCAN0_INT0);  
 }
 
+static void DMTimerIntConfigure(void){
+   IntRegister(SYS_INT_TINT2,isr_DTimer2);
+   IntPrioritySet(SYS_INT_TINT2,INT_PRIORITY_TIMER2,AINTC_HOSTINT_ROUTE_IRQ);
+   IntSystemEnable(SYS_INT_TINT2);  
+}
+
+static void QEP2IntConfigure(void){
+   IntRegister(SYS_INT_eQEP2INT,isr_qep);
+   IntPrioritySet(SYS_INT_eQEP2INT,INT_PRIORITY_EQEP2,AINTC_HOSTINT_ROUTE_IRQ);
+   IntSystemEnable(SYS_INT_eQEP2INT);  
+}
+
+
+
 
 void perAINTCConfigure(){
    EDMAAINTCConfigure();
    MMCSDAINTCConfigure();
    RTCAINTCConfigure();
    DCANINTConfigure();
+   DMTimerIntConfigure();
+   QEP2IntConfigure();
 }
 
 

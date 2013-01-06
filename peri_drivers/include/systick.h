@@ -47,18 +47,11 @@
 extern "C" {
 #endif
 
-void SystickConfigure(void (*pfnHandler)(void));
-void SystickPeriodSet(unsigned int milliSec);
-void SystickEnable(void);
-void SystickDisable(void);
-
-/*
-*External functions.
-*/
-extern void TimerTickConfigure(void (*pfnHandler)(void));
+extern void TimerTickConfigure(unsigned int milliSec);
 extern void TimerTickPeriodSet(unsigned int milliSec);
-extern void TimerTickEnable(void);
-extern void TimerTickDisable(void);
+extern void TimerTickRegistHandler(void (*pfnHandler)(unsigned int tick));
+extern void TimerTickStart(void);
+extern void TimerTickStop(void);
 
 
 #ifdef __cplusplus

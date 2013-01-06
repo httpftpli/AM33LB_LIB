@@ -82,6 +82,12 @@ void I2CMasterInitExpClk(unsigned int baseAdd, unsigned int sysClk,
     HWREG(baseAdd + I2C_SCLH) = divider - 5; 
 }
 
+
+void I2CMasterReset(unsigned int baseAdd){
+    HWREG(baseAdd + I2C_SYSC) |= 0x02;
+    while (HWREG(baseAdd + I2C_SYSC)&0x02);
+}
+
 /**
  * \brief   Enables the I2C module.This will bring the I2C module out of reset.
  *
@@ -94,6 +100,7 @@ void I2CMasterEnable(unsigned int baseAdd)
 {
     /* Bring the I2C module out of reset */
     HWREG(baseAdd + I2C_CON) |= I2C_CON_I2C_EN;
+    while (!(HWREG(baseAdd + I2C_SYSS)&0x01));
 }
 
 /**
@@ -112,6 +119,7 @@ void I2CMasterDisable(unsigned int baseAdd)
     /* Put I2C module in reset */
     HWREG(baseAdd + I2C_CON) &= ~(I2C_CON_I2C_EN);
 }
+
 
 /**
  * \brief   This API determines whether bus is busy or not.
@@ -150,6 +158,11 @@ unsigned int I2CMasterBusBusy(unsigned int baseAdd)
 unsigned int I2CMasterBusy(unsigned int baseAdd)
 {
     return (HWREG(baseAdd + I2C_CON) & I2C_CON_MST);
+}
+
+void I2CModeSet(unsigned int baseAdd,unsigned int mode){
+   HWREG(baseAdd + I2C_CON) &= ~(0x03<<9);
+   HWREG(baseAdd + I2C_CON) |= mode;
 }
 
 /**
@@ -428,7 +441,7 @@ unsigned int I2CMasterIntRawStatusEx(unsigned int baseAdd, unsigned int intFlag)
  **/
 void I2CMasterIntClearEx(unsigned int baseAdd, unsigned int intFlag)
 {
-    HWREG(baseAdd + I2C_IRQSTATUS) = intFlag; 
+    HWREG(baseAdd + I2C_IRQSTATUS) = 0x7fff & intFlag; 
 }
 
 /**
@@ -534,17 +547,19 @@ unsigned int I2CDataCountGet(unsigned int baseAdd)
 void I2CFIFOThresholdConfig(unsigned int baseAdd, unsigned int threshlodVal,
                             unsigned int flag)
 {
+    if(0==threshlodVal)
+          threshlodVal = 1;
     if(I2C_TX_MODE == flag)
     {
          HWREG(baseAdd + I2C_BUF) &= ~I2C_BUF_TXTRSH;
 
-         HWREG(baseAdd + I2C_BUF) |= threshlodVal;
+         HWREG(baseAdd + I2C_BUF) |= threshlodVal-1;
     }
     else
     {
          HWREG(baseAdd + I2C_BUF) &= ~I2C_BUF_RXTRSH;
 
-         HWREG(baseAdd + I2C_BUF) |= threshlodVal <<  I2C_BUF_RXTRSH_SHIFT;
+         HWREG(baseAdd + I2C_BUF) |= (threshlodVal-1) <<  I2C_BUF_RXTRSH_SHIFT;
     }
 }
 

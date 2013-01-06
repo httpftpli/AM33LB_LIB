@@ -54,6 +54,12 @@ extern "C" {
 ** of operation of I2C
 */
 
+
+#define     I2C_MODE_MASTER_RCV         2<<9   
+#define     I2C_MODE_MASTER_SEND        3<<9
+#define     I2C_MODE_SLAVER_SEND        0<<9
+#define     I2C_MODE_SLAVER_RCV         0<<9
+
 #define     I2C_CFG_MST_TX              I2C_CON_TRX | I2C_CON_MST
 #define     I2C_CFG_MST_RX              I2C_CON_MST
 #define     I2C_CFG_STOP                I2C_CON_STP
@@ -212,6 +218,7 @@ typedef struct i2cContext {
 extern void I2CSoftReset(unsigned int baseAdd);
 extern void I2CMasterStop(unsigned int baseAdd);
 extern void I2CMasterStart(unsigned int baseAdd);
+extern void I2CMasterReset(unsigned int baseAdd);
 extern void I2CMasterEnable(unsigned int baseAdd);
 extern void I2CMasterDisable(unsigned int baseAdd);
 extern void I2CAutoIdleEnable(unsigned int baseAdd);
@@ -228,6 +235,7 @@ extern unsigned int I2CSlaveDataGet(unsigned int baseAdd);
 extern unsigned char I2CMasterDataGet(unsigned int baseAdd);
 extern unsigned int I2CMasterBusBusy(unsigned int baseAdd);
 extern unsigned int I2CMasterBusy(unsigned int baseAdd);
+extern void I2CModeSet(unsigned int baseAdd,unsigned int mode);
 extern unsigned int I2CSlaveIntStatus(unsigned int baseAdd);
 extern unsigned int I2CMasterIntStatus(unsigned int baseAdd);
 extern unsigned int I2CSystemStatusGet(unsigned int baseAdd);

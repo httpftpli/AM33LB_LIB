@@ -40,26 +40,58 @@
 */
 
 
-#include "systick.h"
+#include "dmtimer.h"
+#include "soc_AM335x.h"
 
-void TimerTickConfigure(void (*pfnHandler)(void))
+#define TIMERTICK   SOC_DMTIMER_2_REGS
+
+
+static void (*timertickhandle)(unsigned int tick) = NULL;
+
+
+void isr_DTimer2(unsigned int intnum){
+   UNUSED(intnum);
+   static unsigned int tick = 0;
+   DMTimerIntStatusClear(SOC_DMTIMER_2_REGS,DMTIMER_INT_OVF_IT_FLAG );
+   if (NULL!=timertickhandle) {
+      timertickhandle(tick++);
+   }
+}
+
+
+
+void TimerTickConfigure(unsigned milliSec){
+   DMTimerReset(TIMERTICK);
+   DMTimerModeConfigure(TIMERTICK, DMTIMER_AUTORLD_NOCMP_ENABLE);
+   DMTimerIntEnable(TIMERTICK,  DMTIMER_INT_OVF_EN_FLAG);
+   DMTimerPreScalerClkEnable(TIMERTICK, 2); //CLK_M_OSC =24M 
+                                           //PERCALE : 2^(2+1)=8
+                                           //clkin = 24/8 = 3
+   unsigned int cnt = 0xfffffffe - milliSec*3;
+   DMTimerReloadSet(TIMERTICK, cnt);
+   DMTimerTriggerSet(TIMERTICK);
+}
+
+void TimerTickRegistHandler(void (*pfnHandler)(unsigned int tick))
 {    
-    
+    timertickhandle = pfnHandler;
 }
 
-void TimerTickPeriodSet(unsigned int ulTime)
+void TimerTickPeriodSet(unsigned int usTime)
 {
-	
+   unsigned int cnt = 0xffffffe - usTime*3;
+   DMTimerReloadSet(TIMERTICK, cnt);
+   DMTimerTriggerSet(TIMERTICK);
 }
 
-void TimerTickEnable(void)
+void TimerTickStart(void)
 {	
-
+   DMTimerEnable(TIMERTICK);
 }
 
-void TimerTickDisable(void)
+void TimerTickStop(void)
 {
-	
+   DMTimerDisable(TIMERTICK);
 }
 
 
