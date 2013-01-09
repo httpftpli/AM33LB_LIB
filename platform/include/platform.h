@@ -47,6 +47,7 @@
 #include "pf_qep.h"
 #include "pf_hsi2c.h"
 #include "pf_rx8025.h"
+#include "pf_timertick.h"
 
 #ifdef __cplusplus
 extern "C" {
