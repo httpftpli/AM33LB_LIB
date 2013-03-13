@@ -122,6 +122,8 @@ extern void DMTimer7ModuleClkConfig(void);
 extern void EVMPortMIIModeSelect(void);
 extern void RTCModuleClkConfig(void);
 extern void HSMMCSDModuleClkConfig(void);
+extern void GPMCClkConfig(void);
+extern void GPMCInitForNOR(unsigned int baseAddr );
 extern void I2C0ModuleClkConfig(void);
 extern void I2C1ModuleClkConfig(void);
 extern void GpioPinMuxSetup(unsigned int offsetAddr,
@@ -165,10 +167,13 @@ extern void DCANMsgRAMInit(unsigned int instanceNum);
 extern void CANRegistRcvedHandler(void (*handler)(unsigned int index,CAN_FRAME *frame));
 
 
-void PWMSSModuleClkConfig(unsigned int instanceNum);
+extern void PWMSSModuleClkConfig(unsigned int instanceNum);
+
+extern void GPIOInit();
+extern void GPIO0ModuleClkConfig(void);
+extern void GPIO1ModuleClkConfig(void);
 
 #ifdef __cplusplus
-}
 #endif
 
 #endif

@@ -3343,7 +3343,7 @@ USBHostIntHandlerInternal(unsigned int ulIndex, unsigned int ulStatus, unsigned 
 //
 //*****************************************************************************
 void
-USB0HostIntHandler(void)
+USB0HostIntHandler(unsigned int intnum)
 {
     unsigned int ulStatus = 0;
     unsigned int epStatus = 0;
@@ -3409,7 +3409,7 @@ USB0HostIntHandler(void)
 //
 //*****************************************************************************
 void
-USB1HostIntHandler(void)
+USB1HostIntHandler(unsigned int intnum)
 {
     unsigned int ulStatus = 0;
     unsigned int epStatus = 0;    

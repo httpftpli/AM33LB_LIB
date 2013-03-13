@@ -352,8 +352,8 @@ extern unsigned int USBHCDControlTransfer(unsigned int ulIndex,
                                            unsigned char *pData,
                                            unsigned int ulSize,
                                            unsigned int ulMaxPacketSize);
-extern void USB0HostIntHandler(void);
-extern void USB1HostIntHandler(void);
+extern void USB0HostIntHandler(unsigned int intnum);
+extern void USB1HostIntHandler(unsigned int intnum);
 extern void USBHCDTimeOutHook(unsigned int ulIndex, 
 	                                                        tUSBHTimeOut **USBHTimeOut);
 

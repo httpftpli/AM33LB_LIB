@@ -1,5 +1,5 @@
-/**
- * \file   pf_pwmss.c
+/** 
+ * \file   pf_pwmss.c 
  *
  * \brief  This file contains functions which does platform specific
  *         configurations for PWMSS.

@@ -119,6 +119,7 @@ void  GPMCModuleSoftReset(unsigned int baseAddr)
 
     HWREG(baseAddr + GPMC_SYSCONFIG)= (GPMC_SYSCONFIG_SOFTRESET_RESET <<
                                        GPMC_SYSCONFIG_SOFTRESET_SHIFT);
+    while ((HWREG(baseAddr + GPMC_SYSSTATUS)& 0x1) == 0); 
 }
 
 /**

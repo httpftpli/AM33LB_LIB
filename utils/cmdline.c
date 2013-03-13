@@ -67,7 +67,8 @@
  * The command table is contained in an array named <tt>g_sCmdTable</tt> which
  * must be provided by the application.
  *
- * \return Returns \b CMDLINE_BAD_CMD if the command is not found,
+ * \return Returns \b CMDLINE_BAD_CMD if the command is not 
+ *         found,
  * \b CMDLINE_TOO_MANY_ARGS if there are more arguments than can be parsed.
  * Otherwise it returns the code that was returned by the command function.
  */

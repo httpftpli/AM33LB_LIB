@@ -1,3 +1,18 @@
+/**
+*    @file  debug.h
+*    @author  lfl
+*    @brief  macro for debug output
+*  
+*    该文件中宏用于打印调式信息，可能通过定义宏
+*    DEBUG_ERROR_NOTOUTPUT DEBUG_WARN_NOTOUTPUT
+*    DEBUG_DEBUG_NOTOUTPUT 关闭
+*    @todo
+*
+*
+*
+*
+*/
+
 #ifndef __debug__h___
 #define __debug__h___
 
@@ -25,7 +40,6 @@
 #define mdDebug(A)   UARTPuts((A), -1)
 #define mdDebugNum(A) UARTPutNum((A))
 #endif
-
 #define ASSERT(A)   mdAssert(A)
 
 #endif

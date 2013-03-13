@@ -1,0 +1,118 @@
+#include "gpmc.h"
+#include "pf_platform_cfg.h" 
+#include "hw_types.h"
+#include "soc_am335x.h"
+#include "hw_cm_per.h"
+#include "debug.h"
+#include "type.h"
+
+
+void GPMCClkConfig(void)
+{
+    HWREG(SOC_PRCM_REGS + CM_PER_L3S_CLKSTCTRL) |=
+                             CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
+
+    while((HWREG(SOC_PRCM_REGS + CM_PER_L3S_CLKSTCTRL) &
+     CM_PER_L3S_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
+
+    HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKSTCTRL) |=
+                             CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
+
+    while((HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKSTCTRL) &
+     CM_PER_L3_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
+
+    HWREG(SOC_PRCM_REGS + CM_PER_L3_INSTR_CLKCTRL) |=
+                             CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE;
+
+    while((HWREG(SOC_PRCM_REGS + CM_PER_L3_INSTR_CLKCTRL) &
+                               CM_PER_L3_INSTR_CLKCTRL_MODULEMODE) !=
+                                   CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE);
+
+    HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKCTRL) |=
+                             CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE;
+
+    while((HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKCTRL) &
+        CM_PER_L3_CLKCTRL_MODULEMODE) != CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE);
+
+    HWREG(SOC_PRCM_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) |=
+                             CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
+
+    while((HWREG(SOC_PRCM_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
+                              CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL) !=
+                                CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
+
+    HWREG(SOC_PRCM_REGS + CM_PER_GPMC_CLKCTRL) |=
+                             CM_PER_GPMC_CLKCTRL_MODULEMODE_ENABLE;
+
+    while((HWREG(SOC_PRCM_REGS + CM_PER_GPMC_CLKCTRL) &
+      CM_PER_GPMC_CLKCTRL_MODULEMODE) != CM_PER_GPMC_CLKCTRL_MODULEMODE_ENABLE);
+
+    HWREG(SOC_PRCM_REGS + CM_PER_ELM_CLKCTRL) |=
+                             CM_PER_ELM_CLKCTRL_MODULEMODE_ENABLE;
+
+    while((HWREG(SOC_PRCM_REGS + CM_PER_ELM_CLKCTRL) &
+      CM_PER_ELM_CLKCTRL_MODULEMODE) != CM_PER_ELM_CLKCTRL_MODULEMODE_ENABLE);
+
+
+    while(!(HWREG(SOC_PRCM_REGS + CM_PER_L3S_CLKSTCTRL) &
+            CM_PER_L3S_CLKSTCTRL_CLKACTIVITY_L3S_GCLK));
+
+    while(!(HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKSTCTRL) &
+            CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK));
+
+}
+
+static void GPMCConfigCS(unsigned int baseAddr,unsigned char cs,unsigned int bankBaseAddr,unsigned int bitOfAddrLine){
+   mdAssert(cs < 7);
+   mdAssert((bankBaseAddr & 0x00ffffff)==0);
+   if (bitOfAddrLine < 24) bitOfAddrLine = 24;
+   unsigned int basea = (bankBaseAddr & 0x3fffffff)>>24;
+   unsigned char maskaddr = 0;
+   switch (bitOfAddrLine) {
+   case 24: maskaddr = 0xf;break;
+   case 25: maskaddr = 0xe;break;
+   case 26: maskaddr = 0xc;break;
+   case 27: maskaddr = 0x8;break;
+   case 28: maskaddr = 0x0;break;
+   default: maskaddr = 0x0;
+   }
+   HWREG(baseAddr + GPMC_CONFIG7(cs)) = basea | (maskaddr<<8);
+}
+
+
+static void GPMCEnableCS(unsigned int baseAddr,unsigned char cs,BOOL enable){
+   mdAssert(cs<7);
+   unsigned int val = HWREG(baseAddr + GPMC_CONFIG7(cs));
+   val |= (!!enable)<<6;
+   HWREG(baseAddr + GPMC_CONFIG7(cs)) = val;
+}
+
+
+void GPMCInitForNOR(unsigned int baseAddr ){
+  GPMCModuleSoftReset(baseAddr);
+  GPMCIdleModeSelect(baseAddr, GPMC_IDLEMODE_NOIDLE);
+  //NOR Timings Configuration
+  for (int i=0;i<7;i++) {
+     // NOR Memory type Configuration
+     HWREG(baseAddr + GPMC_CONFIG1(i)) = 0 << 30 | 0 << 10 | 1 << 12 | 0 << 8 |
+           0 << 31 | 0 << 4 | 3 << 0;
+     // Chip-Select Configuration
+     GPMCConfigCS(baseAddr, i, CS_BASEADDR[i], CS_ADDRLINE_BIT[i]);
+     //config CS signal parameter
+     HWREG(baseAddr + GPMC_CONFIG2(i)) =  0x0a<<8 | 6<<16 | 0<<0;
+                                       //CSRDOFFTIME | CSWROFFTIME | CSONTIME
+     //config RWn RWn 
+     HWREG(baseAddr + GPMC_CONFIG4(i)) = 5<<24 | 1<<16 | 0x0a<<8 | 3<<0;
+                                       //WEOFFTIME | WEONTIME | OEOFFTIME | OEONTIME
+     //config access time cycle time
+     HWREG(baseAddr + GPMC_CONFIG5(i)) = 9<<16 | 6<<8 | 0x0b<<0;
+                                       // RDACCESSTIME | WRCYCLETIME | RDCYCLETIME
+     HWREG(baseAddr + GPMC_CONFIG6(i)) = 1<<8 ;
+                                       // CYCLE2CYCLEDELAY 
+  }
+  //enable CSi
+  for (int i=0; i < 7; i++) {
+     GPMCEnableCS(baseAddr, i, CS_USE & (1 << i));
+  }
+}
+

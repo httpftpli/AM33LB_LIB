@@ -17,11 +17,16 @@
 #include "rtc.h"
 #include "platform.h"
 #include "soc_AM335x.h"
+#include "usblib.h"
+#include "usbmsc.h"
+#include "usbhost.h"
+#include "usbhmsc.h"
 
 #define DRIVER_NUM_MMCSD0	   0
 #define DRIVER_NUM_USB		   1
 #define DRIVER_NUM_MMCSD1          2
 #define DRIVER_NUM_DRVGUIDE        3
+
 
 
 PARTITION VolToPart[] = {
@@ -31,8 +36,9 @@ PARTITION VolToPart[] = {
     {DRIVER_NUM_MMCSD0, 1},     /* Logical drive 3 ==> Physical drive 0, 3rd partition */    
 };
 
-
+extern tUSBHMSCInstance g_USBHMSCDevice[];
 extern mmcsdCtrlInfo mmcsdctr[2];
+static volatile DSTATUS USBStat = STA_NOINIT;    /* Disk status */
 
 /*-----------------------------------------------------------------------*/
 /* Inidialize a Drive                                                    */
@@ -85,15 +91,28 @@ DSTATUS disk_initialize (
       }
       return 0; 
 
-      case DRIVER_NUM_USB :
-         return STA_NODISK;
-         //TODO finish usb fs
+   case DRIVER_NUM_USB :
+      {
+         unsigned int ulMSCInstance;
 
-      default:
-         return STA_NOINIT;
+         ulMSCInstance = (unsigned int)&g_USBHMSCDevice[0];
+
+         /* Set the not initialized flag again. If all goes well and the disk is */
+         /* present, this will be cleared at the end of the function.            */
+         USBStat |= STA_NOINIT;
+
+         /* Find out if drive is ready yet. */
+         if (USBHMSCDriveReady(ulMSCInstance)) return (FR_NOT_READY);
+
+         /* Clear the not init flag. */
+         USBStat &= ~STA_NOINIT;
       }
-      return STA_NODISK;
+      return 0;
+   default:
+      return STA_NOINIT;
    }
+   return STA_NODISK;
+}
 
 
 
@@ -124,8 +143,7 @@ DSTATUS disk_status(
          break;
       }
    case DRIVER_NUM_USB :
-      //TODO finsi usb fs
-      break;
+      return USBStat;
 
    default:
       return STA_NOINIT;
@@ -167,13 +185,21 @@ DRESULT disk_read(
          break;
       }
    case DRIVER_NUM_USB :
-      // translate the arguments here
-      //TODO finsi usb
-      return RES_PARERR;
+      {
+         unsigned int ulMSCInstance;
+         ulMSCInstance = (unsigned int)&g_USBHMSCDevice[drv];
+         if (USBStat & STA_NOINIT) {
+            return (RES_NOTRDY);
+         }
+         /* READ BLOCK */
+         if (USBHMSCBlockRead(ulMSCInstance, sector, buff, count) == 0)
+             return RES_OK;
+      }
+      return RES_ERROR;
    default:
       return RES_PARERR;
    }
-   return RES_PARERR;
+   return RES_PARERR; 
 }
 
 
@@ -218,10 +244,17 @@ DRESULT disk_write (
          }
       }
    case DRIVER_NUM_USB :
-      // translate the arguments
-      //TODO  finish usb
-      return RES_PARERR;
+      {
+         unsigned int ulMSCInstance;
+         ulMSCInstance = (unsigned int)&g_USBHMSCDevice[0];
+         if (USBStat & STA_NOINIT) return RES_NOTRDY;
+         if (USBStat & STA_PROTECT) return RES_WRPRT;
 
+         /* WRITE BLOCK */
+         if (USBHMSCBlockWrite(ulMSCInstance, sector, (unsigned char *)buff,
+                               count) == 0) return RES_OK;
+      }
+      return RES_ERROR; 
    default:
       return RES_PARERR;
    }
@@ -273,7 +306,25 @@ DRESULT disk_ioctl (
       return RES_ERROR;
 
    case DRIVER_NUM_USB :
-       return RES_ERROR;
+      if (USBStat & STA_NOINIT) {
+         return RES_NOTRDY;
+      }
+      switch (ctrl){
+      case CTRL_SYNC:
+            return RES_OK;
+         case GET_SECTOR_SIZE:
+            *(unsigned short *)buff = 512;
+            return RES_OK;
+         case GET_SECTOR_COUNT:
+            return RES_OK;
+         case GET_BLOCK_SIZE:
+            *(unsigned int *)buff = 1;  //TODO finish BLOCK_SIZE
+            return RES_OK;
+         case CTRL_ERASE_SECTOR:
+            break; 
+      }
+   default:
+      return RES_PARERR;
    }     
 	return RES_PARERR;
 }
