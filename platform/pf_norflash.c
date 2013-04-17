@@ -94,20 +94,26 @@ void GPMCInitForNOR(unsigned int baseAddr ){
   //NOR Timings Configuration
   for (int i=0;i<7;i++) {
      // NOR Memory type Configuration
-     HWREG(baseAddr + GPMC_CONFIG1(i)) = 0 << 30 | 0 << 10 | 1 << 12 | 0 << 8 |
-           0 << 31 | 0 << 4 | 3 << 0;
+     HWREG(baseAddr + GPMC_CONFIG1(i)) = 0<<31   |  0 << 30   |  0<<29 |    0<<28    |  0<<27  |
+                                      //WRAPBURST|READMULTIPLE|READTYPE|WRITEMULTIPLE|WRITETYPE|
+         0x00 <<25    |     0x00 << 23         |     0<<22        |     0<<21          | 
+   //CLKACTIVATIONTIME|ATTACHEDDEVICEPAGELENGTH|WAITREADMONITORING| WAITWRITEMONITORING| 
+        1 << 12  | 0 << 10  | 0x00 << 8 |   0 << 4           |  0 << 0;
+     //DEVICESIZE|DEVICETYPE| MUXADDDATA|TIMEPARAGRANULARITY | GPMCFCLKDIVIDER
+         
+     
      // Chip-Select Configuration
      GPMCConfigCS(baseAddr, i, CS_BASEADDR[i], CS_ADDRLINE_BIT[i]);
      //config CS signal parameter
-     HWREG(baseAddr + GPMC_CONFIG2(i)) =  0x0a<<8 | 6<<16 | 0<<0;
+     HWREG(baseAddr + GPMC_CONFIG2(i)) =  15<<8      |   14<<16    | 0<<0;
                                        //CSRDOFFTIME | CSWROFFTIME | CSONTIME
      //config RWn RWn 
-     HWREG(baseAddr + GPMC_CONFIG4(i)) = 5<<24 | 1<<16 | 0x0a<<8 | 3<<0;
+     HWREG(baseAddr + GPMC_CONFIG4(i)) = 9<<24     |  2<<16   |    15<<8  |  3<<0;
                                        //WEOFFTIME | WEONTIME | OEOFFTIME | OEONTIME
      //config access time cycle time
-     HWREG(baseAddr + GPMC_CONFIG5(i)) = 9<<16 | 6<<8 | 0x0b<<0;
+     HWREG(baseAddr + GPMC_CONFIG5(i)) = 11<<16        |    14<<8    |    16<<0;
                                        // RDACCESSTIME | WRCYCLETIME | RDCYCLETIME
-     HWREG(baseAddr + GPMC_CONFIG6(i)) = 1<<8 ;
+     //HWREG(baseAddr + GPMC_CONFIG6(i)) = 10<<24 ;
                                        // CYCLE2CYCLEDELAY 
   }
   //enable CSi

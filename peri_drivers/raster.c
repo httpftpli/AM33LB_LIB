@@ -376,42 +376,37 @@ void RasterFIFODMADelayConfig(unsigned int baseAddr, unsigned int delay)
 **/
 void RasterHparamConfig(unsigned int baseAddr, unsigned int numOfppl,
                         unsigned int hsw, unsigned int hfp,
-                        unsigned hbp)
-{
-    unsigned int ppl;
-    unsigned int version;
+                        unsigned hbp) {
+   unsigned int ppl;
+   unsigned int regval;
+   ppl = numOfppl - 1;
+   ppl = (ppl & 0x000003f0) | ((ppl & 0x00000400) >> 7);
+   HWREG(baseAddr + LCDC_RASTER_TIMING_0) = ppl;
+   HWREG(baseAddr + LCDC_RASTER_TIMING_0) |= (((hsw - 1)&0x3f) <<
+                                              LCDC_RASTER_TIMING_0_HSW_SHIFT);
+   unsigned int hswh = hsw>>6;
+   if (hswh>0) {
+      regval = HWREG(baseAddr + LCDC_RASTER_TIMING_2);
+      regval &= ~(0x0f<<27); 
+      regval |= ((hswh&0x0f)<<27);
+   }
+   HWREG(baseAddr + LCDC_RASTER_TIMING_0) |= (((hfp - 1)&0xff) <<
+                                              LCDC_RASTER_TIMING_0_HFP_SHIFT);
+   unsigned int hfph = hfp>>8;
+   if (hfph>0) {
+      regval = HWREG(baseAddr + LCDC_RASTER_TIMING_2);
+      regval &= ~(0x03<<0); 
+      regval |= ((hfph&0x03)<<0);
+   }
 
-    version = LCDVersionGet();
-
-    if(RASTER_REV_AM335X == version)
-    {
-         ppl = numOfppl - 1;
-
-         ppl = (ppl & 0x000003f0) | ((ppl & 0x00000400) >> 7);
-
-         HWREG(baseAddr + LCDC_RASTER_TIMING_0) = ppl; 
-    }
-    else if(RASTER_REV_AM1808 == version)
-    {
-   
-         ppl = (numOfppl / 16) - 1;
-
-         HWREG(baseAddr + LCDC_RASTER_TIMING_0) =  (ppl <<                       
-                                                LCDC_RASTER_TIMING_0_PPL_SHIFT);
-    }
-    else
-    {
-         ;/* Do nothing */
-    }
-    
-    HWREG(baseAddr + LCDC_RASTER_TIMING_0) |= ((hsw - 1) <<                   
-                                               LCDC_RASTER_TIMING_0_HSW_SHIFT);
-
-    HWREG(baseAddr + LCDC_RASTER_TIMING_0) |= ((hfp - 1) <<                   
-                                               LCDC_RASTER_TIMING_0_HFP_SHIFT);
-
-    HWREG(baseAddr + LCDC_RASTER_TIMING_0) |= ((hbp - 1) <<
-                                               LCDC_RASTER_TIMING_0_HBP_SHIFT);
+   HWREG(baseAddr + LCDC_RASTER_TIMING_0) |= (((hbp - 1)&0xff) <<
+                                              LCDC_RASTER_TIMING_0_HBP_SHIFT);
+   unsigned int hbph = hbp>>8;
+   if (hbph>0) {
+      regval = HWREG(baseAddr + LCDC_RASTER_TIMING_2);
+      regval &= ~(0x03<<4); 
+      regval |= ((hbph&0x03)<<4);
+   }
 }
 
 /**
@@ -430,41 +425,23 @@ void RasterHparamConfig(unsigned int baseAddr, unsigned int numOfppl,
 **/
 void RasterVparamConfig(unsigned int baseAddr, unsigned int lpp,
                         unsigned int vsw, unsigned int vfp,
-                        unsigned vbp)
-{
-    unsigned int version;
+                        unsigned vbp) {
 
-    version = LCDVersionGet();
+   HWREG(baseAddr + LCDC_RASTER_TIMING_1) = ((lpp - 1) & 0x3ff);
 
-    if(RASTER_REV_AM335X == version)
-    {
+   HWREG(baseAddr + LCDC_RASTER_TIMING_2) &=  0xfbffffff;
 
-         HWREG(baseAddr + LCDC_RASTER_TIMING_1) = ((lpp - 1) & 0x3ff);
+   HWREG(baseAddr + LCDC_RASTER_TIMING_2) |=  (((lpp - 1) & 0x400) >> 10)
+                                          << LCDC_RASTER_TIMING_2_LPP_B10_SHIFT;
 
-         HWREG(baseAddr + LCDC_RASTER_TIMING_2) &=  0xfbffffff;
-  
-         HWREG(baseAddr + LCDC_RASTER_TIMING_2) |=  (((lpp - 1) & 0x400) >> 10) 
-                                                    << LCDC_RASTER_TIMING_2_LPP_B10_SHIFT;           
-    }
-    else if(RASTER_REV_AM1808 == version)
-    {
- 
-         HWREG(baseAddr + LCDC_RASTER_TIMING_1) =  ((lpp - 1) <<             
-                                              LCDC_RASTER_TIMING_1_LPP_SHIFT);
-    }
-    else
-    {
-         ;/* Do nothing */
-    }
+   HWREG(baseAddr + LCDC_RASTER_TIMING_1) |= ((vsw - 1) <<
+                                              LCDC_RASTER_TIMING_1_VSW_SHIFT);
 
-    HWREG(baseAddr + LCDC_RASTER_TIMING_1) |= ((vsw - 1) <<                  
-                                               LCDC_RASTER_TIMING_1_VSW_SHIFT);
+   HWREG(baseAddr + LCDC_RASTER_TIMING_1) |= (vfp <<
+                                              LCDC_RASTER_TIMING_1_VFP_SHIFT);
 
-    HWREG(baseAddr + LCDC_RASTER_TIMING_1) |= (vfp <<                       
-                                               LCDC_RASTER_TIMING_1_VFP_SHIFT);
-
-    HWREG(baseAddr + LCDC_RASTER_TIMING_1) |= (vbp <<
-                                               LCDC_RASTER_TIMING_1_VBP_SHIFT);
+   HWREG(baseAddr + LCDC_RASTER_TIMING_1) |= (vbp <<
+                                              LCDC_RASTER_TIMING_1_VBP_SHIFT);
 }
 /** 
 * \brief This function configures the polartiy of various timing parameters of
@@ -776,7 +753,7 @@ void RasterIntRawStatusSet(unsigned int baseAddr, unsigned int flag)
 void RasterDMAFBConfig(unsigned int baseAddr, unsigned int base,
                        unsigned int  ceiling, unsigned int flag)
 {
-    if(flag == 0)
+   if(flag == 0)
     {
          HWREG(baseAddr + LCDC_LCDDMA_FB0_BASE) =  base;
          HWREG(baseAddr + LCDC_LCDDMA_FB0_CEILING) = ceiling;

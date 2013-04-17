@@ -115,8 +115,8 @@ extern "C"
 // This structure holds the timeOut values for different communications.
 //
 //*****************************************************************************
-#define USB_EP0_TIMEOUT_MILLISECS                3000
-#define USB_NONEP0_TIMEOUT_MILLISECS         3000
+#define USB_EP0_TIMEOUT_MILLISECS                   7000
+#define USB_NONEP0_TIMEOUT_MILLISECS                7000
 #define USB_TIMEOUT_DISABLE                           -1
 
 typedef struct
@@ -202,6 +202,11 @@ typedef struct
     //! The size of the buffer allocated to pConfigDescriptor.
     //
     unsigned int ulConfigDescriptorSize;
+	
+    //
+    //! Operating speed of the device
+    //
+    unsigned int ulDeviceSpeed;
 }
 tUSBHostDevice;
 
@@ -310,7 +315,7 @@ extern void USBHCDSetConfig(unsigned int ulIndex, unsigned int ulDevice,
 extern void USBHCDSetInterface(unsigned int ulIndex, unsigned int ulDevice,
                                unsigned int ulInterface,
                                unsigned ulAltSetting);
-
+extern unsigned int USBHCDGetSpeed(unsigned int ulIndex);
 extern void USBHCDSuspend(unsigned int ulIndex);
 extern void USBHCDResume(unsigned int ulIndex);
 extern void USBHCDReset(unsigned int ulIndex);
@@ -352,8 +357,8 @@ extern unsigned int USBHCDControlTransfer(unsigned int ulIndex,
                                            unsigned char *pData,
                                            unsigned int ulSize,
                                            unsigned int ulMaxPacketSize);
-extern void USB0HostIntHandler(unsigned int intnum);
-extern void USB1HostIntHandler(unsigned int intnum);
+extern void USB0HostIntHandler(unsigned int num);
+extern void USB1HostIntHandler(unsigned int num);
 extern void USBHCDTimeOutHook(unsigned int ulIndex, 
 	                                                        tUSBHTimeOut **USBHTimeOut);
 
@@ -440,6 +445,17 @@ typedef struct
     // The bit offset in the allocation structure.
     //
     unsigned char ucFIFOBitOffset;
+	
+    //
+    // Speed of the pipe.
+    //
+    unsigned int ulPipeSpeed;
+
+    //
+    // Speed of the pipe.
+    //
+    unsigned int ulEpMaxPacketSize;	
+
 }
 tUSBHCDPipe;
 
@@ -461,7 +477,7 @@ typedef enum
     HCD_VBUS_ERROR,
     HCD_POWER_FAULT,
     HCD_IDLE,
-    HCD_BABBLE_ERROR,
+    HCD_BABBLE_ERROR
 }
 tUSBHDeviceState;
 

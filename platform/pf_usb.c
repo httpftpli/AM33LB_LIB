@@ -67,7 +67,7 @@ unsigned int USBVersionGet(void)
  * \return  None.
  *
  */
-void USB0ModuleClkConfig(void)
+void USBModuleClkConfig(void)
 {
 	HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CM_CLKDCOLDO_DPLL_PER) |= 
 		(CM_WKUP_CM_CLKDCOLDO_DPLL_PER_DPLL_CLKDCOLDO_GATE_CTRL | 
@@ -102,7 +102,7 @@ void USBEnableInt(unsigned int ulBase)
 {
 	HWREG(ulBase + USB_0_IRQ_ENABLE_SET_0) = 0xFFFFFFFF;
 	HWREG(ulBase + USB_0_IRQ_ENABLE_SET_1) = 0xFFFFFFFF;
-#ifdef DMA_MODE
+#if USB_USE_CPPI41DMA
 	HWREG(USBSS_BASE + USBSS_IRQ_ENABLE_SET) = 0xFFFFFFFF;
 #endif
 }
@@ -128,7 +128,7 @@ void USBModuleClkEnable(unsigned int ulIndex, unsigned int ulBase)
 	//
 	//Call the clock enabel API
 	//
-	USB0ModuleClkConfig();	
+	USBModuleClkConfig();	
 }
 
 /**  

@@ -158,6 +158,7 @@ extern "C"
 //
 //*****************************************************************************
 #define USB_UNDEF_SPEED         0x80000000  // Current speed is undefined
+#define USB_HIGH_SPEED         	0x00000002  // Current speed is High speed 
 #define USB_FULL_SPEED          0x00000001  // Current speed is Full Speed
 #define USB_LOW_SPEED           0x00000000  // Current speed is Low Speed
 
@@ -509,7 +510,7 @@ extern void USBIntDisableEndpoint(unsigned int ulBase,
 extern void USBIntEnableEndpoint(unsigned int ulBase,
                                  unsigned int ulIntFlags);
 extern unsigned int USBIntStatusEndpoint(unsigned int ulBase);
-extern void USBIntRegister(unsigned int ulBase, void(*pfnHandler)(unsigned int intnum));
+extern void USBIntRegister(unsigned int ulBase, void(*pfnHandler)(void));
 extern void USBIntUnregister(unsigned int ulBase);
 extern void USBOTGSessionRequest(unsigned int ulBase, tBoolean bStart);
 extern unsigned int USBModeGet(unsigned int ulBase);

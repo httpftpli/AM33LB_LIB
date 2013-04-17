@@ -1,8 +1,8 @@
 /**
- * \file   delay.h
+ * \file   tft.h
  *
- * \brief  This file contains the prototypes of the functions present in
- *         utils/src/delay.c
+ * \brief  This file contains prototype declarations of functions which 
+ *         performs EVM configurations.
  */
 
 /*
@@ -40,29 +40,61 @@
 */
 
 
-#ifndef _DELAY_H_
-#define _DELAY_H_
+#ifndef _TFT_H_
+#define _TFT_H_
+
+#include "pf_lcd.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-void DelayTimerSetup(void);
-void delay(unsigned int milliSec);
-void StartTimer(unsigned int millisec);
-void StopTimer();
-unsigned int IsTimerElapsed(void);
-/*
-* External functions
-*/
-extern void SysDelayTimerSetup(void);
-extern void Sysdelay(unsigned int milliSec);
-extern void SysStartTimer(unsigned int millisec);
-extern void SysStopTimer(void);
-extern unsigned int SysIsTimerElapsed(void);
+
+static  const tLCD_PANEL lcd_panels[] = {
+	[0]={
+		.name = "TFT_AT080TN52",
+		.width = 800,
+		.height = 600,
+		.hfp = 40,
+		.hbp = 40,
+		.hsw = 48,
+		.vfp = 13,
+		.vbp = 29,
+		.vsw = 3,
+		.pxl_clk = 40000000,
+		.invert_pxl_clk = 0,
+		},
+	[1]={
+		.name = "TFT_AT070TN92",
+		.width = 800,
+		.height = 480,
+		.hfp = 210,
+		.hbp = 46-20,
+		.hsw = 20,
+		.vfp = 22,
+		.vbp = 23-10,
+		.vsw = 10,
+		.pxl_clk = 33300000,
+		.invert_pxl_clk = 0,
+		},
+    [2] = {
+		.name = "LSA40AT9001",
+		.width = 800,
+		.height = 600,
+		.hfp = 210,
+		.hbp = 46-20,
+		.hsw = 20,
+		.vfp = 12,
+		.vbp = 23-10,
+		.vsw = 10,
+		.pxl_clk = 40000000,
+		.invert_pxl_clk = 0,
+		}
+};
 
 #ifdef __cplusplus
 }
 #endif
+
 #endif
 
-
+/******************************** End of file *******************************/

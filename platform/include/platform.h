@@ -75,6 +75,8 @@ typedef struct {
    unsigned int data[2];
 }CAN_FRAME;
 
+
+
 /*****************************************************************************
 **                    FUNCTION PROTOTYPES
 *****************************************************************************/
@@ -126,6 +128,7 @@ extern void GPMCClkConfig(void);
 extern void GPMCInitForNOR(unsigned int baseAddr );
 extern void I2C0ModuleClkConfig(void);
 extern void I2C1ModuleClkConfig(void);
+extern void USBModuleClkConfig(void); 
 extern void GpioPinMuxSetup(unsigned int offsetAddr,
                             unsigned int padConfValue);
 extern void CANInit(unsigned int baseAdd,unsigned int mode,

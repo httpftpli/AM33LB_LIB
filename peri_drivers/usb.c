@@ -98,7 +98,6 @@ USBIndexWrite(unsigned int ulBase, unsigned int ulEndpoint,
     unsigned int ulIndex;
 
     /* Check the arguments. */
-    
     ASSERT((ulBase == USB0_BASE)||(ulBase == USB1_BASE));
     ASSERT((ulEndpoint == 0) || (ulEndpoint == 1) || (ulEndpoint == 2) ||
            (ulEndpoint == 3));
@@ -288,6 +287,12 @@ USBHostSpeedGet(unsigned int ulBase)
 {
     /* Check the arguments. */
     ASSERT((ulBase == USB0_BASE)||(ulBase == USB1_BASE));
+    
+    /* After Reset , Host negitiates the speed by Chirp logic and then sets this bit */
+    if(HWREGB(ulBase + USB_O_POWER) & USB_POWER_HS_MODE)
+    {
+        return(USB_HIGH_SPEED);
+    }
 
     /* If the Full Speed device bit is set, then this is a full speed device. */
     if(HWREGB(ulBase + USB_O_DEVCTL) & USB_DEVCTL_FSDEV)
@@ -763,77 +768,7 @@ USBIntStatusEndpoint(unsigned int ulBase)
     return(ulStatus);
 }
 
-/**
- * Registers an interrupt handler for the USB controller.
- *
- * \param ulBase specifies the USB module base address.
- * \param pfnHandler is a pointer to the function to be called when a USB
- * interrupt occurs.
- *
- * This sets the handler to be called when a USB interrupt occurs.  This will
- * also enable the global USB interrupt in the interrupt controller.  The
- * specific desired USB interrupts must be enabled via a separate call to
- * USBIntEnable().  It is the interrupt handler's responsibility to clear the
- * interrupt sources via a calls to USBIntStatusControl() and
- * USBIntStatusEndpoint().
- *
- * \sa IntRegister() for important information about registering interrupt
- * handlers.
- *
- * \return None.
- */
-void
-USBIntRegister(unsigned int ulBase, void(*pfnHandler)(unsigned int intnum))
-{
-    /* Check the arguments. */
-    ASSERT((ulBase == USB0_BASE)||(ulBase == USB1_BASE));
 
-#ifdef _TMS320C6X
-#if defined(c6a811x) || defined(c6741x)
-    /* Apply interrupt mux. */
-    USBIntMux();
-#endif
-
-    /* Register the interrupt handler. */
-    IntRegister(ulBase, pfnHandler);
-    
-    /* Enable the USB interrupt. */
-    IntEnable(ulBase);
-#else
-    /* Register the interrupt handler. */
-    IntRegister(ulBase, pfnHandler);
-    
-    /* Enable the USB interrupt. */
-    IntEnable(ulBase);
-#endif
-}
-
-/**
- * Unregisters an interrupt handler for the USB controller.
- *
- * \param ulBase specifies the USB module base address.
- *
- * This function unregister the interrupt handler.  This function will also
- * disable the USB interrupt in the interrupt controller.
- *
- * \sa IntRegister() for important information about registering or
- * unregistering interrupt handlers.
- *
- * \return None.
- */
-void
-USBIntUnregister(unsigned int ulBase)
-{
-    /* Check the arguments. */
-    ASSERT((ulBase == USB0_BASE)||(ulBase == USB1_BASE));
-
-    /*Disable the Interrupts */
-#ifdef _TMS320C6X
-    IntDisable(ulBase);
-#else
-    IntDisable();
-#endif
-}
 
 /**
  * Returns the current status of an endpoint.
@@ -1551,7 +1486,7 @@ USBHostEndpointConfig(unsigned int ulBase, unsigned int ulEndpoint,
                 ulNAKPollInterval;
 
             /* Set the Maximum Payload per transaction. */
-            HWREGB(ulBase + EP_OFFSET(ulEndpoint) + USB_O_TXMAXP1) =
+            HWREGH(ulBase + EP_OFFSET(ulEndpoint) + USB_O_TXMAXP1) =
                 ulMaxPayload;
 
             /* Set the transmit control value to zero. */
@@ -3234,7 +3169,7 @@ USBEndpointDMAChannel(unsigned int ulBase, unsigned int ulEndpoint,
            (ulEndpoint == USB_EP_11) || (ulEndpoint == USB_EP_12) ||
            (ulEndpoint == USB_EP_13) || (ulEndpoint == USB_EP_14) ||
            (ulEndpoint == USB_EP_15));
-    //ASSERT(ulChannel <= UDMA_CHANNEL_USBEP3TX);
+   
 
     /* The input select mask needs to be shifted into the correct position
      * based on the channel. */

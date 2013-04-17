@@ -15,6 +15,7 @@ extern void isr_qep(unsigned int  intnum);
 extern void USB1HostIntHandler(unsigned int intnum);
 extern void USB0HostIntHandler(unsigned int intnum);
 extern void isr_Gpio(unsigned int intnum);
+extern void isr_lcd(unsigned int num);
 
 
 
@@ -69,7 +70,8 @@ static void DCANINTConfigure(void){
 static void DMTimerIntConfigure(void){
    IntRegister(SYS_INT_TINT2,isr_DTimer2);
    IntPrioritySet(SYS_INT_TINT2,INT_PRIORITY_TIMER2,AINTC_HOSTINT_ROUTE_IRQ);
-   IntSystemEnable(SYS_INT_TINT2);  
+   IntSystemEnable(SYS_INT_TINT2);
+    
 }
 
 static void QEP2IntConfigure(void){
@@ -78,17 +80,24 @@ static void QEP2IntConfigure(void){
    IntSystemEnable(SYS_INT_eQEP2INT);  
 }
 
+static void LCDIntConfigure(void) {
+   IntRegister(SYS_INT_LCDCINT, isr_lcd);
+   IntPrioritySet(SYS_INT_LCDCINT, INT_PRIORITY_LCD, AINTC_HOSTINT_ROUTE_IRQ);
+   IntSystemEnable(SYS_INT_LCDCINT);
+}
+
+
 static void USBIntConfigure(int instatance) {
    if (instatance) {
-      //IntRegister(SYS_INT_USB1, USB1HostIntHandler);
+      IntRegister(SYS_INT_USB1, USB1HostIntHandler);
       IntPrioritySet(SYS_INT_USB1, INT_PRIORITY_USB1, AINTC_HOSTINT_ROUTE_IRQ);
       IntSystemEnable(SYS_INT_USB1);
    } else {
-      //IntRegister(SYS_INT_USB0, USB0HostIntHandler);
+      IntRegister(SYS_INT_USB0, USB0HostIntHandler);
       IntPrioritySet(SYS_INT_USB0, INT_PRIORITY_USB0, AINTC_HOSTINT_ROUTE_IRQ);
       IntSystemEnable(SYS_INT_USB0);
    }
-#ifdef USB_DMA_MODE
+#if USB_USE_CPPI41DMA
    IntRegister(SYS_INT_USBSSINT, USB1HostIntHandler);
    IntPrioritySet(SYS_INT_USBSSINT, INT_PRIORITY_USB_DMA, AINTC_HOSTINT_ROUTE_IRQ);
    IntSystemEnable(SYS_INT_USBSSINT);
@@ -112,9 +121,6 @@ static void GPIOIntConfigure(void){
    IntRegister(SYS_INT_GPIOINT3A,isr_Gpio);
    IntPrioritySet(SYS_INT_GPIOINT3A,INT_PRIORITY_GPIO3,AINTC_HOSTINT_ROUTE_IRQ);
    IntSystemEnable(SYS_INT_GPIOINT3A);
-
-
-
 }
 
 
@@ -122,12 +128,13 @@ static void GPIOIntConfigure(void){
 void perAINTCConfigure(){
    EDMAAINTCConfigure();
    MMCSDAINTCConfigure();
-   RTCAINTCConfigure();
+   //RTCAINTCConfigure();
    DCANINTConfigure();
    DMTimerIntConfigure();
    QEP2IntConfigure();
-   USBIntConfigure(0);
+   USBIntConfigure(1);
    GPIOIntConfigure();
+   LCDIntConfigure();
 }
 
 

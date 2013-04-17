@@ -21,6 +21,7 @@
 #include "usbmsc.h"
 #include "usbhost.h"
 #include "usbhmsc.h"
+#include "pf_platform_cfg.h"
 
 #define DRIVER_NUM_MMCSD0	   0
 #define DRIVER_NUM_USB		   1
@@ -95,7 +96,7 @@ DSTATUS disk_initialize (
       {
          unsigned int ulMSCInstance;
 
-         ulMSCInstance = (unsigned int)&g_USBHMSCDevice[0];
+         ulMSCInstance = (unsigned int)&g_USBHMSCDevice[USB_INSTANCE_FOR_USBDISK];
 
          /* Set the not initialized flag again. If all goes well and the disk is */
          /* present, this will be cleared at the end of the function.            */
@@ -146,7 +147,7 @@ DSTATUS disk_status(
       return USBStat;
 
    default:
-      return STA_NOINIT;
+      break;
    }
 
    return STA_NOINIT;
@@ -187,7 +188,7 @@ DRESULT disk_read(
    case DRIVER_NUM_USB :
       {
          unsigned int ulMSCInstance;
-         ulMSCInstance = (unsigned int)&g_USBHMSCDevice[drv];
+         ulMSCInstance = (unsigned int)&g_USBHMSCDevice[USB_INSTANCE_FOR_USBDISK];
          if (USBStat & STA_NOINIT) {
             return (RES_NOTRDY);
          }
@@ -197,7 +198,7 @@ DRESULT disk_read(
       }
       return RES_ERROR;
    default:
-      return RES_PARERR;
+      break;
    }
    return RES_PARERR; 
 }
@@ -246,7 +247,7 @@ DRESULT disk_write (
    case DRIVER_NUM_USB :
       {
          unsigned int ulMSCInstance;
-         ulMSCInstance = (unsigned int)&g_USBHMSCDevice[0];
+         ulMSCInstance = (unsigned int)&g_USBHMSCDevice[USB_INSTANCE_FOR_USBDISK];
          if (USBStat & STA_NOINIT) return RES_NOTRDY;
          if (USBStat & STA_PROTECT) return RES_WRPRT;
 
@@ -256,7 +257,7 @@ DRESULT disk_write (
       }
       return RES_ERROR; 
    default:
-      return RES_PARERR;
+      break;
    }
    return RES_PARERR;
 }
@@ -324,7 +325,7 @@ DRESULT disk_ioctl (
             break; 
       }
    default:
-      return RES_PARERR;
+      break;
    }     
 	return RES_PARERR;
 }

@@ -224,8 +224,9 @@ static volatile tHostState g_sUSBHEP0State[USB_NUM_INSTANCE] =
         0,                          // ulDevAddress
         0,                          // ulMaxPacketSize
         EP0_STATE_IDLE              // eState
-    },
-     {
+    }
+#if (USB_NUM_INSTANCE == 2)
+    ,{
         0,                          // pData
         0,                          // ulBytesRemaining
         0,                          // ulDataSize
@@ -233,6 +234,7 @@ static volatile tHostState g_sUSBHEP0State[USB_NUM_INSTANCE] =
         0,                          // ulMaxPacketSize
         EP0_STATE_IDLE              // eState
     }
+#endif
 };
 
 //*****************************************************************************
@@ -562,7 +564,7 @@ USBHCDPipeAllocSize(unsigned int ulIndex, unsigned int ulEndpointType,
 {
     int iIdx;
     
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // Find a USB pipe that is free.
@@ -587,6 +589,7 @@ USBHCDPipeAllocSize(unsigned int ulIndex, unsigned int ulEndpointType,
                 g_sUSBHCD[ulIndex].USBOUTPipes[iIdx].ulType = ulEndpointType;
                 g_sUSBHCD[ulIndex].USBOUTPipes[iIdx].ulDevAddr = ulDevAddr;
                 g_sUSBHCD[ulIndex].USBOUTPipes[iIdx].pfnCallback = pfnCallback;
+                g_sUSBHCD[ulIndex].USBOUTPipes[iIdx].ulEpMaxPacketSize = ulSize;
 
                 //
                 // Initialize the endpoint as idle.
@@ -637,6 +640,7 @@ USBHCDPipeAllocSize(unsigned int ulIndex, unsigned int ulEndpointType,
                 g_sUSBHCD[ulIndex].USBINPipes[iIdx].ulType = ulEndpointType;
                 g_sUSBHCD[ulIndex].USBINPipes[iIdx].ulDevAddr = ulDevAddr;
                 g_sUSBHCD[ulIndex].USBINPipes[iIdx].pfnCallback = pfnCallback;
+                g_sUSBHCD[ulIndex].USBINPipes[iIdx].ulEpMaxPacketSize = ulSize;
 
                 //
                 // Allocate space in the FIFO for this endpoint.
@@ -800,6 +804,30 @@ USBHCDPipeConfig(unsigned int devIndex, unsigned int ulPipe,
         g_sUSBHCD[devIndex].USBOUTPipes[ulIndex].ulInterval = ulInterval;
         g_sUSBHCD[devIndex].USBOUTPipes[ulIndex].ulNextEventTick =
             ulInterval + g_sUSBHCD[devIndex].ulCurrentTick;
+       
+        //
+        // Get pipe speed
+        //
+        g_sUSBHCD[devIndex].USBOUTPipes[ulIndex].ulPipeSpeed = 
+        g_sUSBHCD[devIndex].USBDevice[ulIndex].ulDeviceSpeed;
+
+        // 
+        // Speed configuration in type0 register 
+        //
+        switch(g_sUSBHCD[devIndex].USBDevice[ulIndex].ulDeviceSpeed)
+        {
+        case USB_HIGH_SPEED:
+            ulFlags |= USB_EP_SPEED_HIGH;     
+            break;
+
+        case USB_FULL_SPEED:
+            ulFlags |= USB_EP_SPEED_FULL;
+            break;
+       
+        default:
+            ulFlags |= USB_EP_SPEED_LOW;     
+            break;
+        }
     }
     else
     {
@@ -833,13 +861,31 @@ USBHCDPipeConfig(unsigned int devIndex, unsigned int ulPipe,
         g_sUSBHCD[devIndex].USBINPipes[ulIndex].ulInterval = ulInterval;
         g_sUSBHCD[devIndex].USBINPipes[ulIndex].ulNextEventTick =
             ulInterval + g_sUSBHCD[devIndex].ulCurrentTick;
-    }
+	//
+	// Get pipe speed
+	//
+	g_sUSBHCD[devIndex].USBINPipes[ulIndex].ulPipeSpeed = 
+	g_sUSBHCD[devIndex].USBDevice[ulIndex].ulDeviceSpeed;	
+	
 
-    //
-    // Full speed by default but low speed will be selected if the device is
-    // low speed.
-    //
-    ulFlags |= USB_EP_SPEED_HIGH;
+        // 
+        // Speed configuration in type0 register 
+        //
+        switch(g_sUSBHCD[devIndex].USBDevice[ulIndex].ulDeviceSpeed)
+        {
+        case USB_HIGH_SPEED:
+            ulFlags |= USB_EP_SPEED_HIGH;     
+            break;
+ 
+        case USB_FULL_SPEED: 
+            ulFlags |= USB_EP_SPEED_FULL;
+            break;
+
+        default:
+            ulFlags |= USB_EP_SPEED_LOW;     
+            break;
+        }
+   }
 
     //
     // Configure the endpoint according to the flags determined above.
@@ -933,15 +979,17 @@ USBHCDPipeWrite(unsigned int ulIndex, unsigned int ulPipe,
         g_sUSBHCD[ulIndex].USBOUTPipes[ulPipeIdx].eState = PIPE_WRITING;
         
         //
-        //Claculate the Number of blocks to Transmit
+        //Calculate the Number of blocks to Transmit
         //
-        if(ulRemainingBytes < USB_PACKET_LENGTH)
+        if(ulRemainingBytes <=
+              (g_sUSBHCD[ulIndex].USBOUTPipes[ulPipeIdx].ulEpMaxPacketSize))
         {
             ulByteToSend = ulRemainingBytes;
         }
         else
         {
-            ulByteToSend = USB_PACKET_LENGTH;
+            ulByteToSend =
+           g_sUSBHCD[ulIndex].USBOUTPipes[ulPipeIdx].ulEpMaxPacketSize;
         }
 
 #ifdef DMA_MODE
@@ -991,10 +1039,13 @@ USBHCDPipeWrite(unsigned int ulIndex, unsigned int ulPipe,
         //
         // Wait for a status change.
         //
+
+        //modefy by lfl ,change starttimer to softtimer
+        unsigned int delaytimeindex;
         if(USB_TIMEOUT_DISABLE!=g_sUSBHCD[ulIndex].USBHTimeOut.Value.slNonEP0)
         {
            ulTimer = g_sUSBHCD[ulIndex].USBHTimeOut.Value.slNonEP0;
-           StartTimer(ulTimer);
+           delaytimeindex = StartTimer(ulTimer);
         }
         while(g_sUSBHCD[ulIndex].USBOUTPipes[ulPipeIdx].eState == PIPE_WRITING)
         {
@@ -1039,7 +1090,7 @@ USBHCDPipeWrite(unsigned int ulIndex, unsigned int ulPipe,
             }
             if(USB_TIMEOUT_DISABLE!=g_sUSBHCD[ulIndex].USBHTimeOut.Value.slNonEP0)
             {
-                if(IsTimerElapsed())
+                if(IsTimerElapsed(delaytimeindex))
                 {
                     ulTimer = 0;
                     g_sUSBHCD[ulIndex].USBOUTPipes[ulPipeIdx].eState = PIPE_ERROR;
@@ -1050,7 +1101,8 @@ USBHCDPipeWrite(unsigned int ulIndex, unsigned int ulPipe,
         }
         if(USB_TIMEOUT_DISABLE!=g_sUSBHCD[ulIndex].USBHTimeOut.Value.slNonEP0)
         {
-            StopTimer();
+            StopTimer(delaytimeindex);
+            ulTimer = 0;	
         }
 
         //
@@ -1326,15 +1378,17 @@ USBHCDPipeRead(unsigned int ulIndex, unsigned int ulPipe,
     //
     //Calculate the Number of blocks requested
     //
-    if(ulSize <= USB_PACKET_LENGTH)
+    if(ulSize <= 
+       (g_sUSBHCD[ulIndex].USBINPipes[ulPipeIdx].ulEpMaxPacketSize))
     {
         ulLength = ulSize;
     }
     else
     {
-        ulLength = USB_PACKET_LENGTH;
+        ulLength = 
+         (g_sUSBHCD[ulIndex].USBINPipes[ulPipeIdx].ulEpMaxPacketSize);
     }
-
+    
 #endif      
 
     while(ulRemainingBytes != 0)
@@ -1370,10 +1424,13 @@ USBHCDPipeRead(unsigned int ulIndex, unsigned int ulPipe,
         //
         // Wait for a status change.
         //
+
+        //modefied by lfl, chande starttimer to soft timer
+        unsigned int timerindex = 0;
         if(USB_TIMEOUT_DISABLE!=g_sUSBHCD[ulIndex].USBHTimeOut.Value.slNonEP0)
         {
            ulTimer = g_sUSBHCD[ulIndex].USBHTimeOut.Value.slNonEP0;
-           StartTimer(ulTimer);
+           timerindex = StartTimer(ulTimer);
         }
         while(g_sUSBHCD[ulIndex].USBINPipes[ulPipeIdx].eState == PIPE_READING)
         {
@@ -1411,7 +1468,7 @@ USBHCDPipeRead(unsigned int ulIndex, unsigned int ulPipe,
                 g_sUSBHCD[ulIndex].USBINPipes[ulPipeIdx].eState = PIPE_STALLED;
                 continue;
             }
-            else if(ulEPStatus & USB_HOST_OUT_ERROR)
+            else if(ulEPStatus & USB_HOST_IN_ERROR)
             {
                 g_sUSBHCD[ulIndex].USBINPipes[ulPipeIdx].eState = PIPE_ERROR;
                 continue;
@@ -1419,7 +1476,7 @@ USBHCDPipeRead(unsigned int ulIndex, unsigned int ulPipe,
 
             if(USB_TIMEOUT_DISABLE!=g_sUSBHCD[ulIndex].USBHTimeOut.Value.slNonEP0)
             {
-                if(IsTimerElapsed())
+                if(IsTimerElapsed(timerindex))
                 {
                     ulTimer = 0;
                     g_sUSBHCD[ulIndex].USBINPipes[ulPipeIdx].eState = PIPE_ERROR;
@@ -1430,7 +1487,8 @@ USBHCDPipeRead(unsigned int ulIndex, unsigned int ulPipe,
         }
         if(USB_TIMEOUT_DISABLE!=g_sUSBHCD[ulIndex].USBHTimeOut.Value.slNonEP0)
         {
-            StopTimer();
+            StopTimer(timerindex);
+            ulTimer = 0; 
         }
         //
         // If data is ready then return it.
@@ -1456,8 +1514,11 @@ USBHCDPipeRead(unsigned int ulIndex, unsigned int ulPipe,
             //
             //Claculate the packet length
             //
-            if(ulRemainingBytes <= USB_PACKET_LENGTH)
+            if(ulRemainingBytes <=
+                (g_sUSBHCD[ulIndex].USBINPipes[ulPipeIdx].ulEpMaxPacketSize))
+            {
                 ulRemainingBytes = ulRemainingBytes - ulLength;
+            }
             else
             {
                 ulRemainingBytes = ulRemainingBytes - ulLength;
@@ -1498,7 +1559,7 @@ USBHCDPipeRead(unsigned int ulIndex, unsigned int ulPipe,
             // If there were less than 64 bytes read, then this was a short
             // packet and no more data will be returned.
             //
-            if(ulBytesRead < 64)
+            if(ulBytesRead < g_sUSBHCD[ulIndex].USBINPipes[ulPipeIdx].ulEpMaxPacketSize)
             {
                 //
                 // Subtract off the bytes that were not received and exit the
@@ -1512,7 +1573,7 @@ USBHCDPipeRead(unsigned int ulIndex, unsigned int ulPipe,
                 //
                 // Move the buffer ahead to receive more data into the buffer.
                 //
-                pucData += 64;
+                pucData += g_sUSBHCD[ulIndex].USBINPipes[ulPipeIdx].ulEpMaxPacketSize;
             }
 #endif
 
@@ -1697,7 +1758,7 @@ USBHCDInitInternal(unsigned int ulIndex, void *pvPool,
 {
     int iIdx;
 
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // The first 64 Bytes are allocated to endpoint 0.
@@ -1881,7 +1942,7 @@ USBHCDInitInternal(unsigned int ulIndex, void *pvPool,
 void
 USBHCDPowerConfigInit(unsigned int ulIndex, unsigned int ulPwrConfig)
 {
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // Save the value as it will be used later.
@@ -1906,7 +1967,7 @@ USBHCDPowerConfigInit(unsigned int ulIndex, unsigned int ulPwrConfig)
 unsigned int
 USBHCDPowerConfigGet(unsigned int ulIndex)
 {
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // Save the value as it will be used later.
@@ -1932,7 +1993,7 @@ USBHCDPowerConfigGet(unsigned int ulIndex)
 unsigned int
 USBHCDPowerConfigSet(unsigned int ulIndex, unsigned int ulConfig)
 {
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // Remember the current setting.
@@ -2048,7 +2109,7 @@ USBHCDInit(unsigned int ulIndex, void *pvPool, unsigned int ulPoolSize)
     //
     // Check the arguments.
     //
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // Make sure there is at least enough to read the configuration descriptor.
@@ -2058,7 +2119,7 @@ USBHCDInit(unsigned int ulIndex, void *pvPool, unsigned int ulPoolSize)
     //
     // Should not call this if the stack is in device mode.
     //
-    ASSERT(g_eUSBMode != USB_MODE_DEVICE)
+    ASSERT(g_eUSBMode != USB_MODE_DEVICE);
 
     
     if(ulIndex == 0)
@@ -2070,6 +2131,7 @@ USBHCDInit(unsigned int ulIndex, void *pvPool, unsigned int ulPoolSize)
         g_USBInstance[ulIndex].uiSubInterruptNum = SYS_INT_USBSSINT;
         g_USBInstance[ulIndex].uiPHYConfigRegAddr = CFGCHIP2_USBPHYCTRL;
     }
+#if (USB_NUM_INSTANCE == 2)
     else if(ulIndex == 1)
     {
         g_USBInstance[ulIndex].uiUSBInstance = ulIndex;
@@ -2079,6 +2141,7 @@ USBHCDInit(unsigned int ulIndex, void *pvPool, unsigned int ulPoolSize)
         g_USBInstance[ulIndex].uiSubInterruptNum = SYS_INT_USBSSINT;
         g_USBInstance[ulIndex].uiPHYConfigRegAddr = CFGCHIP2_USB1PHYCTRL;
     }
+#endif
 
    g_sUSBHCD[ulIndex].USBHTimeOut.Value.slEP0 = USB_EP0_TIMEOUT_MILLISECS;
    g_sUSBHCD[ulIndex].USBHTimeOut.Value.slNonEP0= USB_NONEP0_TIMEOUT_MILLISECS;
@@ -2102,12 +2165,16 @@ USBHCDInit(unsigned int ulIndex, void *pvPool, unsigned int ulPoolSize)
         // Enable Clocking to the USB controller.
         //        
         USBModuleClkEnable(ulIndex, g_USBInstance[ulIndex].uiBaseAddr );
-
-        USBReset(g_USBInstance[ulIndex].uiSubBaseAddr);
+         
+        USBReset(g_USBInstance[ulIndex].uiSubBaseAddr);    
         //
         // Turn on USB Phy clock.
         //
         UsbPhyOn(ulIndex);
+        //
+        // VBUS needs to stabilize
+        //
+	delay(100);
     }
 
     //
@@ -2164,7 +2231,7 @@ USBHCDRegisterDrivers(unsigned int ulIndex,
                       const tUSBHostClassDriver * const *ppHClassDrvs,
                       unsigned int ulNumDrivers)
 {
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     g_sUSBHCD[ulIndex].ulIndex = ulIndex;
 
@@ -2196,7 +2263,7 @@ USBHCDRegisterDrivers(unsigned int ulIndex,
 void
 USBHCDTerm(unsigned int ulIndex)
 {
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // End the session.
@@ -2256,7 +2323,7 @@ USBHCDTerm(unsigned int ulIndex)
 void
 USBHCDReset(unsigned int ulIndex)
 {
-    ASSERT(ulIndex == 0);
+   ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // Start the reset signaling.
@@ -2264,9 +2331,9 @@ USBHCDReset(unsigned int ulIndex)
     USBHostReset(g_USBInstance[ulIndex].uiBaseAddr , 1);
 
     //
-    // Wait 20ms
+    // Wait 100ms.
     //    
-    delay(20);
+    delay(100);
 
     //
     // End reset signaling on the bus.
@@ -2297,7 +2364,7 @@ USBHCDReset(unsigned int ulIndex)
 void
 USBHCDSuspend(unsigned int ulIndex)
 {
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // Start the suspend signaling.
@@ -2321,7 +2388,7 @@ USBHCDSuspend(unsigned int ulIndex)
 void
 USBHCDResume(unsigned int ulIndex)
 {
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // Start the resume signaling.
@@ -2366,7 +2433,7 @@ USBHCDGetConfigDescriptor(unsigned int ulIndex, tUSBHostDevice *pDevice)
     tUSBRequest SetupPacket;
     unsigned int ulBytes;
 
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     ulBytes = 0;
 
@@ -2474,7 +2541,7 @@ USBHCDGetDeviceDescriptor(unsigned int ulIndex, tUSBHostDevice *pDevice)
     unsigned int ulBytes;
     unsigned int retStatus = 1;
 
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // This is a Standard Device IN request.
@@ -2704,7 +2771,7 @@ USBHCDSetConfig(unsigned int ulIndex, unsigned int ulDevice,
     tUSBRequest SetupPacket;
     tUSBHostDevice *pDevice;
 
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     pDevice = (tUSBHostDevice *)ulDevice;
 
@@ -2769,7 +2836,7 @@ USBHCDSetInterface(unsigned int ulIndex, unsigned int ulDevice,
     tUSBRequest SetupPacket;
     tUSBHostDevice *pDevice;
 
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     pDevice = (tUSBHostDevice *)ulDevice;
 
@@ -3343,13 +3410,14 @@ USBHostIntHandlerInternal(unsigned int ulIndex, unsigned int ulStatus, unsigned 
 //
 //*****************************************************************************
 void
-USB0HostIntHandler(unsigned int intnum)
+USB0HostIntHandler(unsigned int num)
 {
     unsigned int ulStatus = 0;
-    unsigned int epStatus = 0;
     unsigned int ulIndex = 0;
 
 #if defined (am335x_15x15) || defined(am335x) || defined(c6a811x)
+    unsigned int epStatus = 0;
+
     ulStatus = HWREG(g_USBInstance[ulIndex].uiSubBaseAddr + USB_0_IRQ_STATUS_1);
     epStatus = HWREG(g_USBInstance[ulIndex].uiSubBaseAddr + USB_0_IRQ_STATUS_0);
     HWREG(g_USBInstance[ulIndex].uiSubBaseAddr + USB_0_IRQ_STATUS_1) = ulStatus;
@@ -3374,12 +3442,11 @@ USB0HostIntHandler(unsigned int intnum)
     //
     
     ulStatus = HWREG(g_USBInstance[ulIndex].uiSubBaseAddr + USB_0_INTR_SRC);
-    epStatus = 0;
   
     // Clear the Interrupts
     HWREG(g_USBInstance[ulIndex].uiSubBaseAddr + USB_0_INTR_SRC_CLEAR) = ulStatus;
 #ifdef _TMS320C6X
-    IntEventClear(SYS_INT_USB0_INT);
+    IntEventClear(g_USBInstance[ulIndex].uiInterruptNum);
 #else
     IntSystemStatusClear(g_USBInstance[ulIndex].uiInterruptNum);
 #endif
@@ -3409,13 +3476,14 @@ USB0HostIntHandler(unsigned int intnum)
 //
 //*****************************************************************************
 void
-USB1HostIntHandler(unsigned int intnum)
+USB1HostIntHandler(unsigned int num)
 {
     unsigned int ulStatus = 0;
-    unsigned int epStatus = 0;    
     unsigned int ulIndex = 1;
 
 #if defined (am335x_15x15) || defined(am335x) || defined(c6a811x)
+    unsigned int epStatus = 0;
+
     ulStatus = HWREG(g_USBInstance[ulIndex].uiSubBaseAddr + USB_0_IRQ_STATUS_1);
     epStatus = HWREG(g_USBInstance[ulIndex].uiSubBaseAddr + USB_0_IRQ_STATUS_0);
     HWREG(g_USBInstance[ulIndex].uiSubBaseAddr + USB_0_IRQ_STATUS_1) = ulStatus;
@@ -3440,12 +3508,11 @@ USB1HostIntHandler(unsigned int intnum)
     //
     
     ulStatus = HWREG(g_USBInstance[ulIndex].uiSubBaseAddr + USB_0_INTR_SRC);
-    epStatus = 0;
   
     // Clear the Interrupts
     HWREG(g_USBInstance[ulIndex].uiSubBaseAddr + USB_0_INTR_SRC_CLEAR) = ulStatus;
 #ifdef _TMS320C6X
-    IntEventClear(SYS_INT_USB0_INT);
+    IntEventClear(g_USBInstance[ulIndex].uiInterruptNum);
 #else
     IntSystemStatusClear(g_USBInstance[ulIndex].uiInterruptNum);
 #endif
@@ -3482,7 +3549,7 @@ USBHCDOpenDriver(unsigned int ulIndex, unsigned int ulDeviceNum)
     unsigned int ulClass;
     tInterfaceDescriptor *pInterface;
 
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // Get the interface descriptor.
@@ -3594,7 +3661,7 @@ InternalUSBHCDSendEvent(unsigned int ulIndex, unsigned int ulEvent)
 static void
 USBHCDDeviceDisconnected(unsigned int ulIndex, unsigned int ulInstance)
 {
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     if(g_sUSBHCD[ulIndex].USBDevice[0].pConfigDescriptor)
     {
@@ -3743,7 +3810,7 @@ USBHCDMain(unsigned int ulIndex, unsigned int ulInstance)
             //
             if(g_sUSBHCD[ulIndex].ulUSBHIntEvents & INT_EVENT_CONNECT)
             {
-                g_sUSBHCD[ulIndex].eDeviceState[0] = HCD_DEV_RESET;
+              g_sUSBHCD[ulIndex].eDeviceState[0] = HCD_DEV_RESET;
             }
             else
             {
@@ -3838,6 +3905,11 @@ USBHCDMain(unsigned int ulIndex, unsigned int ulInstance)
         //
         case HCD_DEV_RESET:
         {
+            //             
+            // a debounce interval of 100 ms for VBUS to stabilise
+            //                    
+            delay(100);
+
             //
             // Trigger a Reset.
             //
@@ -3856,6 +3928,12 @@ USBHCDMain(unsigned int ulIndex, unsigned int ulInstance)
         //
         case HCD_DEV_CONNECTED:
         {
+            //
+            // First get the speed of the device
+            //
+            g_sUSBHCD[ulIndex].USBDevice[0].ulDeviceSpeed = 
+                                           USBHCDGetSpeed(ulIndex);
+            
             //
             // First check if we have read the device descriptor at all
             // before proceeding.
@@ -4081,7 +4159,7 @@ USBHCDControlTransfer(unsigned int ulIndex, tUSBRequest *pSetupPacket,
     unsigned int retStatus = 1;
 
     ASSERT(g_sUSBHEP0State[ulIndex].eState == EP0_STATE_IDLE);
-    ASSERT(ulIndex == 0);
+    ASSERT((ulIndex == 0)||(ulIndex == 1));
 
     //
     // Initialize the state of the data for this request.
@@ -4151,12 +4229,14 @@ USBHCDControlTransfer(unsigned int ulIndex, tUSBRequest *pSetupPacket,
         ulTimer = g_sUSBHCD[ulIndex].USBHTimeOut.Value.slEP0;
     }
 
-    StartTimer(ulTimer);
+    //modefied by lfl, chande starttimer to soft timer
+    unsigned int timerindex = 0;
+    timerindex = StartTimer(ulTimer);
 
     //
     // Block until endpoint 0 returns to the IDLE state.
     //
-    while((g_sUSBHEP0State[ulIndex].eState != EP0_STATE_IDLE)&&(!IsTimerElapsed()))
+    while((g_sUSBHEP0State[ulIndex].eState != EP0_STATE_IDLE)&&(!IsTimerElapsed(timerindex)))
     {
         if(g_sUSBHEP0State[ulIndex].eState == EP0_STATE_ERROR)
         {
@@ -4180,7 +4260,7 @@ USBHCDControlTransfer(unsigned int ulIndex, tUSBRequest *pSetupPacket,
         }
     }
 
-    StopTimer();
+    StopTimer(timerindex);
 
     //
     // Calculate and return the number of bytes that were sent or received.
@@ -4613,6 +4693,31 @@ void
 USBHCDTimeOutHook(unsigned int ulIndex, tUSBHTimeOut **USBHTimeOut)
 {
    (*USBHTimeOut) = &(g_sUSBHCD[ulIndex].USBHTimeOut);
+}
+
+//*****************************************************************************
+//
+//! This function returns the speed of the device connected on the bus.
+//! 
+//! \param ulIndex specifies which USB controller to use.
+//!
+//! This function calls the HCD lower layer function to return the speed
+//! of the connected device. High speed devices get detected as high speed 
+//! only after the 2nd reset and chirp sequence. Till that time they report FS 
+//!
+//! \return device speed as unsigned integer.
+//
+//*****************************************************************************
+
+unsigned int
+USBHCDGetSpeed(unsigned int ulIndex)
+{
+   ASSERT((ulIndex == 0)||(ulIndex == 1));
+	
+   //
+   // Call the lower Abstraction layer speed get routine
+   //
+   return( USBHostSpeedGet( g_USBInstance[ulIndex].uiBaseAddr ) );
 }
 
 //*****************************************************************************

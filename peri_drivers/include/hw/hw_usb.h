@@ -88,10 +88,17 @@
 // The following are defines for the Univeral Serial Bus register offsets.
 //
 //*****************************************************************************
-#define USB0_BASE				SOC_USB_0_BASE
-#define INT_USB0				SYS_INT_USB0
-#define USB1_BASE				SOC_USB_1_BASE
-#define INT_USB1				SYS_INT_USB1
+#if defined(am335x) || defined(am335x_13x13) || defined(am335x_15x15)
+#define USB_CONTROLLER_NUM_INSTANCES   (2)
+#else
+#define USB_CONTROLLER_NUM_INSTANCES   (1)
+#endif
+#define USB0_BASE                      SOC_USB_0_BASE
+#define INT_USB0                       SYS_INT_USB0
+#if (USB_CONTROLLER_NUM_INSTANCES == 2)
+#define USB1_BASE                      SOC_USB_1_BASE
+#define INT_USB1                       SYS_INT_USB1
+#endif
 
 #define USB_O_FADDR             0x00000000  // USB Device Functional Address
 #define USB_O_POWER             0x00000001  // USB Power
@@ -707,6 +714,7 @@
 //
 //*****************************************************************************
 #define USB_POWER_ISOUP         0x00000080  // Isochronous Update
+#define USB_POWER_HS_MODE       0x00000010  // High speed mode
 #define USB_POWER_SOFTCONN      0x00000040  // Soft Connect/Disconnect
 #define USB_POWER_RESET         0x00000008  // RESET Signaling
 #define USB_POWER_RESUME        0x00000004  // RESUME Signaling

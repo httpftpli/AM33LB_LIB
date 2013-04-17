@@ -428,7 +428,7 @@ USBDCDInit(unsigned int ulIndex, tDeviceInfo *psDevice)
     //
     // Should not call this if the stack is in host mode.
     //
-    ASSERT(g_eUSBMode != USB_MODE_HOST)
+    ASSERT(g_eUSBMode != USB_MODE_HOST);
 
     //
     // Initialize a couple of fields in the device state structure.

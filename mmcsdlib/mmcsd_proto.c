@@ -153,7 +153,7 @@ static inline unsigned long long __sd_card_size_v2(void *raw_csd) {
 static unsigned int  emmccardinit(mmcsdCtrlInfo *ctrl) {
    mmcsdCardInfo *card = ctrl->card;
    card->inited = 0;
-   unsigned int count = 100;
+   unsigned int count = 1000;
    if (card->rca == 0) {
       card->rca = 1;
    }
@@ -185,13 +185,15 @@ static unsigned int  emmccardinit(mmcsdCtrlInfo *ctrl) {
          break;
       }
    }
+   if(0==count)
+     return 0;
 
    /* Send CMD2, to get the card identification register */
    cmd.idx = MMC_CMD(2);
    cmd.flags = MMCSD_CMDFLAG_RSP_136BITS;
    cmd.arg = 0;
    status = hsMmcSdCmdSend(ctrl, &cmd);
-   if (status == 0) {
+   if (0 == status) {
       return 0;
    }
    memcpy(card->raw_cid, cmd.rsp, 16);
@@ -753,10 +755,15 @@ unsigned int MMCSDP_CardReset(mmcsdCtrlInfo *ctrl) {
 
    cmd.idx = SD_CMD(0);
    cmd.flags = MMCSD_CMDFLAG_RSP_NONE;
-   cmd.arg = 0;
+   /*cmd.arg = 0xF0F0F0F0;
 
    status = hsMmcSdCmdSend(ctrl, &cmd);
+   if (0 == status) {
+      return status;
+   }*/
 
+   cmd.arg = 0;
+   status = hsMmcSdCmdSend(ctrl, &cmd);
    return status;
 }
 
@@ -841,10 +848,8 @@ unsigned int MMCSDP_CardInit(mmcsdCtrlInfo *ctrl, unsigned int cardType) {
 
    if (card->cardType == MMCSD_CARD_SD) {
      return  sdcardinit(ctrl);
-   } else {
-     return  emmccardinit(ctrl);
    }
-   return 0;
+   return emmccardinit(ctrl);
 }
 
 /**

@@ -15,15 +15,24 @@
 extern "C" {
 #endif
 
-extern void TimerTickConfigure(unsigned int milliSec);
-extern void TimerTickPeriodSet(unsigned int milliSec);
+extern void TimerTickConfigure( );
+extern void TimerTickPeriodSet(unsigned int microsecond);
 extern void TimerTickRegistHandler(void (*pfnHandler)(unsigned int tick));
 extern void TimerTickStart(void);
 extern void TimerTickStop(void);
+extern unsigned int TimerTickGet(void);
+extern unsigned int TimerTickTimeGet(void);
+extern void Sysdelay(unsigned int mSec);
+extern void delay(unsigned int milliSec);
+extern int StartTimer(unsigned int mSec);
+extern unsigned int IsTimerElapsed(unsigned int timerindex);
+extern void  StopTimer(unsigned int timerindex);
+
+
+
 
 
 #ifdef __cplusplus
-}
 #endif
 
 #endif

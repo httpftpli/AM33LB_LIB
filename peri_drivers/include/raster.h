@@ -337,6 +337,7 @@ typedef struct rasterContext {
 */
 extern void RasterEnable(unsigned int baseAddr);
 extern void RasterDisable(unsigned int baseAddr);
+extern void RasterAutoUnderFlowEnable(unsigned int baseAddr);
 extern void RasterNibbleModeEnable(unsigned int  baseAddr);
 extern void RasterNibbleModeDisable(unsigned int baseAddr);
 extern void RasterMSBDataOrderSelect(unsigned int baseAddr);

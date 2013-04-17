@@ -64,6 +64,8 @@ extern void AbortHandler(void);
 extern void IRQHandler(void);
 extern void FIQHandler(void);
 
+extern int __cmain(void);
+
 /**********************************************************************
 *                   INTERNAL FUNCTION PROTOTYPES
 **********************************************************************/
@@ -138,7 +140,7 @@ unsigned int start_boot(void)
     CopyVectorTable();
 
    /* Calling the main */
-    main();
+    __cmain();
 
     while(1);
 }

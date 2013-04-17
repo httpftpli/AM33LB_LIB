@@ -123,10 +123,10 @@ unsigned int hsMmcSdCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c)
             |(dataPresent<<MMCHS_CMD_BCE_SHIFT); 
               
     if(dataPresent){
-        HSMMCSDIntrStatusClear(ctrl->memBase, MMCHS_STAT_CC |(1<< MMCHS_STAT_TC_SHIFT));
+        HSMMCSDIntrStatusClear(ctrl->memBase, MMCHS_STAT_CC |(1<< MMCHS_STAT_TC_SHIFT) | MMCHS_STAT_CTO);
         HSMMCSDDataTimeoutSet(ctrl->memBase, HS_MMCSD_DATA_TIMEOUT(27));
     }else{
-        HSMMCSDIntrStatusClear(ctrl->memBase, MMCHS_STAT_CC );
+        HSMMCSDIntrStatusClear(ctrl->memBase, MMCHS_STAT_CC | MMCHS_STAT_CTO);
     }
         
     HSMMCSDCommandSend(ctrl->memBase, cmd, c->arg,

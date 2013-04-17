@@ -1,7 +1,28 @@
-﻿#include "pf_platform_cfg.h"
+#include "platform.h"
+#include "pf_platform_cfg.h"
 #include "usblib.h"
 #include "usbhost.h"
 #include "cppi41dma.h"
+#include "usbhmsc.h"
+#include "ff.h"
+#include "pf_usbmsc.h"
+
+
+#define USB_INSTANCE 1
+
+
+
+//*****************************************************************************
+//
+// The instance data for the MSC driver.
+//
+//*****************************************************************************
+unsigned int g_ulMSCInstance = 0;
+
+//*****************************************************************************
+// Current FAT fs 
+//*****************************************************************************
+static FATFS g_sFatFs;
 
 
 //*****************************************************************************
@@ -38,37 +59,82 @@ static tUSBHostClassDriver const * const g_ppHostClassDrivers[] =
 // Hold the current state for the application.
 //
 //*****************************************************************************
-typedef enum
+
+volatile tUsbMscState g_usbMscState = USBMSC_NO_DEVICE;
+
+
+//*****************************************************************************
+//
+// This is the generic callback from host stack.
+//
+// \param pvData is actually a pointer to a tEventInfo structure.
+//
+// This function will be called to inform the application when a USB event has
+// occurred that is outside those related to the mass storage device.  At this
+// point this is used to detect unsupported devices being inserted and removed.
+// It is also used to inform the application when a power fault has occurred.
+// This function is required when the g_USBGenericEventDriver is included in
+// the host controller driver array that is passed in to the
+// USBHCDRegisterDrivers() function.
+//
+// \return None.
+//
+//*****************************************************************************
+void USBHCDEvents(void *pvData)
 {
-    //
-    // No device is present.
-    //
-    STATE_NO_DEVICE,
+    tEventInfo *pEventInfo;
 
     //
-    // Mass storage device is being enumerated.
+    // Cast this pointer to its actual type.
     //
-    STATE_DEVICE_ENUM,
+    pEventInfo = (tEventInfo *)pvData;
 
-    //
-    // Mass storage device is ready.
-    //
-    STATE_DEVICE_READY,
+    switch(pEventInfo->ulEvent)
+    {
+        //
+        // New keyboard detected.
+        //
+        case USB_EVENT_CONNECTED:
+        {
+            //
+            // An unknown device was detected.
+            //
+            g_usbMscState = USBMSC_UNKNOWN_DEVICE;
 
-    //
-    // An unsupported device has been attached.
-    //
-    STATE_UNKNOWN_DEVICE,
+            break;
+        }
 
-    //
-    // A power fault has occurred.
-    //
-    STATE_POWER_FAULT
-} tState;
-volatile tState g_eState;
-volatile tState g_eUIState;
+        //
+        // Keyboard has been unplugged.
+        //
+        case USB_EVENT_DISCONNECTED:
+        {
+            //
+            // Unknown device has been removed.
+            //
+            g_usbMscState = USBMSC_NO_DEVICE;
 
-#ifdef USB_USE_DMA
+            break;
+        }
+
+        case USB_EVENT_POWER_FAULT:
+        {
+            //
+            // No power means no device is present.
+            //
+            g_usbMscState = USBMSC_POWER_FAULT;
+
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+}
+
+#if USB_USE_CPPI41DMA  
 
 endpointInfo epInfo[]=
 {
@@ -98,7 +164,7 @@ endpointInfo epInfo[]=
 
 };
 
-#define NUMBER_OF_ENDPOINTS 4
+#define NUMBER_OF_ENDPOINTS  4
 
 #endif
 
@@ -119,7 +185,7 @@ static void MSCCallback(unsigned int ulInstance, unsigned int ulEvent, void *pvD
             //
             // Proceed to the enumeration state.
             //
-            g_eState = STATE_DEVICE_ENUM;
+            g_usbMscState = USBMSC_DEVICE_ENUM;
             break;
         }
 
@@ -132,7 +198,7 @@ static void MSCCallback(unsigned int ulInstance, unsigned int ulEvent, void *pvD
             //
             // Go back to the "no device" state and wait for a new connection.
             //
-            g_eState = STATE_NO_DEVICE;
+            g_usbMscState = USBMSC_NO_DEVICE;
 
             break;
         }
@@ -164,7 +230,7 @@ void usbMscInit(){
     //
     // Open an instance of the mass storage class driver.
     //
-    g_ulMSCInstance = USBHMSCDriveOpen(USB_INSTANCE_FOR_USBDISK, 0, MSCCallback);
+    g_ulMSCInstance = USBHMSCDriveOpen(USB_INSTANCE_FOR_USBDISK, USB_INSTANCE_FOR_USBDISK, MSCCallback);
 
     //
     // Initialize the power configuration.  This sets the power enable signal
@@ -172,11 +238,34 @@ void usbMscInit(){
     //
     USBHCDPowerConfigInit(USB_INSTANCE_FOR_USBDISK, USBHCD_VBUS_AUTO_HIGH);
 	
-#if USB_USE_DMA
+#if USB_USE_CPPI41DMA
 	Cppi41DmaInit(USB_INSTANCE_FOR_USBDISK, epInfo, NUMBER_OF_ENDPOINTS);
 #endif
 	//
 	// Initialize the host controller.
 	//
 	USBHCDInit(USB_INSTANCE_FOR_USBDISK, g_pHCDPool, HCD_MEMORY_SIZE);
+
  }
+
+
+void usbMscProcess() {
+   USBHCDMain(USB_INSTANCE_FOR_USBDISK, g_ulMSCInstance);
+   switch (g_usbMscState) {
+   case USBMSC_NO_DEVICE:
+
+      break;
+   case USBMSC_DEVICE_ENUM:
+      if (USBHMSCDriveReady(g_ulMSCInstance) == 0) {
+         f_mount(FatFS_Drive_Index, &g_sFatFs);
+         g_usbMscState = USBMSC_DEVICE_READY;
+      }
+      break;
+   case USBMSC_DEVICE_READY:
+      break;
+   default:
+      break;
+   }
+}
+
+

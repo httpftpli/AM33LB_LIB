@@ -11,7 +11,7 @@
 
 
 FRESULT f_scandir(
-    char* path , FILINFO*  fileInfo ,unsigned int *nEntrys  /* Start node to be scanned (also used as work area) */
+    const TCHAR* path , FILINFO*  fileInfo ,unsigned int *nEntrys  /* Start node to be scanned (also used as work area) */
 )
 {
     FRESULT res;
@@ -31,7 +31,7 @@ FRESULT f_scandir(
     return res;
 }
 
-FRESULT f_copy(TCHAR *scrpath,TCHAR * despath, unsigned char *workbuf,unsigned int sz_workbuf){
+FRESULT f_copy(const TCHAR *scrpath,const TCHAR * despath, unsigned char *workbuf,unsigned int sz_workbuf){
    FRESULT res;
    mdAssert(sz_workbuf%512==0);
    FIL scrfile,desfile;

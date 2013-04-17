@@ -365,6 +365,32 @@ USBHMSCDriveReady(unsigned int ulInstance)
     pMSCDevice->ulMaxLUN = ucMaxLUN;
 
     //
+    // Issue a SCSI Inquiry to get basic information on the device
+    //
+    ulSize = SCSI_INQUIRY_DATA_SZ;
+    if((USBHSCSIInquiry(pMSCDevice->ulIndex, pMSCDevice->ulBulkInPipe, 
+                        pMSCDevice->ulBulkOutPipe,
+                        pBuffer, &ulSize) != SCSI_CMD_STATUS_PASS))
+    {
+        return(-1);
+    }
+    //
+    // See if the drive is ready to use.
+    //
+    if(USBHSCSITestUnitReady(pMSCDevice->ulIndex, pMSCDevice->ulBulkInPipe,
+                             pMSCDevice->ulBulkOutPipe) != SCSI_CMD_STATUS_PASS)
+    {
+        //
+        // Get the current sense data from the device to see why it failed
+        // the Test Unit Ready command.
+        //
+        ulSize = SCSI_REQUEST_SENSE_SZ;
+        USBHSCSIRequestSense(pMSCDevice->ulIndex, pMSCDevice->ulBulkInPipe,
+                             pMSCDevice->ulBulkOutPipe, pBuffer, &ulSize);
+        //return(-1);
+    }
+	
+    //
     // Just return if the device is returning not present.
     //
     ulSize = SCSI_REQUEST_SENSE_SZ;
@@ -381,16 +407,6 @@ USBHMSCDriveReady(unsigned int ulInstance)
         return(-1);
     }
 
-    //
-    // Issue a SCSI Inquiry to get basic information on the device
-    //
-    ulSize = SCSI_INQUIRY_DATA_SZ;
-    if((USBHSCSIInquiry(pMSCDevice->ulIndex, pMSCDevice->ulBulkInPipe, 
-                        pMSCDevice->ulBulkOutPipe,
-                        pBuffer, &ulSize) != SCSI_CMD_STATUS_PASS))
-    {
-        return(-1);
-    }
 
     //
     // Get the size of the drive.
@@ -426,9 +442,6 @@ USBHMSCDriveReady(unsigned int ulInstance)
              (pBuffer[0] << 24));
     }
 
-    //
-    // See if the drive is ready to use.
-    //
     if(USBHSCSITestUnitReady(pMSCDevice->ulIndex, pMSCDevice->ulBulkInPipe,
                              pMSCDevice->ulBulkOutPipe) != SCSI_CMD_STATUS_PASS)
     {
@@ -440,12 +453,15 @@ USBHMSCDriveReady(unsigned int ulInstance)
         USBHSCSIRequestSense(pMSCDevice->ulIndex, pMSCDevice->ulBulkInPipe,
                              pMSCDevice->ulBulkOutPipe, pBuffer, &ulSize);
         return(-1);
-    }
-
-    //
-    // Success.
-    //
-    return(0);
+    }	
+	else
+	
+	{
+		//
+		// Success.
+		//
+		return(0);
+	}
 }
 
 //*****************************************************************************
