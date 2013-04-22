@@ -22,6 +22,10 @@ typedef float          FP32;                                            /*  单精
 typedef double         FP64;                                            /*  双精度浮点数（64位长度）    */
 typedef signed long long int64; 
 
+#if defined(__IAR_SYSTEMS_ICC__)
+typedef unsigned char TEXTCHAR;
+#endif                       
+
 #define TURE  1
 #define FALSE 0
 #define FAIL  0

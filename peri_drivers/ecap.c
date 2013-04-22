@@ -91,9 +91,9 @@ unsigned int ECAPClockEnableStatusGet(unsigned int baseAdd)
 
     status = HWREG(baseAdd + PWMSS_CLOCK_STATUS);
 
-    status = status << PWMSS_ECAP_CLK_EN_ACK_SHIFT;
+    status = status &(1<< PWMSS_ECAP_CLK_EN_ACK_SHIFT);
 
-    return status;
+    return !!status;
 }
 
 /**
@@ -507,7 +507,7 @@ void ECAPCounterPhaseValConfig(unsigned int baseAdd, unsigned int cntPhaseVal)
  **/
 void ECAPGlobalIntEnable(unsigned int baseAdd)
 {
-    HWREGH(baseAdd + ECAP_ECCLR) |= ECAP_ECCLR_INT;
+    HWREGH(baseAdd + ECAP_ECCLR) |= 1;
 }
 
 /**

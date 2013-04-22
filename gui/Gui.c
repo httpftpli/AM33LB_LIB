@@ -7,6 +7,7 @@
 #include "Asc8x16_dot.h"
 #include "pf_lcd.h"
 #include "font.h"
+#include "utf8.h"
 
 
 
@@ -69,9 +70,7 @@ void LcdClear(COLOR color) {
 }
 
 
-
-
-unsigned int  Dis_DrawChar(unsigned short character,unsigned int x,unsigned int y,COLOR color_f,COLOR color_b){
+unsigned int  Dis_DrawChar_Ucs2(unsigned short character,unsigned int x,unsigned int y,COLOR color_f,COLOR color_b){
    FL_CHARINFO info;
    if(getCharInfo(character,&info)!=0){
       getCharInfo((unsigned short)'?',&info);
@@ -90,15 +89,25 @@ unsigned int  Dis_DrawChar(unsigned short character,unsigned int x,unsigned int 
    return info.width;
 }
 
-void Dis_DrawText(unsigned short *text,unsigned int x,unsigned int y,COLOR color_f,COLOR color_b){
-   unsigned int xoffset = 0;
-   for (int i =0;;i++) {
-      if (0==text[i]) {
-         break; 
+
+void Dis_DrawText(TEXTCHAR *text,unsigned int x,unsigned int y,COLOR color_f,COLOR color_b){
+   unsigned int xoffset = 0;    
+   unsigned short ucs2;
+#if defined(__IAR_SYSTEMS_ICC__)
+   unsigned char charoffset = 0;
+   while (1) {
+      charoffset += UTF8toUCS2(text+charoffset,&ucs2);
+      if (0==charoffset) {
+         return;
       }
-      x += xoffset;
-      xoffset = Dis_DrawChar(text[i],x,y,color_f,color_b);
+      xoffset += Dis_DrawChar_Ucs2(ucs2,xoffset,y,color_f,color_b);
    }
+#else
+#error "Unsupported Compiler. \r\n"
+
+#endif
+
+
 }
 
 //===================================================================

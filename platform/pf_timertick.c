@@ -187,7 +187,7 @@ void Sysdelay(unsigned int mSec)
       return;
    }
    while (1) {
-      if (TimerTickGet() == (conter+mSec+1)) {
+      if (TimerTickGet() >= (conter+mSec+1)) {
          break;
       }
    }

@@ -37,6 +37,9 @@
 #define INT_PRIORITY_GPIO3       (INT_PRIORITY_USER_NORMAL-15)
 #define INT_PRIORITY_LCD         (INT_PRIORITY_USER_NORMAL-16)
 
+#define INT_PRIORITY_eCAP0       (INT_PRIORITY_USER_NORMAL-16)
+#define INT_PRIORITY_eCAP2       (INT_PRIORITY_USER_NORMAL-16)
+
 
 //config GPIO
 #define GPIO_USE  0x03 //bit map of GPIO use , bit 0 for gpio0 ;bit1 for gpio1;bit3 for gpio3

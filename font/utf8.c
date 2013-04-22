@@ -45,6 +45,8 @@ unsigned char  UTF8toUCS2(const unsigned char * utf8_code, unsigned short* ucs2_
      return utf8size;
 }
 
+
+
 unsigned int strLen_UTF8(const unsigned char *utf8_string) {
    unsigned int len = 0;
    while (1) {

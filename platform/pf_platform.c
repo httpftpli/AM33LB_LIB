@@ -15,6 +15,7 @@
 #include "soc_AM335X.h"
 #include "pf_mux.h"
 #include "pf_lcd.h"
+#include "pf_ecap.h"
 #include "debug.h"
 #include "hw_cm_per.h"
 #include "hw_control_AM335x.h"
@@ -101,7 +102,7 @@ MUX_VAL(CONTROL_PADCONF_GPMC_A3, (IDIS | OFF | MODE0 )) /* GPMC_A3_MUX0 */\
 MUX_VAL(CONTROL_PADCONF_GPMC_A4, (IDIS | OFF | MODE0 )) /* GPMC_A4_MUX0 */\
 MUX_VAL(CONTROL_PADCONF_GPMC_A5, (IDIS | OFF | MODE0 )) /* GPMC_A5_MUX0 */\
 MUX_VAL(CONTROL_PADCONF_GPMC_A6, (IDIS | OFF | MODE0 )) /* GPMC_A6_MUX0 */\
-MUX_VAL(CONTROL_PADCONF_GPMC_A7, (IDIS | OFF | MODE7 )) /* GPMC_A7_MUX0 */\
+MUX_VAL(CONTROL_PADCONF_GPMC_A7, (IDIS | OFF | MODE0 )) /* GPMC_A7_MUX0 */\
 MUX_VAL(CONTROL_PADCONF_GPMC_A8, (IDIS | OFF | MODE0 )) /* GPMC_A8_MUX0 */\
 MUX_VAL(CONTROL_PADCONF_GPMC_A9, (IDIS | OFF | MODE0 )) /* GPMC_A9_MUX0 */\
 MUX_VAL(CONTROL_PADCONF_GPMC_A10, (IDIS | OFF | MODE0 )) /* GPMC_A10_MUX0 */\
@@ -138,7 +139,7 @@ MUX_VAL(CONTROL_PADCONF_LCD_VSYNC, (IDIS | OFF | MODE0 )) /* LCD_VSYNC */\
 MUX_VAL(CONTROL_PADCONF_LCD_HSYNC, (IDIS | OFF | MODE0 )) /* LCD_HSYNC */\
 MUX_VAL(CONTROL_PADCONF_LCD_PCLK, (IDIS | OFF | MODE0 )) /* LCD_PCLK */\
 MUX_VAL(CONTROL_PADCONF_LCD_AC_BIAS_EN, (IDIS | OFF | MODE0 )) /* LCD_AC_BIAS_EN */\
-MUX_VAL(CONTROL_PADCONF_XDMA_EVENT_INTR0, (IDIS | OFF | MODE3 )) /* CLKOUT1 */\
+MUX_VAL(CONTROL_PADCONF_ECAP0_IN_PWM0_OUT, (IEN | PU | MODE0 )) /* ECAP0_IN_PWM0_OUT */
 
 }
 
@@ -292,8 +293,8 @@ static void L3L4ClockInit(void){
 extern void usbMscInit();
 
 void platformInit(void) {
-   //MMUConfigAndEnable();
-   //CacheEnable(CACHE_ICACHE);
+   MMUConfigAndEnable();
+   CacheEnable(CACHE_ICACHE);
    L3L4ClockInit();
    IntAINTCInit();
    //RTCInit(); 
@@ -306,7 +307,9 @@ void platformInit(void) {
    I2C0ModuleClkConfig();
    I2C1ModuleClkConfig();
    DMTimer2ModuleClkConfig();  //dtimer2 for tick
-   PWMSSModuleClkConfig(2);    //PWMSS for qep2
+   PWMSSModuleClkConfig(2);    
+   PWMSSModuleClkConfig(1); 
+   PWMSSModuleClkConfig(0);   
    HSMMCSDModuleClkConfig();
    GPMCClkConfig();
    GPMCInitForNOR(SOC_GPMC_0_REGS);
@@ -321,5 +324,6 @@ void platformInit(void) {
    usbMscInit();
    LCDModuleClkConfig();
    LCDRasterInit(TFT_PANEL);		//LCD initation
+   ECAPInit(SOC_ECAP_0_REGS);
    
 }
