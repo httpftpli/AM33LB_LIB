@@ -5,6 +5,7 @@
 #include "platform.h"
 #include "hw_cm_per.h"
 #include "hw_control_AM335x.h"
+#include "module.h"
 
 #define DCAN_ERROR_OCCURED       (0x8000u)
 /* Total No. of message objects available in the DCAN message RAM */
@@ -128,8 +129,8 @@ void isr_DCANLine0(unsigned intnum)
     unsigned int msgNum;
     unsigned int int0id;
 
-    unsigned int membase = (SYS_INT_DCAN0_INT0 == intnum)?SOC_DCAN_0_REGS:SOC_DCAN_1_REGS;
-    unsigned int index = (SYS_INT_DCAN0_INT0 == intnum)?0:1;
+    unsigned int membase = modulelist[intnum].baseAddr;
+    unsigned int index = modulelist[intnum].index;
    
    while (1) {
       int0id = DCANIntRegStatusGet(membase, DCAN_INT_LINE0_STAT);

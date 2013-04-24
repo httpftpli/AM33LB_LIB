@@ -47,8 +47,9 @@
 #include "hw_types.h"
 #include "edma.h"
 #include "interrupt.h"
-#include "platform.h"
+//#include "platform.h"
 #include "debug.h"
+#include "pf_edma.h"
 
 
 /* EDMA instance related macros. */

@@ -81,25 +81,7 @@ typedef struct {
 **                    FUNCTION PROTOTYPES
 *****************************************************************************/
 
-typedef struct{
-   unsigned int bmQdmaMissError;
-   unsigned int bmDmaMissErrorL;
-   unsigned int bmDmaMissErrorH;
-   unsigned int bmEdmaCcError;
-} G_EDMA;
-  
-extern volatile  G_EDMA g_Edma;
 
-typedef struct{
-   unsigned int fgCmdComp:1;
-   unsigned int fgCmdTimeout:1;
-   unsigned int fgDataTimeout:1;
-   unsigned int fgXferComp:1;
-   unsigned int bmCurError;
-   unsigned int bmHisError;
-} G_MMCSD;
-
-extern volatile G_MMCSD g_Mmcsd[3];
 
 
 extern void GPIO1ModuleClkConfig(void);
@@ -113,8 +95,6 @@ extern void RTCInit(void);
 void RTCRead(unsigned short *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
              unsigned char *minute, unsigned char *second);
-extern void EDMAModuleClkConfig(void);
-extern void EDMA3AINTCConfigure();
 extern void EVMMACAddrGet(unsigned int addrIdx, unsigned char *macAddr);
 extern void WatchdogTimer1ModuleClkConfig(void);
 extern void DMTimer2ModuleClkConfig(void);
@@ -123,7 +103,6 @@ extern void DMTimer4ModuleClkConfig(void);
 extern void DMTimer7ModuleClkConfig(void);
 extern void EVMPortMIIModeSelect(void);
 extern void RTCModuleClkConfig(void);
-extern void HSMMCSDModuleClkConfig(void);
 extern void GPMCClkConfig(void);
 extern void GPMCInitForNOR(unsigned int baseAddr );
 extern void I2C0ModuleClkConfig(void);
@@ -137,39 +116,11 @@ extern unsigned int CANSend_noblock(unsigned int baseAddr,CAN_FRAME *frame);
 extern void perAINTCConfigure(void);
 
 extern void platformInit();
-extern unsigned int EDMARegisterHandler(unsigned int handlerIndex, void (*handler)(unsigned int tcc, unsigned int status));
-unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
-                                            unsigned int chNum,
-                                            unsigned int entryAddr,
-                                            unsigned int bufAddr,
-                                            unsigned int rwFlag,
-                                            unsigned int entryBitWidth,
-                                            unsigned int blkSize,
-                                            unsigned int nblks,
-                                            unsigned int handlerIndex);
-extern unsigned int EDMARequestXfer2D(unsigned int trigMode,
-                           unsigned int chNum,
-                           unsigned int scrAddr,
-                           unsigned int dstAddr,
-                           unsigned int bnOfScrRow,
-                           unsigned int numOfScrColum,
-                           unsigned int bnOfDstRow,
-                           unsigned int numOfDstColum,
-                           unsigned int bnOfRow,
-                           unsigned int numOfColum,
-                           unsigned int handlerIndex) ;
-extern unsigned int EDMARequestXferArray(unsigned int trigMode,
-                           unsigned int chNum,
-                           unsigned int scrAddr,
-                           unsigned int dstAddr,
-                           unsigned int bytenumber,
-                           unsigned int handlerIndex); 
+
 
 extern void DCANModuleClkConfig(void);
 extern void DCANMsgRAMInit(unsigned int instanceNum);
 extern void CANRegistRcvedHandler(void (*handler)(unsigned int index,CAN_FRAME *frame));
-
-
 extern void PWMSSModuleClkConfig(unsigned int instanceNum);
 
 extern void GPIOInit();

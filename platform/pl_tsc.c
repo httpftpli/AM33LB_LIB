@@ -26,7 +26,7 @@
 
 typedef struct {
    unsigned int magic ;   //0x55555555 flag  CALIBRATION data valid
-      int x[5], xfb[5];
+   int x[5], xfb[5];
    int y[5], yfb[5];
    int a[7];
 } TS_CALIBRATION; 
@@ -416,11 +416,11 @@ void TouchCalibrate(void){
       Dis_DrawMask(calIcon,caldispoint[i].x,caldispoint[i].y,16,16,C_White,C_TRANSPARENT);
       Dis_RectFill(calIcon,caldispoint[i].x,caldispoint[i].y,16,16,C_Black);
       while (istouch);
-      tsCalibration[i].x = 
-      
-
-       
+      tsCalibration[i].x = ;
+      tsCalibration[i].y = ;             
    }
+
+ 
 
 
    

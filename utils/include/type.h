@@ -34,6 +34,9 @@ typedef unsigned char TEXTCHAR;
 #define __int
 typedef char BOOL;
 
+
+
+
 #endif
 
 

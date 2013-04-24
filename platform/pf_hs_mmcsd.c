@@ -45,8 +45,9 @@
 #include "hw_cm_dpll.h"
 #include "hs_mmcsd.h"
 #include "pf_mux.h"
-#include "platform.h"
 #include "interrupt.h"
+#include "module.h"
+#include "pf_hs_mmcsd.h"
 
 
 
@@ -54,20 +55,8 @@ volatile G_MMCSD g_Mmcsd[3];
 
 void isr_HSMMCSD(unsigned int intnum) {
    unsigned int status = 0;
-   unsigned int index;
-   unsigned int basemem;
-
-   if (SYS_INT_MMCSD0INT == intnum) {
-       index = 0;
-       basemem = SOC_MMCHS_0_REGS;
-   }else if(SYS_INT_MMCSD1INT == intnum){
-       index = 1;
-       basemem = SOC_MMCHS_1_REGS;
-   }else{
-       index = 2;
-       basemem = SOC_MMCHS_2_REGS;
-   }
-
+   unsigned int index = modulelist[intnum].index;
+   unsigned int basemem = modulelist[intnum].baseAddr;
    status = HSMMCSDIntrStatusGet(basemem, 0xFFFFFFFF);
    HSMMCSDIntrStatusClear(basemem, status);
 

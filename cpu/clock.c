@@ -42,6 +42,7 @@
 
 
 #include "clock.h"
+#include "type.h"
 
 /*******************************************************************************
 *                       EXTERNAL VARIABLE DECLARATIONS
@@ -542,12 +543,12 @@ void enableModuleClock(unsigned int moduleId)
  *
  * \param   clkDomainptr	pointer to the clock domain
  *
- * \return  result	Indicates whether the clock domain is disabled or not. 
+ * \return  BOOL	Indicates whether the clock domain is disabled or not. 
  *					Possible values are
  *						-	FAIL
  *						-	SUCCESS
  **/
-result disableClockDomain(ClockDomain *clkDomainptr)
+BOOL disableClockDomain(ClockDomain *clkDomainptr)
 {
 	if(NULL != clkDomainptr)
 	{
@@ -619,7 +620,7 @@ static void disableClock(Clock *clkPtr)
  * \param   moduleId		Module id of the module
  * \param   isBlockingCall	Variable indicating whether this is a blocking call or not
  *
- * \return  result	Indicates whether the module clock is disabled or not. 
+ * \return  BOOL	Indicates whether the module clock is disabled or not. 
  *					Possible values are
  *						-	MODULE_NOT_DISABLED
  *						-	MODULE_NOT_IDLE
@@ -809,15 +810,15 @@ unsigned int getDividerClkGateStatus(Clock *clkPtr)
  *
  * \param   moduleDisableList[]	List of modules to be disabled
  *
- * \return  result	result of module disable. Possible values are
+ * \return  BOOL	result of module disable. Possible values are
  *						-	SUCCESS
  *						-	FAIL
  *
  **/
-result deviceClockDisable(unsigned int moduleDisableList[], unsigned noOfElements)
+BOOL deviceClockDisable(unsigned int moduleDisableList[], unsigned noOfElements)
 {
 	unsigned int index = 0;
-	result status = SUCCESS;
+	BOOL status = SUCCESS;
 	
 	for(index = 0; index < noOfElements; index++)
 	{
@@ -839,12 +840,12 @@ result deviceClockDisable(unsigned int moduleDisableList[], unsigned noOfElement
  *
  * \param   clkDomainId		Id of the clock domain
  *
- * \return  result	State of the clock domain gate. Possible values are
+ * \return  BOOL	State of the clock domain gate. Possible values are
  *						-	SUCCESS
  *						-	FAIL
  *
  **/
-result clkdomainGateStatus(unsigned int clkDomainId)
+BOOL clkdomainGateStatus(unsigned int clkDomainId)
 {
 	ClockDomain *clkDomainPtr = clockDomainList[clkDomainId];
 	
@@ -863,14 +864,14 @@ result clkdomainGateStatus(unsigned int clkDomainId)
  *
  * \param   clockDomainStatusList - List of clock domains to be checked
  *
- * \return  result	result of clock gate status. Possible values are
+ * \return  BOOL	result of clock gate status. Possible values are
  *						-	SUCCESS
  *						-	FAIL
  **/
-result deviceClockGateStatus(unsigned int clockDomainStatusList[], unsigned noOfElements)
+BOOL deviceClockGateStatus(unsigned int clockDomainStatusList[], unsigned noOfElements)
 {
 	unsigned int index = 0;
-	result status = SUCCESS;
+	BOOL status = SUCCESS;
 	
 	for(index = 0; index < noOfElements; index++)
 	{
