@@ -98,10 +98,10 @@ void UARTStdioInit(void) {
    HWREG(SOC_CONTROL_REGS + CONTROL_CONF_UART_TXD(0)) =
       CONTROL_CONF_UART0_TXD_CONF_UART0_TXD_PUTYPESEL;
 
-   UART0ModuleClkConfig();
+    UART0ModuleClkConfig();
 
 
-   UARTModuleReset(UART_CONSOLE_BASE);
+    UARTModuleReset(UART_CONSOLE_BASE);
 
     /* Performing FIFO configurations. */
     UartFIFOConfigure(1, 1);

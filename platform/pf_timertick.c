@@ -57,7 +57,6 @@ static void (*timertickhandle)(unsigned int tick) = NULL;
 
 typedef struct __softtimer{
    unsigned int tick;
-   unsigned int timeElapsed;
    unsigned int enable;
 } SOFTTIMER;
 
@@ -83,28 +82,22 @@ void isr_DTimer2(unsigned int intnum){
    UNUSED(intnum);
    DMTimerIntStatusClear(TIMER_TIMERTICK,DMTIMER_INT_OVF_IT_FLAG );
    tick++;
-   for (int i=0;i<sizeof(softtimer)/sizeof(softtimer[0]);i++) {
-      if (softtimer[i].enable) {
-         softtimer[i].tick--;
-         if(softtimer[i].tick == 0)
-            softtimer[i].timeElapsed = 1;   
-      }
-   }
    if (NULL!=timertickhandle) {
       timertickhandle(tick);
    }
+}
+
+unsigned int TimerTickGet(void){
+   return tick;
 }
 
 int StartTimer(unsigned int mSec){
    int timeindex = timerFindFree();
    if (-1 == timeindex) {
       return -1;
-   }else{
-      IntSystemDisable(INTNUMBER);      
+   }else{          
       softtimer[timeindex].enable = 1;
-      softtimer[timeindex].tick = mSec+1;
-      softtimer[timeindex].timeElapsed = 0;
-      IntSystemEnable(INTNUMBER); 
+      softtimer[timeindex].tick = TimerTickGet() + mSec+1; 
    }
    return timeindex;
 }
@@ -114,20 +107,17 @@ int StartTimer(unsigned int mSec){
 void  StopTimer(unsigned int timerindex){
     IntSystemDisable(INTNUMBER); 
     softtimer[timerindex].enable = 0;
-    softtimer[timerindex].timeElapsed = 0;
     IntSystemEnable(INTNUMBER);
 }
    
       
 
 unsigned int IsTimerElapsed(unsigned int timerindex){
-   if (softtimer[timerindex].timeElapsed == 0) {
+   if (softtimer[timerindex].tick > TimerTickGet()) {
       return FALSE;
-   }else{
-      IntSystemDisable(INTNUMBER);
+   }else{      
       softtimer[timerindex].enable = 0;
-      IntSystemEnable(INTNUMBER);   
-   }
+   }  
    return TRUE;  
 }
 
@@ -171,9 +161,7 @@ void TimerTickStop(void)
    DMTimerDisable(TIMER_TIMERTICK);
 }
 
-unsigned int TimerTickGet(void){
-   return tick;
-}
+
 
 unsigned int TimerTickTimeGet(void){
    return DMTimerCounterGet(TIMER_TIMERTICK);

@@ -21,6 +21,8 @@
 #include "hw_control_AM335x.h"
 #include "pf_platform_cfg.h"
 #include "usb.h"
+#include "pf_usbmsc.h"
+#include "pf_hs_mmcsd.h"
 
 
 extern void EDMAModuleClkConfig(void);
@@ -290,13 +292,12 @@ static void L3L4ClockInit(void){
             CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_CAN_CLK)));
 }
 
-extern void usbMscInit();
-
 void platformInit(void) {
    MMUConfigAndEnable();
    CacheEnable(CACHE_ICACHE);
    L3L4ClockInit();
    IntAINTCInit();
+   IntMasterIRQEnable();
    //RTCInit(); 
    UARTStdioInit(); 
    PinMuxSetup();

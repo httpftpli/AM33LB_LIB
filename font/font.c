@@ -19,7 +19,7 @@ FL_SECTION_INF *pfl_section;
 unsigned int fl_basemem_addr;
 static unsigned int fontmemaddr = 0;
 
-char loadFont(TCHAR * filepath, unsigned int memaddr) {
+signed char loadFont(TCHAR * filepath, unsigned int memaddr) {
    unsigned int re, br;
    FIL fontfile;
    re = f_open(&fontfile, filepath, FA_OPEN_EXISTING | FA_READ);
@@ -72,7 +72,7 @@ unsigned char  GetFontYSize()
 
 
 
-char getCharInfo(unsigned short wCode, FL_CHARINFO *pcharinfo) {
+signed char getCharInfo(unsigned short wCode, FL_CHARINFO *pcharinfo) {
    int r = getCharInfo_U(wCode, pcharinfo);
    if (r != 0) return -1;
    pcharinfo->pixaddr += fontmemaddr;

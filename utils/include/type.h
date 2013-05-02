@@ -26,10 +26,16 @@ typedef signed long long int64;
 typedef unsigned char TEXTCHAR;
 #endif                       
 
-#define TURE  1
+#define TRUE  1
 #define FALSE 0
 #define FAIL  0
 #define SUCCESS 1
+
+
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
 #define __out
 #define __int
 typedef char BOOL;

@@ -32,6 +32,7 @@ typedef enum
 
 extern  volatile tUsbMscState g_usbMscState;
 extern void usbMscProcess();
+extern void usbMscInit();
 
 
 #endif

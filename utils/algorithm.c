@@ -7,10 +7,10 @@ void bubbleSortAscend(int *buf, unsigned int nNum) {
       k = flag;
       flag = 0;
       for (j = 1; j < k; j++){
-         if (a[j - 1] > a[j]) {
-            tmp = a[j-1];
-            a[j - 1] = a[j];
-            a[j] = tmp;
+         if (buf[j - 1] > buf[j]) {
+            tmp = buf[j-1];
+            buf[j - 1] = buf[j];
+            buf[j] = tmp;
             flag = j;
          }
       }

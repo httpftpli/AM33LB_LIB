@@ -40,8 +40,8 @@ typedef struct tagCharInfo{
 
 
 unsigned char  GetFontYSize();
-char loadFont(TCHAR * filepath, unsigned int memaddr);
-char getCharInfo(unsigned short wCode,FL_CHARINFO *pcharinfo);
+signed char loadFont(TCHAR * filepath, unsigned int memaddr);
+signed char getCharInfo(unsigned short wCode,FL_CHARINFO *pcharinfo);
 
 
 #endif // !defined(AFX_FONT_H__6E6D67A4_78AE_410B_B728_2464EF2E40C7__INCLUDED_)

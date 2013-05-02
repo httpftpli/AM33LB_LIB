@@ -265,7 +265,7 @@ static void StepEnable(void)
     if (0==tsenable) {
        return
     }
-    for(i = 0; i < SAMPLES*2; i++) // Ô­À´11´Î£¬ÏÖÔÚSAMPLES*2
+    for(i = 0; i < SAMPLES*2; i++) // åŽŸæ¥11æ¬¡ï¼ŒçŽ°åœ¨SAMPLES*2
     {
          TSCADCConfigureStepEnable(SOC_ADC_TSC_0_REGS, i, 1);
     }
@@ -465,7 +465,7 @@ void TouchScreenInit(void){
    TSCADCFIFOIRQThresholdLevelConfig(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_1, SAMPLES);
    TSCADCEventInterruptEnable(SOC_ADC_TSC_0_REGS, TSCADC_FIFO1_THRESHOLD_INT);
    TSCADCModuleStateSet(SOC_ADC_TSC_0_REGS, TSCADC_MODULE_ENABLE);
-   StepEnable();   //×¢Òâ 11´Î
+   StepEnable();   //æ³¨æ„ 11æ¬¡
 }
 
 
