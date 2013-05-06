@@ -11,9 +11,9 @@ extern BOOL Rx8025SetTime(unsigned char hour,
 extern BOOL Rx8025GetTime(unsigned char *hour,
                           unsigned char *minute, unsigned char *second);
 
-extern BOOL Rx8025SetDate(unsigned short year,
+extern BOOL Rx8025SetCalendar(unsigned char year,
                           unsigned char month,unsigned char day);
-extern BOOL Rx8025GetDate(unsigned short *year,
+extern BOOL Rx8025GetCalendar(unsigned char *year,
                           unsigned char *month,unsigned char *day);
 
 

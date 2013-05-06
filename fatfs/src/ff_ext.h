@@ -5,8 +5,10 @@
 
 FRESULT f_scandir(char* path , FILINFO*  fileInfo ,unsigned int *nEntrys );
 FRESULT f_copy(TCHAR *scrpath,TCHAR * despath,unsigned char *workbuf,unsigned int sz_workbuf);
+FRESULT f_fdiskEx (BYTE pdrv,unsigned int beginLBA,const DWORD szt[],void* work);
 
 #endif
+
 
 
 

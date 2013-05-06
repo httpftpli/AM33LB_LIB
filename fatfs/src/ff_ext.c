@@ -31,6 +31,8 @@ FRESULT f_scandir(
     return res;
 }
 
+
+
 FRESULT f_copy(const TCHAR *scrpath,const TCHAR * despath, unsigned char *workbuf,unsigned int sz_workbuf){
    FRESULT res;
    mdAssert(sz_workbuf%512==0);

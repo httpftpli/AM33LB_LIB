@@ -92,7 +92,7 @@ extern void UARTPinMuxSetup(unsigned int instanceNum);
 extern void CPSWPinMuxSetup(void);
 extern void CPSWClkEnable(void);
 extern void RTCInit(void);
-void RTCRead(unsigned short *year, unsigned char *month,
+void RTCRead(unsigned char *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
              unsigned char *minute, unsigned char *second);
 extern void EVMMACAddrGet(unsigned int addrIdx, unsigned char *macAddr);
