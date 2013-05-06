@@ -1,44 +1,3 @@
-/**
- * \file   rtc.c
- *
- * \brief  This file contains functions which does the platform specific
- *         configurations for RTC.
- */
-
-/*
-* Copyright (C) 2010 Texas Instruments Incorporated - http://www.ti.com/
-*/
-/*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions
-*  are met:
-*
-*    Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-*
-*    Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the
-*    distribution.
-*
-*    Neither the name of Texas Instruments Incorporated nor the names of
-*    its contributors may be used to endorse or promote products derived
-*    from this software without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*/
-
 
 #include "hw_cm_wkup.h"
 #include "soc_AM335x.h"
@@ -48,6 +7,8 @@
 #include "rtc.h"
 #include "debug.h"
 #include "misc.h"
+#include "pf_rx8025.h"
+#include "pf_timertick.h"
 
 
 void isr_RTC(unsigned int intnum) {
@@ -257,7 +218,7 @@ static void RTCModuleClkConfig(void)
     ** Waiting for IDLEST field in CM_RTC_RTC_CLKCTRL register to attain the
     ** desired value.
     */
-    while((CM_RTC_RTC_CLKCTRL_IDLEST_FUNC <<
+   while((CM_RTC_RTC_CLKCTRL_IDLEST_FUNC <<
            CM_RTC_RTC_CLKCTRL_IDLEST_SHIFT) !=
            (HWREG(SOC_CM_RTC_REGS + CM_RTC_RTC_CLKCTRL) &
            CM_RTC_RTC_CLKCTRL_IDLEST));
@@ -280,34 +241,44 @@ static void RTCModuleClkConfig(void)
 }
 
 
-void RTCInit(void){
+static void RTCAM335XInit(unsigned int calendar,unsigned int time){
     RTCModuleClkConfig();   
     RTCWriteProtectDisable(SOC_RTC_0_REGS);
     RTC32KClkSourceSelect(SOC_RTC_0_REGS, RTC_INTERNAL_CLK_SRC_SELECT);
     RTC32KClkClockControl(SOC_RTC_0_REGS, RTC_32KCLK_ENABLE);
     RTCEnable(SOC_RTC_0_REGS);
-    RTCCalendarSet(SOC_RTC_0_REGS,  (((2<<12)|(0<<8)|(1<<4)|(2<<0))<<YEAR_SHIFT)
-                                   |(((1<<4)|(2<<0))<<MONTH_SHIFT)
-                                   |(((0<<4)|(5<<0))<<DAY_SHIFT));
-    RTCTimeSet(SOC_RTC_0_REGS, (((2<<4) |(0<<0))<<HOUR_SHIFT)
-                              |(((50<<4)|(2<<0))<<MINUTE_SHIFT)
-                              |(((50<<4)|(5<<0))<<SECOND_SHIFT));      
+    RTCCalendarSet(SOC_RTC_0_REGS,  calendar);
+    RTCTimeSet(SOC_RTC_0_REGS, time);      
     RTCRun(SOC_RTC_0_REGS); 
     RTCIntTimerEnable(SOC_RTC_0_REGS, RTC_INT_EVERY_SECOND);
     RTCWriteProtectEnable(SOC_RTC_0_REGS);
  }
 
 
-void RTCRead(unsigned short *year, unsigned char *month,
+
+
+void RTCInit(void){
+    unsigned char hour,minute,second,year,month,day;
+    Rx8025Init();
+    Rx8025GetTime(&hour,&minute,&second);
+    Rx8025GetCalendar(&year,&month,&day);
+    RTCAM335XInit(year<<YEAR_SHIFT | month<<MONTH_SHIFT | day<<DAY_SHIFT,
+                  hour<<HOUR_SHIFT | minute<< MINUTE_SHIFT | second<<SECOND_SHIFT);
+}
+
+
+void RTCRead(unsigned char *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
              unsigned char *minute, unsigned char *second) {
    unsigned int time = RTCTimeGet(SOC_RTC_0_REGS); //FIRST READ TIME;
    unsigned int can = RTCCalendarGet(SOC_RTC_0_REGS);
-   *year = bcd2hex_4((can & YEAR_MASK) >> YEAR_SHIFT);
-   *month = bcd2hex_2((can & MONTH_MASK) >> MONTH_SHIFT);
-   *day = bcd2hex_2((can & DAY_MASK) >> DAY_SHIFT);
-   *hour = bcd2hex_2((time & HOUR_MASK) >> HOUR_SHIFT);
-   *minute = bcd2hex_2((time & MINUTE_MASK) >> MINUTE_SHIFT);
-   *second = bcd2hex_2((time & SECOND_MASK) >> SECOND_SHIFT);
+   *year = (can & YEAR_MASK) >> YEAR_SHIFT;
+   *month = (can & MONTH_MASK) >> MONTH_SHIFT;
+   *day = (can & DAY_MASK) >> DAY_SHIFT;
+   *hour = (time & HOUR_MASK) >> HOUR_SHIFT;
+   *minute = (time & MINUTE_MASK) >> MINUTE_SHIFT;
+   *second = (time & SECOND_MASK) >> SECOND_SHIFT;
 }
+
+
 /******************************* End of file ********************************/

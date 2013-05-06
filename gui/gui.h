@@ -28,6 +28,7 @@ typedef unsigned int COLOR;
 extern void Dis_RectFill(uint32 x,uint32 y,uint32 width,uint32 height,COLOR color);
 extern void LcdClear(COLOR color);
 extern void LcdChangDisBuffer(void);
+extern void Dis_SetPixel(unsigned int x,unsigned int y,COLOR color);
 extern void Dis_DrawMask(void *buf, unsigned int x, unsigned int y, unsigned int width,
                   unsigned int height, COLOR color_f, COLOR color_b);
 extern unsigned int  Dis_DrawChar_Ucs2(unsigned short character,unsigned int x,unsigned int y,COLOR color_f,COLOR color_b);

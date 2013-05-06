@@ -11,7 +11,7 @@
 
 
 
-static inline void LCD_SetPixel(unsigned int x,unsigned int y,COLOR color){
+inline void LCD_SetPixel(unsigned int x,unsigned int y,COLOR color){
    if ((color & 0xffff0000)==0 ) {
       Pix((x),(y)) = color;
    }
@@ -90,17 +90,25 @@ unsigned int  Dis_DrawChar_Ucs2(unsigned short character,unsigned int x,unsigned
 }
 
 
+
+void Dis_SetPixel(unsigned int x,unsigned int y,COLOR color){
+   LCD_SetPixel(x,y,color);
+}
+
+
 void Dis_DrawText(TEXTCHAR *text,unsigned int x,unsigned int y,COLOR color_f,COLOR color_b){
-   unsigned int xoffset = 0;    
+   unsigned int xoffset = 0; 
    unsigned short ucs2;
 #if defined(__IAR_SYSTEMS_ICC__)
    unsigned char charoffset = 0;
+   unsigned char signelcharlen= 0;
    while (1) {
-      charoffset += UTF8toUCS2(text+charoffset,&ucs2);
-      if (0==charoffset) {
+      signelcharlen = UTF8toUCS2(text+charoffset,&ucs2);
+      charoffset += signelcharlen;
+      if (0==signelcharlen) {
          return;
       }
-      xoffset += Dis_DrawChar_Ucs2(ucs2,xoffset,y,color_f,color_b);
+      xoffset += Dis_DrawChar_Ucs2(ucs2,x+xoffset,y,color_f,color_b);
    }
 #else
 #error "Unsupported Compiler. \r\n"

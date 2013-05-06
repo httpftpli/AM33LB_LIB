@@ -439,14 +439,15 @@ static unsigned int sdcardinit(mmcsdCtrlInfo *ctrl) {
    card->inited = 1;
    return 1;
 }
-/**
+
+/*
  * \brief   This function determines the type of MMCSD card.
  *
  * \param    mmcsdCtrlInfo It holds the mmcsd control information.
  *
  * \returns  type of the MMCSD card
  *         
- **/
+ */
 static unsigned int mmcsdcardtypecheck(mmcsdCtrlInfo *ctrl) {
    unsigned int status;
    mmcsdCmd cmd;
@@ -541,6 +542,37 @@ static unsigned int mmcbuswidthset(mmcsdCtrlInfo *ctrl) {
 }
 
 
+/**
+ * @brief mmcsdCtrlInfo结构初始化 
+ *  mmcsdCtrlInfo结构初始化 ，该结构体初始化后调用
+ *  MMCSDP_CtrlInit初始化mmcsd控制器
+ * @param [out] ctrl    mmcsdCtrlInfo指针
+ * @param [in]  memBase 控制器基地址  SOC_MMCHS_X_REGS       
+ * @param [in]  ipClk   mmcsd控制器时钟频率 
+ * @param [in]  opClk   mmcsd卡 clk频率 
+ * @param [in]  busWidthSupport  MMCSD_BUSWIDTH_XBIT
+ * @param [in]  ddrSupport       mmcsd卡双边沿 
+ * @param [in]  card       mmcsdCardInfo结构，代表mmcsd卡 
+ * @param [in]  preXferHook  回调函数 ，NULL是使用默认的回调函数
+ * @param [in]  cmdstatusget 回调函数 ，NULL是使用默认的回调函数
+ * @param [in]  xferstatusget 回调函数 
+ *        ，NULL是使用默认的回调函数
+ *      
+ * @param [in]  busWidthSupport  
+ * @return          
+ * @author  李飞亮
+ * @date    2013/5/4
+ * @note 
+ * opClk = 48M时不支持ddr
+ * 示例代码如下：
+ * @code
+ * 
+ * @endcode
+ *
+ * @pre
+ *
+ * @see 
+ */
 unsigned char MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int memBase,unsigned int ipClk,
                        unsigned int opClk,unsigned short busWidthSupport,
                        unsigned short ddrSupport, 
@@ -575,7 +607,7 @@ unsigned char MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int memBase,unsig
    return 1;
 }
 
-/**
+/*
  * \brief   This function sends the command to MMCSD.
  *
  * \param    mmcsdCtrlInfo It holds the mmcsd control information.
@@ -584,7 +616,7 @@ unsigned char MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int memBase,unsig
  *
  * \return   status of the command.
  *
- **/
+ */
 unsigned int MMCSDP_CmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c) {
    return hsMmcSdCmdSend(ctrl, c);
 }
@@ -592,7 +624,7 @@ unsigned int MMCSDP_CmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c) {
 
 
 
-/**
+/*
  * \brief   This function sends the application command to MMCSD.
  *
  * \param    mmcsdCtrlInfo It holds the mmcsd control information.
@@ -601,7 +633,7 @@ unsigned int MMCSDP_CmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c) {
  *
  * \return   status of the command.
  *
- **/
+ */
 unsigned int MMCSDP_AppCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c) {
    unsigned int status = 0;
    mmcsdCmd capp;
@@ -625,7 +657,7 @@ unsigned int MMCSDP_AppCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c) {
 
 
 
-/**
+/*
  * \brief   Configure the MMC/SD bus width
  *
  * \param    mmcsdCtrlInfo It holds the mmcsd control information.
@@ -635,7 +667,7 @@ unsigned int MMCSDP_AppCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c) {
  *
  * \return  None.
  *
- **/
+ */
 unsigned int MMCSDP_BusWidthSet(mmcsdCtrlInfo *ctrl) {
    mmcsdCardInfo *card = ctrl->card;
 
@@ -647,14 +679,14 @@ unsigned int MMCSDP_BusWidthSet(mmcsdCtrlInfo *ctrl) {
    return 0;
 }
 
-/**
+/*
  * \brief    This function configures the transmission speed in MMCSD.
  *
  * \param    mmcsdCtrlInfo It holds the mmcsd control information.
  *
  * \returns  1 - successfull.
  *           0 - failed.
- **/
+ */
 unsigned int MMCSDP_TranSpeedSet(mmcsdCtrlInfo *ctrl) {
    mmcsdCardInfo *card = ctrl->card;
    unsigned int speed;
@@ -698,14 +730,14 @@ unsigned int MMCSDP_TranSpeedSet(mmcsdCtrlInfo *ctrl) {
    return 1;
 }
 
-/**
+/*
  * \brief   This function resets the MMCSD card.
  *
  * \param    mmcsdCtrlInfo It holds the mmcsd control information.
  *
  * \returns  1 - successfull reset of card.
  *           0 - fails to reset the card.
- **/
+ */
 unsigned int MMCSDP_CardReset(mmcsdCtrlInfo *ctrl) {
    unsigned int status = 0;
    mmcsdCmd cmd;
@@ -724,14 +756,14 @@ unsigned int MMCSDP_CardReset(mmcsdCtrlInfo *ctrl) {
    return status;
 }
 
-/**
+/*
  * \brief   This function sends the stop command to MMCSD card.
  *
  * \param    mmcsdCtrlInfo It holds the mmcsd control information.
  *
  * \returns  1 - successfully sends stop command to card.
  *           0 - fails to send stop command to card.
- **/
+ */
 unsigned int MMCSDP_StopCmdSend(mmcsdCtrlInfo *ctrl) {
    unsigned int status = 0;
    mmcsdCmd cmd;
@@ -747,7 +779,8 @@ unsigned int MMCSDP_StopCmdSend(mmcsdCtrlInfo *ctrl) {
 /**
  * \brief   This function intializes the mmcsdcontroller.
  *
- * \param    mmcsdCtrlInfo It holds the mmcsd control information.
+ * \param   mmcsdCtrlInfo *ctrl It holds the mmcsd control 
+ *           information.
  *
  * \returns  NO
  **/
@@ -756,14 +789,14 @@ void  MMCSDP_CtrlInit(mmcsdCtrlInfo *ctrl) {
      ctrl->inited = 1;
 }
 
-/**
+/*
  * \brief   This function determines whether card is persent or not.
  *
  * \param    mmcsdCtrlInfo It holds the mmcsd control information.
  *
  * \returns  1 - Card is present.
  *           0 - Card is not present.
- **/
+ */
 unsigned int MMCSDP_CardPresent(mmcsdCtrlInfo *ctrl) {
    //return ctrl->cardPresent(ctrl);
    return hsMmcSdCardPresent(ctrl);
@@ -774,10 +807,12 @@ unsigned int MMCSDP_CardPresent(mmcsdCtrlInfo *ctrl) {
 /**
  * \brief This function intializes the MMCSD Card.
  * 
- * \param ctrl It holds the mmcsd control information.
+ * \param ctrl It holds the mmcsd control information. 
+ * \param cardType  card type ,the value can be
+ * MMCSD_CARD_AUTO MMCSD_CARD_MMC MMCSD_CARD_SD 
  * 
- * \returns 1 - Intialization is successfull.
- *           0 - Intialization is failed.
+ * \returns 1 - Intialization is successfull. 
+ *         0 - Intialization is failed.
  * \return
  * 
  */
@@ -812,13 +847,15 @@ unsigned int MMCSDP_CardInit(mmcsdCtrlInfo *ctrl, unsigned int cardType) {
 /**
  * \brief   This function sends the write command to MMCSD card.
  *
- * \param    mmcsdCtrlInfo It holds the mmcsd control information.
+ * \param    ctrl        It holds the mmcsd control information.
  * \param    ptr           It determines the address from where data has to written
  * \param    block         It determines to which block data to be written
  * \param    nblks         It determines the number of blocks to be written
  *
- * \returns  1 - successfull written of data.
- *           0 - failure to write the data.
+ * \return  int 
+ *        1 - successfull written of data
+ *        0 - failure to write the data.
+ * @note  1 bock = 512byte
  **/
 unsigned int MMCSDP_Write(mmcsdCtrlInfo *ctrl, const void *ptr, unsigned int block,
                                  unsigned int nblks) {

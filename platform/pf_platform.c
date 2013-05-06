@@ -293,20 +293,21 @@ static void L3L4ClockInit(void){
 }
 
 void platformInit(void) {
+   PinMuxSetup();
    MMUConfigAndEnable();
    CacheEnable(CACHE_ICACHE);
    L3L4ClockInit();
    IntAINTCInit();
-   IntMasterIRQEnable();
-   //RTCInit(); 
+   IntMasterIRQEnable(); 
+   I2C0ModuleClkConfig();
+   I2CInit(SOC_I2C_0_REGS,400000, NULL, 0);
+   I2C1ModuleClkConfig();
+   RTCInit(); 
    UARTStdioInit(); 
-   PinMuxSetup();
    EDMAInit();
    DCANModuleClkConfig();
    DCANMsgRAMInit(0);
-   DCANMsgRAMInit(1);
-   I2C0ModuleClkConfig();
-   I2C1ModuleClkConfig();
+   DCANMsgRAMInit(1);  
    DMTimer2ModuleClkConfig();  //dtimer2 for tick
    PWMSSModuleClkConfig(2);    
    PWMSSModuleClkConfig(1); 

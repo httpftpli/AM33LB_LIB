@@ -3913,6 +3913,63 @@ FRESULT f_fdisk (
 }
 
 
+
+/*-----------------------------------------------------------------------*/
+/* Divide Physical Drive                                                 */
+/*-----------------------------------------------------------------------*/
+
+
+FRESULT f_fdiskEx (
+	BYTE pdrv,			/* Physical drive number */
+    unsigned int beginLBA,
+	const DWORD szt[],	/* Pointer to the size table for each partitions */
+	void* work			/* Pointer to the working buffer */
+)
+{
+	UINT i;
+	BYTE  *p, *buf = (BYTE*)work;
+	DSTATUS stat;
+	DWORD sz_disk, sz_part, s_part;
+
+
+	stat = disk_initialize(pdrv);
+	if (stat & STA_NOINIT) return FR_NOT_READY;
+	if (stat & STA_PROTECT) return FR_WRITE_PROTECTED;
+	if (disk_ioctl(pdrv, GET_SECTOR_COUNT, &sz_disk)) return FR_DISK_ERR;
+
+	
+	/* Create partition table */
+	mem_set(buf, 0, _MAX_SS);
+        p = buf + MBR_Table;
+       sz_part = 0;
+       s_part = beginLBA;
+	for (i = 0; i < 4; i++, p += SZ_PTE) {
+		sz_part = szt[i]<=100?szt[i]*sz_disk/100:szt[i];
+        if (szt[i]==-1UL) {
+           sz_part = sz_disk-s_part;
+        }
+		if ((s_part+sz_part) > sz_disk) return FR_INVALID_PARAMETER;
+
+		/* Set partition table */
+		p[1] = 0;						/* Start head */
+		p[2] = (BYTE)(0);	/* Start sector */
+		p[3] = (BYTE)0;					/* Start cylinder */
+		p[4] = 0x06;						/* System type (temporary setting) */
+		p[5] = 0;						/* End head */
+		p[6] = (BYTE)(0);	/* End sector */
+		p[7] = (BYTE)0;					/* End cylinder */
+		ST_DWORD(p + 8, s_part);			/* Start sector in LBA */
+		ST_DWORD(p + 12, sz_part);			/* Partition size */
+
+		/* Next partition */
+		s_part+= sz_part;
+	}
+	ST_WORD(p, 0xAA55);
+
+	/* Write it to the MBR */
+	return (disk_write(pdrv, buf, 0, 1) || disk_ioctl(pdrv, CTRL_SYNC, 0)) ? FR_DISK_ERR : FR_OK;
+}
+
 #endif /* _MULTI_PARTITION == 2 */
 #endif /* _USE_MKFS && !_FS_READONLY */
 
