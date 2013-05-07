@@ -1,20 +1,28 @@
-// font.h 
-//
+/**
+ *  \file   font.h
+ *
+ *  \brief
+ *  \author  æŽé£žäº®
+ *  \addtogroup FONT 
+ *  @{  
+ */
 
-#if !defined(AFX_FONT_H__6E6D67A4_78AE_410B_B728_2464EF2E40C7__INCLUDED_)
-#define AFX_FONT_H__6E6D67A4_78AE_410B_B728_2464EF2E40C7__INCLUDED_
+
+
+#ifndef __FONT_H__
+#define __FONT_H__
 
 #define UNICODE_FONT_MAX_SECTION   20
 
-
-//#include "..\include\typedef.h"
 #include "ff.h"
+#include "type.h"
 
 #define  PIXELS_PER_BYTE					8
-#define	FONT_INDEX_TAB_SIZE				4    //µ¥¸ö×Ö·û¶ÔÓ¦µÄ×ÖÌå¼ìË÷ÐÅÏ¢³¤¶ÈÎª 4Byte  (b0~b25: ¼ÇÂ¼µãÕóÐÅÏ¢µÄÆðÊ¼µØÖ·, b26~b31: ¼ÇÂ¼µ±Ç°×Ö·ûµÄÏóËØ¿í¶È)
+#define	FONT_INDEX_TAB_SIZE				4    //å•ä¸ªå­—ç¬¦å¯¹åº”çš„å­—ä½“æ£€ç´¢ä¿¡æ¯é•¿åº¦ä¸º 4Byte  (b0~b25: è®°å½•ç‚¹é˜µä¿¡æ¯çš„èµ·å§‹åœ°å€, b26~b31: è®°å½•å½“å‰å­—ç¬¦çš„è±¡ç´ å®½åº¦)
 #define	GET_FONT_WIDTH(charinfo)		(charinfo >> 26)
 #define	GET_FONT_OFFADDR(charinfo)		(charinfo & 0x3ffffff)
 #define	DB2UC(c1,c2)					(c1 | (((U16)c2)<<8))
+
 
 typedef struct tagFlSectionInfo {
    unsigned short  First;
@@ -23,25 +31,32 @@ typedef struct tagFlSectionInfo {
 } FL_SECTION_INF, *PFL_SECTION_INF;
 
 typedef struct tagFontLibHeader {
-   char             magic[4];    //'U'(or ¡¯M¡¯), 'F', 'L', X---Unicode(or MBCS) Font Library, X: ±íÊ¾°æ±¾ºÅ. ·Ö¸ßµÍ4Î»¡£Èç 0x12±íÊ¾ Ver 1.2
+   char             magic[4];    //'U'(or â€™Mâ€™), 'F', 'L', X---Unicode(or MBCS) Font Library, X: è¡¨ç¤ºç‰ˆæœ¬å·. åˆ†é«˜ä½Ž4ä½ã€‚å¦‚ 0x12è¡¨ç¤º Ver 1.2
    unsigned int 	   Size;
-   unsigned char    nSection; // ¹²·Ö¼¸¶ÎÊý¾Ý£¬Ö÷ÒªÕë¶Ô UNICODE ±àÂëÓÐÐ§¡£
+   unsigned char    nSection; // å…±åˆ†å‡ æ®µæ•°æ®ï¼Œä¸»è¦é’ˆå¯¹ UNICODE ç¼–ç æœ‰æ•ˆã€‚
    unsigned char    YSize;
-   unsigned short   wCpFlag;    // codepageflag:  bit0~bit13 Ã¿¸öbit·Ö±ð´ú±íÒ»¸öCodePage ±êÖ¾£¬Èç¹ûÊÇ1£¬Ôò±íÊ¾µ±Ç°CodePage ±»Ñ¡¶¨£¬·ñÔòÎª·ÇÑ¡¶¨¡£
+   unsigned short   wCpFlag;    // codepageflag:  bit0~bit13 æ¯ä¸ªbitåˆ†åˆ«ä»£è¡¨ä¸€ä¸ªCodePage æ ‡å¿—ï¼Œå¦‚æžœæ˜¯1ï¼Œåˆ™è¡¨ç¤ºå½“å‰CodePage è¢«é€‰å®šï¼Œå¦åˆ™ä¸ºéžé€‰å®šã€‚
    unsigned short   bTotalChars;
-      char             reserved[2];      // Ô¤Áô×Ö½Ú
+      char             reserved[2];      // é¢„ç•™å­—èŠ‚
 } FL_HEADER, *PFL_HEADER; 
 
+
+
+/**
+ * @brief å­—ç¬¦ä¿¡æ¯ç»“æž„ä½“ 
+ */
 typedef struct tagCharInfo{
-   unsigned char height;
-   unsigned char width;
-   unsigned int  pixaddr;
-}FL_CHARINFO,*PFL_CHARINFO;
+   unsigned char height; /**< @brief å­—ç¬¦é«˜åº¦ */
+   unsigned char width;  /**< @brief å­—ç¬¦å®½åº¦ */
+   unsigned int  pixaddr; /**< @brief å­—ç¬¦ç‚¹é˜µæ•°æ®é¦–åœ°å€ */
+}FL_CHARINFO, *PFL_CHARINFO;
+
 
 
 unsigned char  GetFontYSize();
 signed char loadFont(TCHAR * filepath, unsigned int memaddr);
-signed char getCharInfo(unsigned short wCode,FL_CHARINFO *pcharinfo);
+BOOL getCharInfo(unsigned short wCode,FL_CHARINFO *pcharinfo);
 
 
-#endif // !defined(AFX_FONT_H__6E6D67A4_78AE_410B_B728_2464EF2E40C7__INCLUDED_)
+#endif 
+//! @}

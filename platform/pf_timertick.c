@@ -1,9 +1,19 @@
 /**
- * \file   systick.c
+ *  \file   pf_timertick.c
  *
- * \brief  system timer tick routines
- *
-*/
+ *  \brief
+ *  \author  李飞亮  
+ *  \addtogroup TIMETICK
+ *  @brief   时钟节拍
+ *  
+ *  每1ms产生一个时钟节拍,用于定时执行某个任务，延时，软时钟等
+ *  \n
+ *  \#include "pf_timertick.h"
+ *  @{
+ *   
+ */
+
+
 
 /*
 * Copyright (C) 2010 Texas Instruments Incorporated - http://www.ti.com/
@@ -66,6 +76,7 @@ volatile  SOFTTIMER softtimer[16];
 unsigned int softtimerenable;
 
 
+
 static unsigned int timerFindFree(){
    for (int i=0;i<i<sizeof(softtimer)/sizeof(softtimer[0]);i++) {
       if (softtimer[i].enable==0) {
@@ -74,8 +85,6 @@ static unsigned int timerFindFree(){
    }
    return -1;
 }
-
-
 
 
 void isr_DTimer2(unsigned int intnum){
@@ -87,10 +96,36 @@ void isr_DTimer2(unsigned int intnum){
    }
 }
 
+
+/**
+ * @brief 读取定时器滴答值 
+ * @return  NONE         
+ * @date    2013/5/7
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 unsigned int TimerTickGet(void){
    return tick;
 }
 
+
+/**
+ * @brief 启动一个延时时钟
+ * @param [in] mSec 延时值，单位ms 
+ * @return 
+ * - -1 失败 
+ * - >=0 延时时钟的索引 
+ * @date    2013/5/7
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ *  
+ */
 int StartTimer(unsigned int mSec){
    int timeindex = timerFindFree();
    if (-1 == timeindex) {
@@ -104,14 +139,46 @@ int StartTimer(unsigned int mSec){
 
 
 
-void  StopTimer(unsigned int timerindex){
-    IntSystemDisable(INTNUMBER); 
+/**
+ * @brief 停止延时时钟 
+ *  
+ * 延时时钟如果被停止，该索引号不能继续使用，不能在调 
+ * 用 IsTimerElapsed() 查询时间到
+ * @param [timerindex] 时钟索引，由  StartTimer() 返回 
+ * @return   NONE        
+ * @date    2013/5/7
+ * @note
+ * @code
+ * @endcode
+ * @pre 
+ *  StartTimer()
+ * @see 
+ */
+void  StopTimer(unsigned int timerindex){   
     softtimer[timerindex].enable = 0;
-    IntSystemEnable(INTNUMBER);
 }
    
       
 
+/**
+ * @brief 查询延时定时器是否到 
+ *  
+ * 如果该函数返回 \b TRUE ,由 \b timerindex 
+ * 索引的时钟停止，该 timerindex不能继续使用
+ *  
+ * @param [in] timerindex 时钟索引，由  StartTimer() 
+ *        返回
+ * @return 
+ * - FALSE 时间没到 
+ * - TRUE 时间到 
+ * @date    2013/5/7
+ * @note
+ * @code
+ * @endcode
+ * @pre 
+ * StartTimer() 
+ * @see 
+ */
 unsigned int IsTimerElapsed(unsigned int timerindex){
    if (softtimer[timerindex].tick > TimerTickGet()) {
       return FALSE;
@@ -138,6 +205,8 @@ void TimerTickConfigure(){
       softtimer[i].enable = 0;
    }
 }
+
+
 
 void TimerTickRegistHandler(void (*pfnHandler)(unsigned int tick))
 {    
@@ -187,4 +256,4 @@ void delay(unsigned int milliSec)
     Sysdelay(milliSec);
 }
 
-
+//! @}

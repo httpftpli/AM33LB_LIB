@@ -298,7 +298,6 @@ void platformInit(void) {
    CacheEnable(CACHE_ICACHE);
    L3L4ClockInit();
    IntAINTCInit();
-   IntMasterIRQEnable(); 
    I2C0ModuleClkConfig();
    I2CInit(SOC_I2C_0_REGS,400000, NULL, 0);
    I2C1ModuleClkConfig();

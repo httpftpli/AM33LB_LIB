@@ -1,3 +1,15 @@
+/**
+ *  \file   pf_dcan.c
+ *
+ *  \brief CAN控制器API
+ *  \author  李飞亮  
+ *
+ * @addtogroup CANBUS   
+ * @{ 
+ */
+
+
+
 #include "dcan.h"
 #include "soc_AM335x.h"
 #include "hw_types.h"
@@ -43,6 +55,24 @@ static void (*dcanRcvedHandler)(unsigned int index,CAN_FRAME *frame)
    = (void (*)(unsigned int ,CAN_FRAME *))0;
         
   
+
+
+/**
+ * @brief 注册CAN接受回调函数 
+ *  
+ * 当CAN控制器收到CAN帧后调用注册的回调函数 
+ * ,回调函数在中断线程中执行 
+ * @return  void         
+ * @date    2013/5/7
+ * @note 
+ * @code
+ * 
+ * @endcode
+ *
+ * @pre
+ *
+ * @see 
+ */
 
 void CANRegistRcvedHandler(void (*handler)(unsigned int index,CAN_FRAME *frame)){
    dcanRcvedHandler = handler;
@@ -179,6 +209,7 @@ void isr_DCANLine0(unsigned intnum)
    }
 }
 
+
 BOOL CANSendFinishGetClr(unsigned int baseAddr) {
    unsigned int index = (SOC_DCAN_0_REGS == baseAddr) ? 0 : 1;
    BOOL val = g_can[index].fgSendFinish;
@@ -187,6 +218,28 @@ BOOL CANSendFinishGetClr(unsigned int baseAddr) {
 }
 
 
+
+/**
+ * @brief CAN总线发送数据 
+ *  CAN总线发送数据，不等待从机应答，发送之前查询前一次发送是不是完成，
+ *  如果前一次发送没有收到应答，该函数返回 \b
+ *  CAN_SEND_PRE_SENDING 不进行新的发送
+ * @param [in] baseAddr CAN控制器地址
+ * @param [in] frame    CAN_FRAME 结构体 
+ * @return   \b CAN_SEND_PRE_SENDING \b CAN_SEND_OK 
+ *  CAN_SEND_OK - 成功发送 ，CAN_SEND_PRE_SENDING -
+ *  前一次没有应答
+ * @date    2013/5/7
+ * @note
+ * 示例代码如下：
+ * @code
+ * 
+ * @endcode
+ *
+ * @pre
+ *
+ * @see 
+ */
 
 unsigned int CANSend_noblock(unsigned int baseAddr,CAN_FRAME *frame){
     unsigned int msgNum;
@@ -212,6 +265,26 @@ unsigned int CANSend_noblock(unsigned int baseAddr,CAN_FRAME *frame){
 }
 
 
+/**
+ * @brief CAN控制器初始化
+ * @param [in] baseAdd CAN控制器地址
+ * @param [in] mode 
+ * - CAN_MODE_NORMAL \n  - CAN_MODE_TEST_LOOPBACK \n 
+ * - CAN_MODE_TEST_LOOPBACK_SILENT
+ * @param [in] clkInFreq 值为 \b DCAN_IN_CLK 
+ * @param [in] bitRate CAN总线频率
+ * @return   void        
+ * @date    2013/5/7
+ * @note  
+ * 示例代码如下：
+ * @code
+ * 
+ * @endcode
+ *
+ * @pre
+ *
+ * @see 
+ */
 void CANInit(unsigned int baseAdd,unsigned int mode,unsigned int clkInFreq,unsigned int bitRate){
    unsigned index = (SOC_DCAN_0_REGS==baseAdd)? 0:1;
    g_can[index].fgSendFinish = 1;
@@ -232,6 +305,7 @@ void CANInit(unsigned int baseAdd,unsigned int mode,unsigned int clkInFreq,unsig
    CANRxMsgObjectConfig(baseAdd);
    DCANNormalModeSet(baseAdd);
 }
+
 
 void DCANModuleClkConfig(void)
 {
@@ -309,6 +383,7 @@ void DCANModuleClkConfig(void)
             CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_CAN_CLK)));
 }
 
+
 void DCANMsgRAMInit(unsigned int instanceNum)
 {
     if(0 == instanceNum)
@@ -324,3 +399,7 @@ void DCANMsgRAMInit(unsigned int instanceNum)
        
     }
 } 
+
+/**
+ * @}
+ */

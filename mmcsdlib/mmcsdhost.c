@@ -70,7 +70,7 @@ void hsMmcSdInit(mmcsdCtrlInfo *ctrl)
  *
  * \return   status of the command.
  *
- **/
+ */
 unsigned int hsMmcSdCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c)
 {
     unsigned int blksize;

@@ -208,7 +208,7 @@ extern unsigned int MMCSDP_Read(mmcsdCtrlInfo *ctrl, void *ptr, unsigned int blo
 extern unsigned int MMCSDP_Write(mmcsdCtrlInfo *ctrl, const void *ptr, unsigned int block,
 				                       unsigned int nblks);
 extern unsigned int MMCSDP_AppCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c);
-extern unsigned char MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int memBase,unsigned int ipClk,
+extern void MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int memBase,unsigned int ipClk,
                        unsigned int opClk,unsigned short busWidthSupport,
                        unsigned short ddrSupport, 
                        mmcsdCardInfo *card,

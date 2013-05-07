@@ -1,24 +1,45 @@
-/***********************************************************
-ÃèÊö£º	ÓÃcÓïÑÔÐ´µÄÒ»¸öÈçºÎ´ÓµãÕó×Ö¿âÖÐ¶ÁÈ¡×Ö·ûÐÅÏ¢£¨ÏñËØ¿í +µãÕóÐÅÏ¢£©
-        ÖÁÓÚÈÝ´íÐÔºÍÐ§ÂÊ·½Ãæ»¹µÃÊ¹ÓÃÕß×ÔÐÐ¸ÄÉÆ,Ð»Ð»ÄúµÄ²ÎÔÄ£¡
+/**
+ *  \file   font.c
+ *
+ *  \brief
+ *  \author  æŽé£žäº®  
+ *  \addtogroup FONT
+ *  @brief å­—ä½“æ˜¾ç¤º
+ *  @{
+ *   
+ */
 
-ÎÄ¼þ¸ñÊ½£º 
-		Unicode -- ÎÄ¼þÍ·+Êý¾Ý¶Î(section)+Ë÷Òý±í+µãÕóÐÅÏ¢
-		MBCS_Ladin-ÎÄ¼þÍ·+Ë÷Òý±í+µãÕóÐÅÏ¢
-		MBCS_CJK-- ÎÄ¼þÍ·+µãÕóÐÅÏ¢
-		
-
-*************************************************************/
 
 #include "font.h"
 #include "unicode\unicode.h"
 #include "ff.h"
+#include "type.h"
+#include "pf_platform_cfg.h"
 
 FL_HEADER fl_header;
+static unsigned int is_font_loaded = 0;
 FL_SECTION_INF *pfl_section;
 unsigned int fl_basemem_addr;
 static unsigned int fontmemaddr = 0;
 
+
+
+/**
+ * @brief è½½å…¥å­—ä½“
+ * @param [in] filepath å­—ä½“æ–‡ä»¶è·¯å¾„
+ * @param [in] memaddr  å­—ä½“è½½å…¥åœ°å€
+ * @return 
+ * - -1 å­—ä½“æ–‡ä»¶æ‰“å¼€æˆ–è€…è¯»å–å¤±è´¥ \n 
+ * - -2 å­—ä½“æ–‡ä»¶æ ¼å¼ä¸æ­£ç¡® \n
+ * - 0 å­—ä½“è½½å…¥æˆåŠŸ \n
+ * @date    2013/5/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ * \b FONT_IN_C_SOURCE 
+ */
 signed char loadFont(TCHAR * filepath, unsigned int memaddr) {
    unsigned int re, br;
    FIL fontfile;
@@ -35,7 +56,7 @@ signed char loadFont(TCHAR * filepath, unsigned int memaddr) {
       f_close(&fontfile);
       return -1;
    }
-   //¼ì²â±êÊ¶Í·
+   //æ£€æµ‹æ ‡è¯†å¤´
    if ((fl_header.magic[0] != 'U' && fl_header.magic[0] != 'M')
        || fl_header.magic[1] != 'F' || fl_header.magic[2] != 'L') {
       f_close(&fontfile);
@@ -56,25 +77,68 @@ signed char loadFont(TCHAR * filepath, unsigned int memaddr) {
       return -1;
    }
    fl_basemem_addr = memaddr;
-   if ('U' == fl_header.magic[0]) {     //unicode ±àÂë
+   if ('U' == fl_header.magic[0]) {     //unicode ç¼–ç 
       pfl_section = (FL_SECTION_INF *)(memaddr+sizeof(fl_header));
    }
    fontmemaddr = memaddr;
+	is_font_loaded = 1;
    return 0;
 }
 
 
 
+/**
+ * @brief èŽ·å–å­—ä½“é«˜åº¦
+ * @param [in] 
+ * @return å­—ä½“é«˜åº¦          
+ * @date    2013/5/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ *  \b FONT_IN_C_SOURCE
+ */
 unsigned char  GetFontYSize()
 {
 	return fl_header.YSize;
 }
 
 
+extern const uint8 Asc8x16[1536];
 
-signed char getCharInfo(unsigned short wCode, FL_CHARINFO *pcharinfo) {
-   int r = getCharInfo_U(wCode, pcharinfo);
-   if (r != 0) return -1;
+/**
+ * @brief èŽ·å–å­—ä½“ä¿¡æ¯
+ * @param [in] wCode å­—ä½“ç¼–ç ,unicodeæ–¹å¼
+ * @param [out] pcharinfo FL_CHARINFO ç»“æž„ä½“
+ * @return  BOOL         
+ * @date    2013/5/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ *   \b FONT_IN_C_SOURCE
+ */
+BOOL getCharInfo(unsigned short wCode, FL_CHARINFO *pcharinfo) {
+   if (is_font_loaded == 0) {
+      goto FONT_IN_SOURCE;
+   }
+   BOOL r = getCharInfo_U(wCode, pcharinfo);
+   if (r == FALSE) goto FONT_IN_SOURCE;
    pcharinfo->pixaddr += fontmemaddr;
-   return 0;
+   return TRUE; 
+
+FONT_IN_SOURCE:
+   if (wCode > 0xff) {
+      return FALSE;
+   }
+   pcharinfo->height = 16;
+   pcharinfo->width = 8;
+   pcharinfo->pixaddr = 16 * (wCode - 32) + (unsigned int)Asc8x16;
+   return TRUE;
+
 }
+
+
+//! @}

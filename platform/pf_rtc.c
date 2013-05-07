@@ -1,3 +1,19 @@
+/**
+ *  \file   pf_rtc.c
+ *
+ *  \brief
+ *  \author  李飞亮  
+ *  \addtogroup RTC
+ *  
+ *  
+ *  RTC分内置RTC和外置RTC,上点复位时从外置RTC读取时钟，并初始化内置RTC,运
+ *  行时只从内置RTC读取 
+ *  
+ *  @{
+ *   
+ */
+
+
 
 #include "hw_cm_wkup.h"
 #include "soc_AM335x.h"
@@ -257,16 +273,55 @@ static void RTCAM335XInit(unsigned int calendar,unsigned int time){
 
 
 
-void RTCInit(void){
+/**
+ * @brief RTC初始化 
+ * 读出RX8025，初始化内置RTC 
+ * @return 
+ * - FAIL 
+ * - SUCCESS 
+ * @date    2013/5/7
+ * @note
+ * @code
+ * @endcode
+ * @pre 
+ * 初始化I2C0 
+ * @see 
+ */
+BOOL RTCInit(void){
     unsigned char hour,minute,second,year,month,day;
+    BOOL r;
     Rx8025Init();
-    Rx8025GetTime(&hour,&minute,&second);
-    Rx8025GetCalendar(&year,&month,&day);
+    r = Rx8025GetTime(&hour,&minute,&second);
+    if (FAIL==r) {
+       return r;
+    }
+    r = Rx8025GetCalendar(&year,&month,&day);
+    if (FAIL==r) {
+       return r;
+    }
     RTCAM335XInit(year<<YEAR_SHIFT | month<<MONTH_SHIFT | day<<DAY_SHIFT,
                   hour<<HOUR_SHIFT | minute<< MINUTE_SHIFT | second<<SECOND_SHIFT);
+    return SUCCESS;
 }
 
 
+/**
+ * @brief 读取RTC 
+ *  从内置RTC读取时钟和日历
+ * @param [out] year
+ * @param [out] month           
+ * @param [out] day
+ * @param [out] hour
+ * @param [out] minute
+ * @param [out] second
+ * @return NONE          
+ * @date    2013/5/7
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 void RTCRead(unsigned char *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
              unsigned char *minute, unsigned char *second) {
@@ -280,5 +335,5 @@ void RTCRead(unsigned char *year, unsigned char *month,
    *second = (time & SECOND_MASK) >> SECOND_SHIFT;
 }
 
-
+//! @}
 /******************************* End of file ********************************/

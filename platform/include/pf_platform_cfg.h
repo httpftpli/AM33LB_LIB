@@ -77,5 +77,6 @@ static const unsigned int CS_ADDRLINE_BIT[7] = {24,24,24,24,24,24,24};
 #define TFT_PANEL    TFT_AT070TN92  
 
 
+
 #endif
 

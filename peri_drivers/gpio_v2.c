@@ -3,42 +3,11 @@
  *
  *  \brief    This file contains the device abstraction layer APIs for GPIO
  *            peripheral present in AM33XX SoC.
+ *  @addtogroup GPIO
+ *  @{
  *
  */
 
-/*
-* Copyright (C) 2010 Texas Instruments Incorporated - http://www.ti.com/
-*/
-/*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions
-*  are met:
-*
-*    Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-*
-*    Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the
-*    distribution.
-*
-*    Neither the name of Texas Instruments Incorporated nor the names of
-*    its contributors may be used to endorse or promote products derived
-*    from this software without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*/
 
 #include "gpio_v2.h"
 #include "hw_types.h"
@@ -68,7 +37,7 @@ void GPIOModuleReset(unsigned int baseAdd)
     while(!(HWREG(baseAdd + GPIO_SYSSTATUS) & GPIO_SYSSTATUS_RESETDONE));
 }
 
-/**
+/*
  * \brief  This API is used to enable the GPIO module. When the GPIO module
  *         is enabled, the clocks to the module are not gated.
  *
@@ -86,7 +55,7 @@ void GPIOModuleEnable(unsigned int baseAdd)
     HWREG(baseAdd + GPIO_CTRL) &= ~(GPIO_CTRL_DISABLEMODULE);
 }
 
-/**
+/*
  * \brief  This API is used to disable the GPIO module. When the GPIO module
  *         is disabled, the clocks to the module are gated.
  *
@@ -113,8 +82,9 @@ void GPIOModuleDisable(unsigned int baseAdd)
  * (0 <= pinNumber <= 31)\n
  *
  * 'pinDirection' can take one of the following values:
- * - GPIO_DIR_INPUT - to configure the pin as an input pin\n
- * - GPIO_DIR_OUTPUT - to configure the pin as an output pin\n
+ * - \b GPIO_DIR_INPUT - to configure the pin as an input pin\n
+ * - \b GPIO_DIR_OUTPUT - to configure the pin as an output 
+ *   pin\n
  *
  * \return None
  */
@@ -145,8 +115,10 @@ void GPIODirModeSet(unsigned int baseAdd,
  * 
  * \return  The direction of the specified pin. This returns one of the
  *          following two values:
- *          - GPIO_DIR_INPUT - signifying that the pin is an input pin\n
- *          - GPIO_DIR_OUTPUT - signifying that the pin is an output pin\n
+ *          - \b GPIO_DIR_INPUT - signifying that the pin is an
+ *            input pin\n
+ *          - \b GPIO_DIR_OUTPUT - signifying that the pin is an
+ *            output pin\n
  *
  */
 
@@ -216,7 +188,7 @@ unsigned int GPIOPinRead(unsigned int baseAdd,
     return(HWREG(baseAdd + GPIO_DATAIN) & (1 << pinNumber));
 }
 
-/**
+/*
  * \brief  This API is used to collectively set and collectively clear the
  *         specified output pins of a GPIO instance.
  *
@@ -240,7 +212,7 @@ void GPIOMultiplePinsWrite(unsigned int baseAdd,
     HWREG(baseAdd + GPIO_CLEARDATAOUT) = clrMask;
 }
 
-/**
+/*
  * \brief   This API reads the pin values of the specified pins of the GPIO
  *          instance.
  *
@@ -328,7 +300,8 @@ void GPIOPinIntDisable(unsigned int baseAdd,
 }
 
 /**
- * \brief  This API configures the event type for a specified input GPIO pin.
+ * \brief  This API configures the event type for a specified input GPIO pin. 
+ *  
  *         Whenever the selected event occurs on that GPIO pin and if interrupt
  *         generation is enabled for that pin, the GPIO module will send an
  *         interrupt to CPU.
@@ -517,7 +490,7 @@ unsigned int GPIOIntTypeGet(unsigned int baseAdd,
     return intEvent;
 }
 
-/**
+/*
  * \brief  This API determines the enabled interrupt status of a specified pin.
  *
  * \param  baseAdd    The memory address of the GPIO instance being used
@@ -558,7 +531,7 @@ unsigned int GPIOPinIntStatus(unsigned int baseAdd,
     return intStatus;
 }
 
-/**
+/*
  * \brief  This API clears the enabled interrupt status of a specified GPIO
  *         pin.
  *
@@ -595,7 +568,7 @@ void GPIOPinIntClear(unsigned int baseAdd,
     }
 }
 
-/**
+/*
  * \brief  This API determines the raw interrupt status of the specified GPIO
  *         pins in the instance corresponding to the specified interrupt line.
  *
@@ -634,7 +607,7 @@ unsigned int GPIORawIntStatus(unsigned int baseAdd,
     return intStatus;
 }
 
-/**
+/*
  * \brief  This API manually triggers an interrupt request due to a specified 
  *         GPIO pin. 
  *
@@ -675,7 +648,7 @@ void GPIOTriggerPinInt(unsigned int baseAdd,
     }
 }
 
-/**
+/*
  * \brief  This API enables the GPIO Wakeup Generation feature for all
  *         the pins of the GPIO module.
  *
@@ -696,7 +669,7 @@ void GPIOWakeupGlobalEnable(unsigned int baseAdd)
     HWREG(baseAdd + GPIO_SYSCONFIG) |= (GPIO_SYSCONFIG_ENAWAKEUP);
 }
 
-/**
+/*
  * \brief  This API disables the GPIO Wakeup generation feature for all
  *         the pins of the GPIO module.
  *
@@ -711,7 +684,7 @@ void GPIOWakeupGlobalDisable(unsigned int baseAdd)
     HWREG(baseAdd + GPIO_SYSCONFIG) &= ~(GPIO_SYSCONFIG_ENAWAKEUP);
 }
 
-/**
+/*
  * \brief  This API enables the feature for the specified Input GPIO Pin
  *         (Interrupt Request Source) to generate an asynchronous wakeup
  *         signal to the CPU.
@@ -756,7 +729,7 @@ void GPIOPinIntWakeUpEnable(unsigned int baseAdd,
     }
 }
 
-/**
+/*
  * \brief  This API disables the feature for the specified Input GPIO Pin
  *         (Interrupt Request Source) to generate an asynchronous wakeup
  *         signal to the CPU.
@@ -793,7 +766,7 @@ void GPIOPinIntWakeUpDisable(unsigned int baseAdd,
     }
 }
 
-/**
+/*
  * \brief   This API is used to control(enable/disable) the Auto-Idle mode
  *          for GPIO.
  *
@@ -817,7 +790,7 @@ void GPIOAutoIdleModeControl(unsigned int baseAdd, unsigned int modeFlag)
     HWREG(baseAdd + GPIO_SYSCONFIG) |= (modeFlag & GPIO_SYSCONFIG_AUTOIDLE);
 }
 
-/**
+/*
  * \brief  This API is used to configure the Power Management
  *         Request/Acknowledgement process for GPIO.
  *
@@ -845,7 +818,7 @@ void GPIOIdleModeConfigure(unsigned int baseAdd, unsigned int modeFlag)
 }
 
 
-/**
+/*
  * \brief  This API configures the clock gating ratio for the event detection
  *         logic.
  *
@@ -876,7 +849,7 @@ void GPIOGatingRatioConfigure(unsigned int baseAdd, unsigned int configFlag)
     HWREG(baseAdd + GPIO_CTRL) |= (configFlag & GPIO_CTRL_GATINGRATIO);    
 }
 
-/**
+/*
  * \brief  This API enables/disables debouncing feature for a specified input
  *         GPIO pin.
  * 
@@ -909,7 +882,7 @@ void GPIODebounceFuncControl(unsigned int baseAdd,
     HWREG(baseAdd + GPIO_DEBOUNCENABLE) |= (controlFlag  << pinNumber);
 }
 
-/**
+/*
  * \brief  This API configures the debouncing time for all the input pins of
  *         a GPIO instance.
  *
@@ -933,7 +906,7 @@ void GPIODebounceTimeConfig(unsigned int baseAdd,
                                             GPIO_DEBOUNCINGTIME_DEBOUNCETIME);
 }
 
-/**
+/*
  * \brief  This API reads the contents in the Revision register of the GPIO
  *         module.
  *
@@ -948,7 +921,7 @@ unsigned int GPIORevisionInfoGet(unsigned int baseAdd)
 }
 
 
-/**
+/*
  * \brief   This API stores the context of the gpio
  *
  * \param   baseAdd       Base Address of the GPIO Module Register.
@@ -965,7 +938,7 @@ void gpioContextSave(unsigned int baseAdd, GPIOCONTEXT *contextPtr)
 }
 
 
-/**
+/*
  * \brief   This API restores the context of the GPIO
  *
  * \param   baseAdd       Base Address of the GPIO Module Register.
@@ -981,4 +954,5 @@ void gpioContextRestore(unsigned int baseAdd, GPIOCONTEXT *contextPtr)
     HWREG(baseAdd + GPIO_OE) = contextPtr->dir;
 }
 
+//! @}
 /******************************* End Of File ********************************/

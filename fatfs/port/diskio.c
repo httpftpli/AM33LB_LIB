@@ -22,6 +22,7 @@
 #include "usbhost.h"
 #include "usbhmsc.h"
 #include "pf_platform_cfg.h"
+#include "misc.h"
 
 #define DRIVER_NUM_MMCSD0	   0
 #define DRIVER_NUM_USB		   1

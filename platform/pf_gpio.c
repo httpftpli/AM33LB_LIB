@@ -3,6 +3,13 @@
  *
  * \brief  This file contains functions which performs the platform specific
  *         configurations of GPIO.
+ *  
+ * 
+ * @addtogroup GPIO 
+ * @brief GPIO模块 
+ *  
+ * \#include  "gpio_v2.h" 
+ * @{ 
  */
 
 
@@ -94,6 +101,26 @@ void isr_Gpio(unsigned int intnum){
 }
 
 
+/**
+ * @brief 
+ *        注册GPIO回调函数，回调函数在中断线程中执行
+ * @param [in] modulOfGpio 
+ *        GPIO组号，比如GPIO2_8,modulOfGpio=2
+ * @param [in] bitOfGpio GPIO位号，比如 GPIO2_8, 
+ *        bitOfGpio=8
+ * @param [in]  gpiohandler
+ * @return  void         
+ * @date    2013/5/7
+ * @note
+ * 示例代码如下：
+ * @code
+ * 
+ * @endcode
+ *
+ * @pre
+ *
+ * @see 
+ */
 void GPIORegistHandler(unsigned char modulOfGpio,unsigned bitOfGpio,
                        void (*gpiohandler)()){
    mdAssert(modulOfGpio<4);
@@ -101,6 +128,22 @@ void GPIORegistHandler(unsigned char modulOfGpio,unsigned bitOfGpio,
    handler[modulOfGpio][bitOfGpio] = gpiohandler;
 }
 
+
+/**
+ * @brief 清楚GPIO中断回调函数
+ * @param [in] modulOfGpio 见 GPIORegistHandler()
+ * @param [in] bitOfGpio 见 GPIORegistHandler() 
+ * @return           
+ * @date    2013/5/7
+ * @note 
+ * @code
+ * 
+ * @endcode
+ *
+ * @pre
+ *
+ * @see 
+ */
 void GPIOClearHandler(unsigned char modulOfGpio, unsigned bitOfGpio){
    mdAssert(modulOfGpio<4);
    mdAssert(bitOfGpio<32);
@@ -354,6 +397,20 @@ void GPIO1ModuleClkConfig(void)
 }
 
 
+/**
+ * @brief GPIO控制器初始化 
+ * @return            
+ * @date    2013/5/7
+ * @note
+ * 示例代码如下：
+ * @code
+ * 
+ * @endcode
+ *
+ * @pre
+ *
+ * @see 
+ */
 void GPIOInit(){
    unsigned int baseaddr ;
    for (int i=0;i<4;i++) {
@@ -370,5 +427,5 @@ void GPIOInit(){
    }
 }
 
-
+//! @}
 /****************************** End of file *********************************/

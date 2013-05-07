@@ -72,7 +72,7 @@ void LcdClear(COLOR color) {
 
 unsigned int  Dis_DrawChar_Ucs2(unsigned short character,unsigned int x,unsigned int y,COLOR color_f,COLOR color_b){
    FL_CHARINFO info;
-   if(getCharInfo(character,&info)!=0){
+   if(getCharInfo(character,&info)==FALSE){
       getCharInfo((unsigned short)'?',&info);
    }
    unsigned int addr = info.pixaddr;

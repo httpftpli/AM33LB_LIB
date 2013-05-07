@@ -1,3 +1,13 @@
+/**
+ *  \file   pf_ecap.c
+ *
+ *  \brief
+ *  \author  李飞亮  
+ *  \addtogroup 
+ *  @{ 
+ *   
+ */
+
 #include "soc_am335x.h"
 #include "ecap.h"
 #include "hw_types.h"
@@ -13,10 +23,29 @@ typedef void (*ECAPHANDLERS)(unsigned int val) ;
 
 ECAPHANDLERS   ecaphandlers[NUMBER_OF_ECAP] = {NULL,NULL,NULL};
 
+
+/**
+ * @brief 注册ECAP回调函数 
+ * 当ECAP产生捕获事件时调用回调函数，回调函数在中断线程中执行
+ * @param [in] ecapindex ECAN控制器索引
+ * @param [in] ecaphandler  回调函数 
+ * @return   void        
+ * @date    2013/5/7
+ * @note
+ * 示例代码如下：
+ * @code
+ * 
+ * @endcode
+ *
+ * @pre
+ *
+ * @see 
+ */
 void ECAPregisterHandler(unsigned int ecapindex,void (*ecaphandler)(unsigned int time)){
    mdAssert(ecapindex<NUMBER_OF_ECAP);
    ecaphandlers[ecapindex] = ecaphandler;
 }
+
 
 void isr_ecap(unsigned int intnum){
    MODULE *module = modulelist+intnum;
@@ -37,6 +66,23 @@ void isr_ecap(unsigned int intnum){
    }
 }
    
+
+/**
+ * @brief ECAP控制器初始化 
+ *  
+ * @param [in] baseAddr ECAP控制器地址
+ * @return void          
+ * @date    2013/5/7
+ * @note
+ * 示例代码如下：
+ * @code
+ * 
+ * @endcode
+ *
+ * @pre
+ *
+ * @see 
+ */
 
 void ECAPInit(unsigned int baseAddr) {
    //TODO   to finish Clock Tree;
@@ -67,7 +113,7 @@ void ECAPInit(unsigned int baseAddr) {
 }
 
 
-
+//! @}
 
 
 

@@ -1,3 +1,18 @@
+/**
+ *  \file   mmcsd_proto.c
+ *
+ *  \brief  MMCSDåè®®å®žçŽ°
+ *
+ *   
+ *   
+ */
+
+/**
+ * @addtogroup MMCSD 
+ * MMCSD document 
+ * @{ 
+ */
+
 #include "mmcsd_proto.h"
 #include "string.h"
 #include "uartStdio.h"
@@ -543,37 +558,34 @@ static unsigned int mmcbuswidthset(mmcsdCtrlInfo *ctrl) {
 
 
 /**
- * @brief mmcsdCtrlInfo½á¹¹³õÊ¼»¯ 
- *  mmcsdCtrlInfo½á¹¹³õÊ¼»¯ £¬¸Ã½á¹¹Ìå³õÊ¼»¯ºóµ÷ÓÃ
- *  MMCSDP_CtrlInit³õÊ¼»¯mmcsd¿ØÖÆÆ÷
- * @param [out] ctrl    mmcsdCtrlInfoÖ¸Õë
- * @param [in]  memBase ¿ØÖÆÆ÷»ùµØÖ·  SOC_MMCHS_X_REGS       
- * @param [in]  ipClk   mmcsd¿ØÖÆÆ÷Ê±ÖÓÆµÂÊ 
- * @param [in]  opClk   mmcsd¿¨ clkÆµÂÊ 
- * @param [in]  busWidthSupport  MMCSD_BUSWIDTH_XBIT
- * @param [in]  ddrSupport       mmcsd¿¨Ë«±ßÑØ 
- * @param [in]  card       mmcsdCardInfo½á¹¹£¬´ú±ímmcsd¿¨ 
- * @param [in]  preXferHook  »Øµ÷º¯Êý £¬NULLÊÇÊ¹ÓÃÄ¬ÈÏµÄ»Øµ÷º¯Êý
- * @param [in]  cmdstatusget »Øµ÷º¯Êý £¬NULLÊÇÊ¹ÓÃÄ¬ÈÏµÄ»Øµ÷º¯Êý
- * @param [in]  xferstatusget »Øµ÷º¯Êý 
- *        £¬NULLÊÇÊ¹ÓÃÄ¬ÈÏµÄ»Øµ÷º¯Êý
- *      
- * @param [in]  busWidthSupport  
- * @return          
- * @author  Àî·ÉÁÁ
- * @date    2013/5/4
- * @note 
- * opClk = 48MÊ±²»Ö§³Öddr
- * Ê¾Àý´úÂëÈçÏÂ£º
- * @code
+ * @brief mmcsdCtrlInfoç»“æž„åˆå§‹åŒ– 
+ *  mmcsdCtrlInfoç»“æž„åˆå§‹åŒ– ï¼Œè¯¥ç»“æž„ä½“åˆå§‹åŒ–åŽè°ƒç”¨
+ *  MMCSDP_CtrlInit()åˆå§‹åŒ–mmcsdæŽ§åˆ¶å™¨
+ * @param [out] ctrl    mmcsdCtrlInfoæŒ‡é’ˆ
+ * @param [in]  memBase æŽ§åˆ¶å™¨åŸºåœ°å€  SOC_MMCHS_X_REGS       
+ * @param [in]  ipClk   mmcsdæŽ§åˆ¶å™¨æ—¶é’Ÿé¢‘çŽ‡ 
+ * @param [in]  opClk   mmcsdå¡ clké¢‘çŽ‡ 
+ * @param [in]  ddrSupport       mmcsdå¡åŒè¾¹æ²¿ 
+ * @param [in]  card       mmcsdCardInfoç»“æž„ï¼Œä»£è¡¨mmcsdå¡ 
+ * @param [in]  preXferHook 
+ *        å›žè°ƒå‡½æ•°ï¼ŒNULLæ—¶ä½¿ç”¨é»˜è®¤å›žè°ƒå‡½æ•°
+ * @param [in]  cmdstatusget 
+ *        å›žè°ƒå‡½æ•°ï¼ŒNULLæ—¶ä½¿ç”¨é»˜è®¤å›žè°ƒå‡½æ•°
+ * @param [in]  xferstatusget 
+ *        å›žè°ƒå‡½æ•°ï¼ŒNULLæ—¶ä½¿ç”¨é»˜è®¤å›žè°ƒå‡½æ•°
  * 
- * @endcode
- *
- * @pre
- *
+ * @param [in]  busWidthSupport  æ•°æ®çº¿å®½åº¦ \b
+ *        MMCSD_BUSWIDTH_8BITï¼Œ \b MMCSD_BUSWIDTH_4BITï¼Œ
+ *        \b MMCSD_BUSWIDTH_1BIT
+ *  
+ * @return  void 
+ * @date    2013/5/4 
+ * @note 
+ * opClk = 48000000æ—¶ä¸æ”¯æŒddr  
+ * busWidthSupportä¸èƒ½ä¸º \b MMCSD_BUSWIDTH_8BIT 
  * @see 
  */
-unsigned char MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int memBase,unsigned int ipClk,
+void  MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int memBase,unsigned int ipClk,
                        unsigned int opClk,unsigned short busWidthSupport,
                        unsigned short ddrSupport, 
                        mmcsdCardInfo *card,
@@ -604,7 +616,6 @@ unsigned char MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int memBase,unsig
       xferstatusget = HSMMCSDXferStatusGet;
    }
    ctrl->xferStatusGet = xferstatusget;
-   return 1;
 }
 
 /*
@@ -809,7 +820,7 @@ unsigned int MMCSDP_CardPresent(mmcsdCtrlInfo *ctrl) {
  * 
  * \param ctrl It holds the mmcsd control information. 
  * \param cardType  card type ,the value can be
- * MMCSD_CARD_AUTO MMCSD_CARD_MMC MMCSD_CARD_SD 
+ * \b MMCSD_CARD_AUTO, \b MMCSD_CARD_MMC, \b MMCSD_CARD_SD 
  * 
  * \returns 1 - Intialization is successfull. 
  *         0 - Intialization is failed.
@@ -1006,3 +1017,7 @@ unsigned int MMCSDP_Read(mmcsdCtrlInfo *ctrl, void *ptr, unsigned int block,
 
    return 1;
 }
+
+/**
+ * @} 
+ */

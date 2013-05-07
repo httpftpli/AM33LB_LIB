@@ -299,6 +299,7 @@ unsigned int  LCDFrameBufferCurGet(void)
   return lcdCtrl.activeframe;
 }
 
+
 const tLCD_PANEL *LCDTftInfoGet(void){
   return lcdCtrl.panel;
 }

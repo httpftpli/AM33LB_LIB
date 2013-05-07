@@ -22,22 +22,22 @@ extern FL_SECTION_INF *pfl_section;
 
 
 // 获取字符的像素宽度和字符图像数据的地址
-char getCharInfo_U(unsigned short wCode, FL_CHARINFO *charinfo) {
+BOOL getCharInfo_U(unsigned short wCode, FL_CHARINFO *charinfo) {
    int   i;
    for (i = 0; i < fl_header.nSection; i++) {
       if (wCode >= pfl_section[i].First && wCode <= pfl_section[i].Last) break;
    }
-   if (i >= fl_header.nSection)	return -1;
+   if (i >= fl_header.nSection)	return FALSE;
 
    unsigned int offset = pfl_section[i].OffAddr + FONT_INDEX_TAB_SIZE * (wCode - pfl_section[i].First);
    unsigned int charindex = *(unsigned int *)(fl_basemem_addr + offset);
    charinfo->height = fl_header.YSize;
    charinfo->width = GET_FONT_WIDTH(charindex);
    if (0==charinfo->width) {
-      return -1;
+      return FALSE;
    }
    charinfo->pixaddr = GET_FONT_OFFADDR(charindex);
-   return 0;
+   return TRUE;
 }
 
 
