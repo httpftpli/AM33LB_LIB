@@ -701,7 +701,7 @@ void TSCADCConfigureMisc(unsigned int baseAdd, unsigned char spareInputVal,
 	                    TSC_ADC_SS_ADC_MISC_AFE_SPARE_OUTPUT_SHIFT;
 }
 
-/**
+/*
  * \brief   This API Enables/Disables the given step. 
  *
  * \param   baseAdd     Base Address of the TouchScreen Module Registers.
@@ -718,7 +718,7 @@ void TSCADCConfigureMisc(unsigned int baseAdd, unsigned char spareInputVal,
  *
  * \return  none  
  *
- **/
+ */
 void TSCADCConfigureStepEnable(unsigned int baseAdd, unsigned int stepSel,
 	                    unsigned int stepEn_Dis)
 {
@@ -1651,7 +1651,7 @@ unsigned int TSCADCFIFOWordCountRead(unsigned int baseAdd, unsigned int FIFOSel)
 void TSCADCFIFOIRQThresholdLevelConfig(unsigned int baseAdd, unsigned char FIFOSel,
                                     unsigned char numberOfSamples)
 {
-    HWREG(baseAdd + TSC_ADC_SS_FIFOTHRESHOLD(FIFOSel)) = numberOfSamples - 1;
+    HWREG(baseAdd + TSC_ADC_SS_FIFOTHRESHOLD(FIFOSel)) = numberOfSamples ;
 }
 
 /**

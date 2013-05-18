@@ -45,7 +45,7 @@ void Dis_RectFill(uint32 x, uint32 y, uint32 width, uint32 height, COLOR color) 
 }
 
 
-void Dis_DrawMask(void *buf, unsigned int x, unsigned int y, unsigned int width,
+void Dis_DrawMask(const void *buf, unsigned int x, unsigned int y, unsigned int width,
                   unsigned int height, COLOR color_f, COLOR color_b) {
    unsigned int nbyteperline = (width+7)/8;
    for (int i = 0; i < height; i++) {
@@ -96,7 +96,7 @@ void Dis_SetPixel(unsigned int x,unsigned int y,COLOR color){
 }
 
 
-void Dis_DrawText(TEXTCHAR *text,unsigned int x,unsigned int y,COLOR color_f,COLOR color_b){
+unsigned int Dis_DrawText(TEXTCHAR *text,unsigned int x,unsigned int y,COLOR color_f,COLOR color_b){
    unsigned int xoffset = 0; 
    unsigned short ucs2;
 #if defined(__IAR_SYSTEMS_ICC__)
@@ -106,10 +106,11 @@ void Dis_DrawText(TEXTCHAR *text,unsigned int x,unsigned int y,COLOR color_f,COL
       signelcharlen = UTF8toUCS2(text+charoffset,&ucs2);
       charoffset += signelcharlen;
       if (0==signelcharlen) {
-         return;
+         break;
       }
       xoffset += Dis_DrawChar_Ucs2(ucs2,x+xoffset,y,color_f,color_b);
    }
+   return x+xoffset;
 #else
 #error "Unsupported Compiler. \r\n"
 

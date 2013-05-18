@@ -57,6 +57,7 @@ extern void USB0HostIntHandler(unsigned int intnum);
 extern void isr_Gpio(unsigned int intnum);
 extern void isr_lcd(unsigned int num);
 extern void isr_ecap(unsigned int num);
+extern void isr_tsc(unsigned int intnum);
 
 
 MODULE modulelist[128] = {
@@ -73,7 +74,9 @@ MODULE modulelist[128] = {
    [MODULE_ID_DCAN0] = {.index=0, .baseAddr = SOC_DCAN_0_REGS,.INTNum={SYS_INT_DCAN0_INT0,0,0},.INTPriority={INT_PRIORITY_DCAN0_LINE0,0,0},.isr={isr_DCANLine0,0,0}},
    [MODULE_ID_DCAN1] = {.index=1, .baseAddr = SOC_DCAN_1_REGS,.INTNum={SYS_INT_DCAN1_INT0,0,0},.INTPriority={INT_PRIORITY_DCAN1_LINE0,0,0},.isr={isr_DCANLine0,0,0}},
    [MODULE_ID_MMCSD0] = {.index=0, .baseAddr = SOC_MMCHS_0_REGS,.INTNum={SYS_INT_MMCSD0INT,0,0},.INTPriority={INT_PRIORITY_MMCSD0,0,0},.isr={isr_HSMMCSD,0,0}},
-   [MODULE_ID_MMCSD1] = {.index=1, .baseAddr = SOC_MMCHS_1_REGS,.INTNum={SYS_INT_MMCSD1INT,0,0},.INTPriority={INT_PRIORITY_MMCSD1,0,0},.isr={isr_HSMMCSD,0,0}}
+   [MODULE_ID_MMCSD1] = {.index=1, .baseAddr = SOC_MMCHS_1_REGS,.INTNum={SYS_INT_MMCSD1INT,0,0},.INTPriority={INT_PRIORITY_MMCSD1,0,0},.isr={isr_HSMMCSD,0,0}},
+   [MODULE_ID_ADCTSC] = {.index=0,.baseAddr = SOC_ADC_TSC_0_REGS,.INTNum={SYS_INT_ADC_TSC_GENINT,0,0},.INTPriority={INT_PRIORITY_ADCTSC,0,0},.isr={isr_tsc,0,0}}
+   
 };
 
 

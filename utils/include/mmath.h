@@ -8,6 +8,8 @@
 
 #define ABS(A)    ((A)>0 )?(A):(-(A))
 
+#define NARRAY(array) (sizeof((array))/sizeof((array[0])))
+
 
 
 #endif

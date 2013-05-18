@@ -9,13 +9,6 @@ typedef void (*LOOP)(void);
                        
                        
                        
- typedef struct tagMSG {
-unsigned int message;
-unsigned int wParam;
-unsigned int lParam;
-unsigned int time;
-unsigned int pt;
-}MSG, *PMSG;
 
 
 #endif

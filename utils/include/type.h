@@ -39,8 +39,9 @@ typedef unsigned char TEXTCHAR;
 #define __out
 #define __int
 typedef char BOOL;
+typedef unsigned int size_t;
 
-
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE*)0)->MEMBER)
 
 
 #endif

@@ -6,5 +6,28 @@ extern void bubbleSortAscend(int *buf, unsigned int nNum);
 extern int sum(int *buf,unsigned int nNum);
 
 
+/**
+ * @brief FIFI 环形队列 
+ *  
+ * 一个没有加锁的环形队列，一读一写环形队列
+ * @date    2013/5/10 
+ */
+typedef struct tagfilo {
+    unsigned long writeIndex;   /** < @brief 写下标  */
+    unsigned long readIndex;    /** < @brief 写下标  */
+	unsigned char sizeOfItem;
+    unsigned long nItem;        /** < @brief item总个数 */  
+	unsigned long nAvaItem;		/** < @brief 记录当前fifi中的item个数*/
+    void *        buf;        /** < @brief  缓冲区指针 */
+}RINGBUF;
+
+
+extern void ringBufInit(RINGBUF *ringBuf, void * buf, unsigned int sizeOfItem,unsigned int nItem);
+extern BOOL isRingBufFull(RINGBUF *ringBuf);
+extern BOOL isRingBufEmpty(RINGBUF *ringBuf);
+extern BOOL ringBufPush(RINGBUF *ringBuf, void *item);
+extern BOOL ringBufPop(RINGBUF * ringBuf, void * item);
+extern BOOL ringBufRead(RINGBUF * ringBuf, void ** item);
+
 #endif
 

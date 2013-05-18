@@ -23,6 +23,7 @@
 #include "usb.h"
 #include "pf_usbmsc.h"
 #include "pf_hs_mmcsd.h"
+#include "pf_tsc.h"
 
 
 extern void EDMAModuleClkConfig(void);
@@ -141,7 +142,17 @@ MUX_VAL(CONTROL_PADCONF_LCD_VSYNC, (IDIS | OFF | MODE0 )) /* LCD_VSYNC */\
 MUX_VAL(CONTROL_PADCONF_LCD_HSYNC, (IDIS | OFF | MODE0 )) /* LCD_HSYNC */\
 MUX_VAL(CONTROL_PADCONF_LCD_PCLK, (IDIS | OFF | MODE0 )) /* LCD_PCLK */\
 MUX_VAL(CONTROL_PADCONF_LCD_AC_BIAS_EN, (IDIS | OFF | MODE0 )) /* LCD_AC_BIAS_EN */\
-MUX_VAL(CONTROL_PADCONF_ECAP0_IN_PWM0_OUT, (IEN | PU | MODE0 )) /* ECAP0_IN_PWM0_OUT */
+MUX_VAL(CONTROL_PADCONF_ECAP0_IN_PWM0_OUT, (IEN | PU | MODE0 )) /* ECAP0_IN_PWM0_OUT */\
+MUX_VAL(CONTROL_PADCONF_AIN7, (IEN | OFF | MODE0 )) /* AIN7 */\
+MUX_VAL(CONTROL_PADCONF_AIN6, (IEN | OFF | MODE0 )) /* AIN6 */\
+MUX_VAL(CONTROL_PADCONF_AIN5, (IEN | OFF | MODE0 )) /* AIN5 */\
+MUX_VAL(CONTROL_PADCONF_AIN4, (IEN | OFF | MODE0 )) /* AIN4 */\
+MUX_VAL(CONTROL_PADCONF_AIN3, (IEN | OFF | MODE0 )) /* AIN3 */\
+MUX_VAL(CONTROL_PADCONF_AIN2, (IEN | OFF | MODE0 )) /* AIN2 */\
+MUX_VAL(CONTROL_PADCONF_AIN1, (IEN | OFF | MODE0 )) /* AIN1 */\
+MUX_VAL(CONTROL_PADCONF_AIN0, (IEN | OFF | MODE0 )) /* AIN0 */\
+MUX_VAL(CONTROL_PADCONF_VREFP, (IEN | OFF | MODE0 )) /* VREFP */\
+MUX_VAL(CONTROL_PADCONF_VREFN, (IEN | OFF | MODE0 )) /* VREFN */
 
 }
 
@@ -312,6 +323,7 @@ void platformInit(void) {
    PWMSSModuleClkConfig(1); 
    PWMSSModuleClkConfig(0);   
    HSMMCSDModuleClkConfig();
+   TSCADCModuleClkConfig();
    GPMCClkConfig();
    GPMCInitForNOR(SOC_GPMC_0_REGS);
    USBModuleClkConfig(); 
@@ -327,4 +339,4 @@ void platformInit(void) {
    LCDRasterInit(TFT_PANEL);		//LCD initation
    ECAPInit(SOC_ECAP_0_REGS);
    
-}
+} 
