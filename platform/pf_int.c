@@ -20,7 +20,7 @@ static void DMTimerIntConfigure(void) {
 
 
 
-static void USBIntConfigure(int instatance) {
+void USBIntConfigure(int instatance) {
    if (instatance) {
       IntRegister(SYS_INT_USB1, USB1HostIntHandler);
       IntPrioritySet(SYS_INT_USB1, INT_PRIORITY_USB1, AINTC_HOSTINT_ROUTE_IRQ);
@@ -35,32 +35,4 @@ static void USBIntConfigure(int instatance) {
    IntPrioritySet(SYS_INT_USBSSINT, INT_PRIORITY_USB_DMA, AINTC_HOSTINT_ROUTE_IRQ);
    IntSystemEnable(SYS_INT_USBSSINT);
 #endif
-}
-
-
-
-
-void moduleIntConfigure(unsigned int moduleID){
-   MODULE *module = modulelist+moduleID;
-   for (int i=0;i<sizeof(module->INTNum)/sizeof(module->INTNum[0]);i++) {
-      if (module->INTNum[i]==0) {
-         break;
-      }
-      IntRegister(module->INTNum[i],module->isr[i]);
-      IntPrioritySet(module->INTNum[i],module->INTPriority[i],AINTC_HOSTINT_ROUTE_IRQ);
-      IntSystemEnable(module->INTNum[i]);
-   } 
-}
-
-
-void perAINTCConfigure() {
-   DMTimerIntConfigure();
-   USBIntConfigure(1);
-   for (int i=0;i<128;i++) {
-      MODULE *module = modulelist+i;
-      if (module->baseAddr==0) {
-         continue;
-      }
-      moduleIntConfigure(i);
-   }
 }

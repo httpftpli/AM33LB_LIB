@@ -88,7 +88,7 @@ extern void GPIO1ModuleClkConfig(void);
 extern void GPIO1Pin23PinMuxSetup(void);
 extern void GPIO0ModuleClkConfig(void);
 extern void UART0ModuleClkConfig(void);
-extern void UARTPinMuxSetup(unsigned int instanceNum);
+extern void UART1ModuleClkConfig(void);
 extern void CPSWPinMuxSetup(void);
 extern void CPSWClkEnable(void);
 extern BOOL RTCInit(void);
@@ -104,26 +104,24 @@ extern void DMTimer7ModuleClkConfig(void);
 extern void EVMPortMIIModeSelect(void);
 extern void RTCModuleClkConfig(void);
 extern void GPMCClkConfig(void);
-extern void GPMCInitForNOR(unsigned int baseAddr );
+extern void GPMCInitForNOR();
 extern void I2C0ModuleClkConfig(void);
 extern void I2C1ModuleClkConfig(void);
 extern void USBModuleClkConfig(void); 
 extern void GpioPinMuxSetup(unsigned int offsetAddr,
                             unsigned int padConfValue);
-extern void CANInit(unsigned int baseAdd,unsigned int mode,
-                    unsigned int clkInFreq,unsigned int bitRate);
+extern void DCANInit(unsigned int moduleId,unsigned int mode,unsigned int bitRate);
 extern unsigned int CANSend_noblock(unsigned int baseAddr,CAN_FRAME *frame);
-extern void perAINTCConfigure(void);
+extern void USBIntConfigure(int instatance);
 
 extern void platformInit();
 
 
 extern void DCANModuleClkConfig(void);
-extern void DCANMsgRAMInit(unsigned int instanceNum);
 extern void CANRegistRcvedHandler(void (*handler)(unsigned int index,CAN_FRAME *frame));
-extern void PWMSSModuleClkConfig(unsigned int instanceNum);
+extern void PWMSSInit(void);
 
-extern void GPIOInit();
+extern void GPIOInit(unsigned int moduleId, int debounceTimer,unsigned int debounceEnableBitmap) ;
 extern void GPIO0ModuleClkConfig(void);
 extern void GPIO1ModuleClkConfig(void);
 

@@ -19,55 +19,70 @@
 #include "algorithm.h"
 #include "hw_types.h"
 #include "hw_cm_wkup.h"
-#include "gui.h"
+#include "module.h"
+#include "mmath.h"
+#include "atomic.h"
+#include "GUI.h"
+#include "pf_tsc.h"
 
 #define SAMPLES       8
-#define CALIBRATION_POINT_OFFSET  10
+#define CALIBRATION_POINT_OFFSET  20
 
 
 typedef struct {
-   unsigned int magic ;   //0x55555555 flag  CALIBRATION data valid
-   int x[5], xfb[5];
-   int y[5], yfb[5];
-   int a[7];
+   int An;
+   int Bn;
+   int Cn;
+   int Dn;
+   int En;
+   int Fn;
+   int Divider;
+}MATRIX;
+
+typedef struct {
+   unsigned int magic;   //0x55555555 flag  CALIBRATION data valid
+   int  x[5], xfb[5];
+   int  y[5], yfb[5];
+   MATRIX  matrix;
 } TS_CALIBRATION;
 
 
-typedef struct ts_sample {
-   int       x;
-   int       y;
-   unsigned int timetick;
-} TS_SAMPLE;
-
-TS_CALIBRATION tsCalibration = {.magic = 0xaaaaaaaa};
+static TS_CALIBRATION tsCalibration = { .magic = 0xaaaaaaaa };
 
 
-void TouchCalibrate(void);
-void loadCalibration(){
-   if (tsCalibration.magic!=0x55555555)
-      TouchCalibrate();      
+BOOL TouchCalibrate(void);
+
+void loadCalibration() {
+   if (tsCalibration.magic != 0x55555555) TouchCalibrate();
 }
 
-static TS_SAMPLE tsSampleRaw;
-static volatile unsigned char touched;
-static volatile unsigned int tsenable = 1;
+volatile static TS_SAMPLE tsSampleRaw,ts;
+volatile TS_SAMPLE ts;
+atomic touched = 0;
+volatile static unsigned int tsenable = 1;
 
 static void StepEnable(void);
+static void ts_linear(TS_CALIBRATION *cal,  int *x,  int *y);
 
-void ts_linear(TS_SAMPLE *samp);
+//static void ts_linear_scale(int *x, int *y, int swap_xy);
 
 void  isr_tsc(unsigned int intnum) {
-   unsigned int wordsLeftX, wordsLeftY, error = 0,samplefinish = 0;
+   unsigned int wordsLeftX, wordsLeftY, error = 0, samplefinish = 0;
    volatile int dump;
    unsigned int status;
    int arr_x[SAMPLES];
    int arr_y[SAMPLES];
+   static volatile TS_SAMPLE preTsSampleRaw = { 0, 0 };
 
    status = TSCADCIntStatus(SOC_ADC_TSC_0_REGS);
-   if (status & TSCADC_FIFO1_THRESHOLD_INT) {
-     samplefinish = 1;
+   TSCADCIntStatusClear(SOC_ADC_TSC_0_REGS, status);
+   if (status & TSCADC_PEN_UP_EVENT_INT) {
+      preTsSampleRaw.x = 0;
    }
-   if(1==samplefinish){
+   if (status & TSCADC_FIFO1_THRESHOLD_INT) {
+      samplefinish = 1;
+   }
+   if (1 == samplefinish) {
       wordsLeftX = TSCADCFIFOWordCountRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_0);
       wordsLeftY = TSCADCFIFOWordCountRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_1);
       if ((wordsLeftX != wordsLeftY) || (wordsLeftY != SAMPLES)) {
@@ -85,25 +100,37 @@ void  isr_tsc(unsigned int intnum) {
          for (int i = 0; i < wordsLeftY; i++) {
             arr_y[i] = TSCADCFIFOADCDataRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_1);
          }
-      }      
-   }
-   TSCADCIntStatusClear(SOC_ADC_TSC_0_REGS, status); 
-   if(1==samplefinish){
+      }
       StepEnable();
    }
-
-   if ((1 == tsenable) && (0 == error)&&(1==samplefinish)){
+   if ((1 == tsenable) && (0 == error) && (1 == samplefinish)) {
       bubbleSortAscend(arr_x, SAMPLES);
-      tsSampleRaw.y = sum(arr_x + 1, SAMPLES - 2) / (SAMPLES - 2);
       bubbleSortAscend(arr_y, SAMPLES);
-      tsSampleRaw.y = sum(arr_y + 1, SAMPLES - 2) / SAMPLES - 2;
-      touched = 1;
-      ts_linear(&tsSampleRaw);
-      MSG msg;
-      msg.message = MSG_TOUCH;
-      msg.xpt = tsSampleRaw.x;
-      msg.ypt = tsSampleRaw.y;
-      SendMessage(&msg);
+      if (0 == preTsSampleRaw.x) {
+         preTsSampleRaw.x = 1; //sum(arr_x+2 , SAMPLES-4 ) / (SAMPLES-4 );
+         preTsSampleRaw.y = 1; //sum(arr_y+2 , SAMPLES-4 ) / (SAMPLES-4 );
+      } else if (1 == preTsSampleRaw.x) {
+         preTsSampleRaw.x = sum(arr_x + 2, SAMPLES - 4) / (SAMPLES - 4);
+         preTsSampleRaw.y = sum(arr_y + 2, SAMPLES - 4) / (SAMPLES - 4);
+      } else {
+         ts.x = tsSampleRaw.x =  preTsSampleRaw.x;
+         ts.y = tsSampleRaw.y =  preTsSampleRaw.y;
+         preTsSampleRaw.x = sum(arr_x + 2, SAMPLES - 4) / (SAMPLES - 4);
+         preTsSampleRaw.y = sum(arr_y + 2, SAMPLES - 4) / (SAMPLES - 4);
+         ts_linear(&tsCalibration,(int*)&(ts.x),(int *)&(ts.y));
+         atomicSet(&touched);
+
+         //MSG msg;
+         //msg.message = MSG_TOUCH;
+         //msg.xpt = sampletem.x;
+         //msg.ypt = sampletem.y;
+         //UARTprintf("x: %d  ; y: %d  ;", tsSampleRaw.x, tsSampleRaw.y);
+         //UARTprintf("fbx: %d  ; fby: %d \n\r", msg.xpt, msg.ypt);
+         //SendMessage(&msg);*/
+      }
+   }
+   if (status & TSCADC_PEN_UP_EVENT_INT) {
+      //UARTprintf("pen up \n\r");
    }
 }
 
@@ -145,16 +172,13 @@ static void IdleStepConfig(void) {
    /* Configure ADC to Single ended operation mode */
    TSCADCIdleStepOperationModeControl(SOC_ADC_TSC_0_REGS,
                                       TSCADC_SINGLE_ENDED_OPER_MODE);
-
    /* Configure reference volatage and input to idlestep */
    TSCADCIdleStepConfig(SOC_ADC_TSC_0_REGS, TSCADC_NEGATIVE_REF_VSSA,
                         TSCADC_POSITIVE_INP_CHANNEL1, TSCADC_NEGATIVE_INP_ADCREFM,
                         TSCADC_POSITIVE_REF_VDDA);
-
    /* Configure the Analog Supply to Touch screen */
    TSCADCIdleStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_OFF,
                                     TSCADC_XNPSW_PIN_OFF, TSCADC_YPPSW_PIN_OFF);
-
    /* 
    **Configure the Analong Ground of Touch screen.
    */
@@ -163,251 +187,258 @@ static void IdleStepConfig(void) {
                                     TSCADC_WPNSW_PIN_OFF);
 }
 
-
 static void TSchargeStepConfig(void) {
    /* Configure ADC to Single ended operation mode */
    TSCADCChargeStepOperationModeControl(SOC_ADC_TSC_0_REGS,
                                         TSCADC_SINGLE_ENDED_OPER_MODE);
-
-   /* Configure reference volatage and input to charge step*/
-   TSCADCChargeStepConfig(SOC_ADC_TSC_0_REGS, TSCADC_NEGATIVE_REF_XNUR,
-                          TSCADC_POSITIVE_INP_CHANNEL2, TSCADC_NEGATIVE_INP_CHANNEL2,
-                          TSCADC_POSITIVE_REF_XPUL);
-
+   /* Configure reference volatage and input to idlestep */
+   TSCADCChargeStepConfig(SOC_ADC_TSC_0_REGS, TSCADC_NEGATIVE_REF_VSSA,
+                          TSCADC_POSITIVE_INP_CHANNEL1, TSCADC_NEGATIVE_INP_ADCREFM,
+                          TSCADC_POSITIVE_REF_VDDA);
    /* Configure the Analog Supply to Touch screen */
-   TSCADCChargeStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_ON,
-                                      TSCADC_XNPSW_PIN_OFF, TSCADC_XPPSW_PIN_OFF);
-
-   /* Configure the Analong Ground to Touch screen */
+   TSCADCChargeStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_OFF,
+                                      TSCADC_XNPSW_PIN_OFF, TSCADC_YPPSW_PIN_OFF);
+   /* 
+   **Configure the Analong Ground of Touch screen.
+   */
    TSCADCChargeStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_OFF,
-                                      TSCADC_YPNSW_PIN_OFF, TSCADC_YNNSW_PIN_ON,
+                                      TSCADC_YPNSW_PIN_ON, TSCADC_YNNSW_PIN_ON,
                                       TSCADC_WPNSW_PIN_OFF);
-
    TSCADCTSChargeStepOpenDelayConfig(SOC_ADC_TSC_0_REGS, 0x200);
+
+   /* Configure ADC to Single ended operation mode */
+   /*TSCADCChargeStepOperationModeControl(SOC_ADC_TSC_0_REGS,
+                                        TSCADC_SINGLE_ENDED_OPER_MODE);*/
+   /* Configure reference volatage and input to charge step*/
+   /*TSCADCChargeStepConfig(SOC_ADC_TSC_0_REGS, TSCADC_NEGATIVE_REF_XNUR,
+                          TSCADC_POSITIVE_INP_CHANNEL2, TSCADC_NEGATIVE_INP_CHANNEL2,
+                          TSCADC_POSITIVE_REF_XPUL);*/
+   /* Configure the Analog Supply to Touch screen */
+   /*TSCADCChargeStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_ON,
+                                      TSCADC_XNPSW_PIN_OFF, TSCADC_XPPSW_PIN_OFF);*/
+   /* Configure the Analong Ground to Touch screen */
+   /*TSCADCChargeStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_OFF,
+                                      TSCADC_YPNSW_PIN_OFF, TSCADC_YNNSW_PIN_ON,
+                                      TSCADC_WPNSW_PIN_OFF);*/
+   /*TSCADCTSChargeStepOpenDelayConfig(SOC_ADC_TSC_0_REGS, 0x200);*/
 }
 
-static void StepConfigX(unsigned int stepSelc)
-{
-    /* Configure ADC to Single ended operation mode */
-    TSCADCTSStepOperationModeControl(SOC_ADC_TSC_0_REGS,
+static void StepConfigX(unsigned int stepSelc) {
+   /* Configure ADC to Single ended operation mode */
+   TSCADCTSStepOperationModeControl(SOC_ADC_TSC_0_REGS,
                                     TSCADC_SINGLE_ENDED_OPER_MODE, stepSelc);
 
-    /* Configure reference volatage and input to charge step*/ 
-    TSCADCTSStepConfig(SOC_ADC_TSC_0_REGS, stepSelc,TSCADC_NEGATIVE_REF_VSSA,
-                       TSCADC_POSITIVE_INP_CHANNEL3,TSCADC_NEGATIVE_INP_CHANNEL1,
-                       TSCADC_POSITIVE_REF_VDDA);
+   /* Configure reference volatage and input to charge step*/
+   TSCADCTSStepConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_NEGATIVE_REF_VSSA,
+                      TSCADC_POSITIVE_INP_CHANNEL3, TSCADC_NEGATIVE_INP_CHANNEL1,
+                      TSCADC_POSITIVE_REF_VDDA);
 
-    /* Configure the Analog Supply to Touch screen */
-    TSCADCTSStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_ON,
-                                   TSCADC_XNPSW_PIN_OFF, TSCADC_YPPSW_PIN_OFF,
-                                   stepSelc);
+   /* Configure the Analog Supply to Touch screen */
+   TSCADCTSStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_ON,
+                                  TSCADC_XNPSW_PIN_OFF, TSCADC_YPPSW_PIN_OFF,
+                                  stepSelc);
 
-    /* Configure the Analong Ground to Touch screen */
-    TSCADCTSStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_ON,
-                                   TSCADC_YPNSW_PIN_OFF, TSCADC_YNNSW_PIN_OFF,
-                                   TSCADC_WPNSW_PIN_OFF, stepSelc);
+   /* Configure the Analong Ground to Touch screen */
+   TSCADCTSStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_ON,
+                                  TSCADC_YPNSW_PIN_OFF, TSCADC_YNNSW_PIN_OFF,
+                                  TSCADC_WPNSW_PIN_OFF, stepSelc);
 
-    /* select fifo 0 */
-    TSCADCTSStepFIFOSelConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_FIFO_0);
+   /* select fifo 0 */
+   TSCADCTSStepFIFOSelConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_FIFO_0);
 
-    /* Configure in One short hardware sync mode */
-    TSCADCTSStepModeConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_ONE_SHOT_HARDWARE_SYNC);
-    
-    TSCADCTSStepAverageConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_SIXTEEN_SAMPLES_AVG); 
+   /* Configure in One short hardware sync mode */
+   TSCADCTSStepModeConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_ONE_SHOT_HARDWARE_SYNC);
+
+   TSCADCTSStepAverageConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_SIXTEEN_SAMPLES_AVG);
 }
 
 
-static void StepConfigY(unsigned int stepSelc)
-{
+static void StepConfigY(unsigned int stepSelc) {
 
-    /* Configure ADC to Single ended operation mode */
-    TSCADCTSStepOperationModeControl(SOC_ADC_TSC_0_REGS, 
-                                     TSCADC_SINGLE_ENDED_OPER_MODE, stepSelc);
+   /* Configure ADC to Single ended operation mode */
+   TSCADCTSStepOperationModeControl(SOC_ADC_TSC_0_REGS,
+                                    TSCADC_SINGLE_ENDED_OPER_MODE, stepSelc);
 
-    /* Configure reference volatage and input to charge step*/ 
-    TSCADCTSStepConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_NEGATIVE_REF_VSSA,
-                       TSCADC_POSITIVE_INP_CHANNEL1, TSCADC_NEGATIVE_INP_ADCREFM,
-                       TSCADC_POSITIVE_REF_VDDA);
+   /* Configure reference volatage and input to charge step*/
+   TSCADCTSStepConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_NEGATIVE_REF_VSSA,
+                      TSCADC_POSITIVE_INP_CHANNEL1, TSCADC_NEGATIVE_INP_ADCREFM,
+                      TSCADC_POSITIVE_REF_VDDA);
 
-    /* Configure the Analog Supply to Touch screen */
-    TSCADCTSStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_OFF,
-                                   TSCADC_XNPSW_PIN_OFF, TSCADC_YPPSW_PIN_ON, stepSelc);
+   /* Configure the Analog Supply to Touch screen */
+   TSCADCTSStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_OFF,
+                                  TSCADC_XNPSW_PIN_OFF, TSCADC_YPPSW_PIN_ON, stepSelc);
 
-    /* Configure the Analong Ground to Touch screen */
-    TSCADCTSStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_OFF,
-                                   TSCADC_YPNSW_PIN_OFF, TSCADC_YNNSW_PIN_ON,
-                                   TSCADC_WPNSW_PIN_OFF, stepSelc);
+   /* Configure the Analong Ground to Touch screen */
+   TSCADCTSStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_OFF,
+                                  TSCADC_YPNSW_PIN_OFF, TSCADC_YNNSW_PIN_ON,
+                                  TSCADC_WPNSW_PIN_OFF, stepSelc);
 
-    /* select fifo 1 */
-    TSCADCTSStepFIFOSelConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_FIFO_1);
+   /* select fifo 1 */
+   TSCADCTSStepFIFOSelConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_FIFO_1);
 
-    /* Configure in One short hardware sync mode */
-    TSCADCTSStepModeConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_ONE_SHOT_HARDWARE_SYNC);
+   /* Configure in One short hardware sync mode */
+   TSCADCTSStepModeConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_ONE_SHOT_HARDWARE_SYNC);
 
-    TSCADCTSStepAverageConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_SIXTEEN_SAMPLES_AVG); 
+   TSCADCTSStepAverageConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_SIXTEEN_SAMPLES_AVG);
 }
 
-static void StepEnable(void)
-{
-    for(int i = 1; i < SAMPLES*2+1; i++) 
-    {
-         TSCADCConfigureStepEnable(SOC_ADC_TSC_0_REGS, i, 1);
-    }
+static void StepEnable(void) {
+   for (int i = 0; i < (SAMPLES * 2 + 1); i++) {
+      TSCADCConfigureStepEnable(SOC_ADC_TSC_0_REGS, i, 1);
+   }
 }
 
 
-void tsEnalbe(void){
+void tsEnalbe(void) {
    tsenable = 1;
+   delay(10);
 }
 
-void tsDisable(void){
+void tsDisable(void) {
    tsenable = 0;
 }
 
 
-int perform_calibration(TS_CALIBRATION *cal) {
-	int j;
-	float n, x, y, x2, y2, xy, z, zx, zy;
-	float det, a, b, c, e, f, i;
-	float scaling = 65536.0;
-
-// Get sums for matrix
-	n = x = y = x2 = y2 = xy = 0;
-	for(j=0;j<5;j++) {
-		n += 1.0;
-		x += (float)cal->x[j];
-		y += (float)cal->y[j];
-		x2 += (float)(cal->x[j]*cal->x[j]);
-		y2 += (float)(cal->y[j]*cal->y[j]);
-		xy += (float)(cal->x[j]*cal->y[j]);
-	}
-
-// Get determinant of matrix -- check if determinant is too small
-	det = n*(x2*y2 - xy*xy) + x*(xy*y - x*y2) + y*(x*xy - y*x2);
-	if(det < 0.1 && det > -0.1) {
-        cal->magic = 0xaaaaaaaa;
-		return 0;
-	}
-
-// Get elements of inverse matrix
-	a = (x2*y2 - xy*xy)/det;
-	b = (xy*y - x*y2)/det;
-	c = (x*xy - y*x2)/det;
-	e = (n*y2 - y*y)/det;
-	f = (x*y - n*xy)/det;
-	i = (n*x2 - x*x)/det;
-
-// Get sums for x calibration
-	z = zx = zy = 0;
-	for(j=0;j<5;j++) {
-		z += (float)cal->xfb[j];
-		zx += (float)(cal->xfb[j]*cal->x[j]);
-		zy += (float)(cal->xfb[j]*cal->y[j]);
-	}
-
-// Now multiply out to get the calibration for framebuffer x coord
-	cal->a[0] = (int)((a*z + b*zx + c*zy)*(scaling));
-	cal->a[1] = (int)((b*z + e*zx + f*zy)*(scaling));
-	cal->a[2] = (int)((c*z + f*zx + i*zy)*(scaling));
-
-// Get sums for y calibration
-	z = zx = zy = 0;
-	for(j=0;j<5;j++) {
-		z += (float)cal->yfb[j];
-		zx += (float)(cal->yfb[j]*cal->x[j]);
-		zy += (float)(cal->yfb[j]*cal->y[j]);
-	}
-
-// Now multiply out to get the calibration for framebuffer y coord
-	cal->a[3] = (int)((a*z + b*zx + c*zy)*(scaling));
-	cal->a[4] = (int)((b*z + e*zx + f*zy)*(scaling));
-	cal->a[5] = (int)((c*z + f*zx + i*zy)*(scaling));
-
-// If we got here, we're OK, so assign scaling to a[6] and return
-	cal->a[6] = (int)scaling;
-    cal->magic = 0x55555555;
-	return 1;
+static void ts_linear(TS_CALIBRATION *cal,  int *x,  int *y) {
+   *x  = (cal->matrix.An * (int)(*x)) / 1000 + cal->matrix.Bn * (int)(*y) / 1000 + cal->matrix.Cn;
+   *y  = (cal->matrix.Dn * (int)(*x)) / 1000 + cal->matrix.En * (int)(*y) / 1000 + cal->matrix.Fn;
 }
 
 
 
-void ts_linear(TS_SAMPLE *samp) {
-   unsigned int xtemp = samp->x; 
-   unsigned int ytemp = samp->y;
-   samp->x =   (tsCalibration.a[2] +
-                tsCalibration.a[0] * xtemp +
-                tsCalibration.a[1] * ytemp) / tsCalibration.a[6];
-   samp->y =   (tsCalibration.a[5] +
-                tsCalibration.a[3] * xtemp +
-                tsCalibration.a[4] * ytemp) / tsCalibration.a[6];
-}
+/**
+ * @brief 触摸屏校准 
+ * @return           
+ * @date    2013/5/31
+ * @note 
+ * 该函数会修改显存 
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
+BOOL TouchCalibrate(void) {
+   static const unsigned char calIcon[] = { 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80,
+      0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0xFF, 0xFF,
+      0xFF, 0xFF, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01,
+      0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80 };
 
-
-void TouchCalibrate(void){
-   static const unsigned char calIcon[] = {0x01,0x80,0x01,0x80,0x01,0x80,0x01,0x80,
-         0x01,0x80,0x01,0x80,0x01,0x80,0xFF,0xFF,
-         0xFF,0xFF,0x01,0x80,0x01,0x80,0x01,0x80,0x01,
-      0x80,0x01,0x80,0x01,0x80,0x01,0x80};
+   int x1, x2, x3;
+   int y1, y2, y3, K;
+   int xL1, xL2, xL3;
+   int yL1, yL2, yL3;
+   int A, B, C, D, E, F;
+   int m, n;
 
    const tLCD_PANEL  *panel = LCDTftInfoGet();
-   Dis_DrawText("calibrate touch pad",100,400,C_White,C_TRANSPARENT);
-   
-   tsCalibration.xfb[0] = 0+CALIBRATION_POINT_OFFSET-8;
-   tsCalibration.xfb[1] = panel->width-CALIBRATION_POINT_OFFSET-8;
-   tsCalibration.xfb[2] = panel->width-CALIBRATION_POINT_OFFSET-8;
-   tsCalibration.xfb[3] = 0+CALIBRATION_POINT_OFFSET-8;
-   tsCalibration.xfb[4] = panel->width/2-8;
-   
-   tsCalibration.yfb[0] = panel->height-CALIBRATION_POINT_OFFSET-8; 
-   tsCalibration.yfb[1] = panel->height-CALIBRATION_POINT_OFFSET-8;
-   tsCalibration.yfb[2] = 0+CALIBRATION_POINT_OFFSET-8;
-   tsCalibration.yfb[3] = 0+CALIBRATION_POINT_OFFSET-8;
-   tsCalibration.yfb[4] = panel->height/2-8;
- 
-   Dis_RectFill(0,0,panel->width,panel->height,C_Black);
-   for (int i=0;i<5;i++) {
-      Dis_DrawMask(calIcon, tsCalibration.xfb[i],tsCalibration.yfb[i],16,16,C_White,C_TRANSPARENT);    
-      while (!touched);
-      touched = 0;
-      tsCalibration.x[i] = tsSampleRaw.x ;
-      tsCalibration.y[i] = tsSampleRaw.y ;
-      Dis_RectFill(tsCalibration.xfb[i],tsCalibration.yfb[i],16,16,C_Black);
+   Dis_Clear(C_Black);
+   Dis_String("calibrate touch pad", panel->width / 2 - 100, panel->height / 2 + 50, 0, C_White, C_TRANSPARENT);
+   tsCalibration.xfb[0] = 0 + CALIBRATION_POINT_OFFSET;
+   tsCalibration.xfb[1] = panel->width - CALIBRATION_POINT_OFFSET;
+   tsCalibration.xfb[2] = panel->width / 2;
+   tsCalibration.xfb[3] = panel->width / 2;
+
+
+   tsCalibration.yfb[0] = 0 + CALIBRATION_POINT_OFFSET;
+   tsCalibration.yfb[1] = panel->height / 2;
+   tsCalibration.yfb[2] = panel->height - CALIBRATION_POINT_OFFSET;
+   tsCalibration.yfb[3] = panel->height / 2;
+   for (int i = 0; i < 4; i++) {
+      atomicClear(&touched);
+      Dis_DrawMask(calIcon, tsCalibration.xfb[i] - 8, tsCalibration.yfb[i] - 8, 16, 16, C_White, C_TRANSPARENT);
+      if (0 == i) {
+         while (!atomicTest(&touched));
+      } else {                                      
+         while (!(atomicTest(&touched) && ((ABS(tsCalibration.x[i-1] - tsSampleRaw.x) > 800) || ( ABS(tsCalibration.y[i-1] - tsSampleRaw.y) > 800))));
+      }
+      tsCalibration.x[i] = tsSampleRaw.x;
+      tsCalibration.y[i] = tsSampleRaw.y;
+      Dis_RectFill(tsCalibration.xfb[i] - 8, tsCalibration.yfb[i] - 8, 16, 16, C_Black);
    }
-   perform_calibration(&tsCalibration);
+
+   x1 = tsCalibration.x[0];
+   x2 = tsCalibration.x[1];
+   x3 = tsCalibration.x[2];
+   y1 = tsCalibration.y[0];
+   y2 = tsCalibration.y[1];
+   y3 = tsCalibration.y[2];
+   xL1 = tsCalibration.xfb[0];
+   xL2 = tsCalibration.xfb[1];
+   xL3 = tsCalibration.xfb[2];
+   yL1 = tsCalibration.yfb[0];
+   yL2 = tsCalibration.yfb[1];
+   yL3 = tsCalibration.yfb[2];
+   K = (x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2);
+   m = (int)((xL1 - xL3) * (y2 - y3));
+   n = (int)((xL2 - xL3) * (y1 - y3));
+   m = m - n;
+   A = ((int)((xL1 - xL2) * (y2 - y3)) - (int)((xL2 - xL3) * (y1 - y2))) * 1000 / K;
+   B = ((xL2 - xL3) * (x1 - x2) - (x2 - x3) * (xL1 - xL2)) * 1000 / K;
+   C = xL1 - (A * x1 + B * y1) / 1000;
+   D = ((yL1 - yL2) * (y2 - y3) - (yL2 - yL3) * (y1 - y2)) * 1000 / K;
+   E = ((yL2 - yL3) * (x1 - x2) - (x2 - x3) * (yL1 - yL2)) * 1000 / K;
+   F = yL1 - (D * x1 + E * y1) / 1000;
+   tsCalibration.matrix.An = A;
+   tsCalibration.matrix.Bn = B;
+   tsCalibration.matrix.Cn = C;
+   tsCalibration.matrix.Dn = D;
+   tsCalibration.matrix.En = E;
+   tsCalibration.matrix.Fn = F;
+
+   int tempx = tsCalibration.x[3];
+   int tempy = tsCalibration.x[3];
+   ts_linear(&tsCalibration, &tempx, &tempy);
+   if ((ABS(tempx - tsCalibration.xfb[3]) < 30) && (ABS(tempy - tsCalibration.yfb[3]) < 30)) {
+      //Save_touchData(&Tch_ctrs);
+      Dis_String("calibrate success", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_White, C_TRANSPARENT);
+      delay(1000);
+      return TRUE;
+   } else {
+      Dis_String("calibrate fail", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_White, C_TRANSPARENT);
+      delay(1000);
+      return FAIL;
+   }
+
 }
 
 
-void TouchScreenInit(void){
-   TSCADCConfigureAFEClock(SOC_ADC_TSC_0_REGS, 24000000, 3000000);
+
+
+void TouchScreenInit() {
+   MODULE *module = modulelist + MODULE_ID_ADCTSC;
+   unsigned int baseaddr = module->baseAddr;
+   moduleEnable(MODULE_ID_ADCTSC);
+   TSCADCConfigureAFEClock(baseaddr, module->moduleClk->fClk[0]->clockSpeedHz, 600000);
    /* Enable Transistor bias */
-   TSCADCTSTransistorConfig(SOC_ADC_TSC_0_REGS, TSCADC_TRANSISTOR_ENABLE);
+   TSCADCTSTransistorConfig(baseaddr, TSCADC_TRANSISTOR_ENABLE);
    /* Map hardware event to Pen Touch IRQ */
-   TSCADCHWEventMapSet(SOC_ADC_TSC_0_REGS, TSCADC_PEN_TOUCH);
+   TSCADCHWEventMapSet(baseaddr, TSCADC_PEN_TOUCH);
    /* Set 4 Wire touch screen  mode */
-   TSCADCTSModeConfig(SOC_ADC_TSC_0_REGS, TSCADC_FOUR_WIRE_MODE);
-   TSCADCStepIDTagConfig(SOC_ADC_TSC_0_REGS, 1);
+   TSCADCTSModeConfig(baseaddr, TSCADC_FOUR_WIRE_MODE);
+   TSCADCStepIDTagConfig(baseaddr, 1);
    /* Disable Write Protection of Step Configuration regs*/
-   TSCADCStepConfigProtectionDisable(SOC_ADC_TSC_0_REGS);
-    /* Touch Screen detection Configuration*/
+   TSCADCStepConfigProtectionDisable(baseaddr);
+   /* Touch Screen detection Configuration*/
    IdleStepConfig();
-    /* Configure the Charge step */
+   /* Configure the Charge step */
    TSchargeStepConfig();
-   for(int i = 0; i < SAMPLES; i++)
-    {
-         StepConfigX(i);
-         TSCADCTSStepOpenDelayConfig(SOC_ADC_TSC_0_REGS, i, 0x98);
-    }
+   for (int i = 0; i < SAMPLES; i++) {
+      StepConfigX(i);
+      TSCADCTSStepOpenDelayConfig(baseaddr, i, 0x90);
+      TSCADCTSStepSampleDelayConfig(baseaddr, i, 0);
+   }
 
-    for(int i = SAMPLES; i < (2 * SAMPLES); i++)
-    {
-         StepConfigY(i);
-         TSCADCTSStepOpenDelayConfig(SOC_ADC_TSC_0_REGS, i, 0x98);
-    }
+   for (int i = SAMPLES; i < (2 * SAMPLES); i++) {
+      StepConfigY(i);
+      TSCADCTSStepOpenDelayConfig(baseaddr, i, 0x90);
+      TSCADCTSStepSampleDelayConfig(baseaddr, i, 0);
+   }
 
-   TSCADCFIFOIRQThresholdLevelConfig(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_1, SAMPLES-1);
-   TSCADCEventInterruptEnable(SOC_ADC_TSC_0_REGS,  TSCADC_FIFO1_THRESHOLD_INT);//TSCADC_SYNC_PEN_EVENT_INT |
-   TSCADCModuleStateSet(SOC_ADC_TSC_0_REGS, TSCADC_MODULE_ENABLE);
-   StepEnable(); 
+   TSCADCFIFOIRQThresholdLevelConfig(baseaddr, TSCADC_FIFO_1, SAMPLES);
+   TSCADCModuleStateSet(baseaddr, TSCADC_MODULE_ENABLE);
+   StepEnable();
+   TSCADCEventInterruptEnable(baseaddr,  TSCADC_FIFO1_THRESHOLD_INT | TSCADC_PEN_UP_EVENT_INT); //|TSCADC_PEN_UP_EVENT_INT|TSCADC_SYNC_PEN_EVENT_INT
+   moduleIntConfigure(MODULE_ID_ADCTSC);
 }
 
 

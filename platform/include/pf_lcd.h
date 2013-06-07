@@ -44,7 +44,7 @@ extern "C" {
 
 #define FRAME_BUFFER_SIZE	(FRAME_WIDTH*FRAME_HEIGHT*4 + PALETTE_SIZE + PALETTE_OFFSET)
 
-
+#include "gui.h"
 
 typedef struct __lcdc_panel {
 	char	name[24];	                /* Full name <vendor>_<model> */
@@ -98,7 +98,7 @@ extern unsigned int LCDVersionGet(void);
 extern void LCDRasterEOFIntEnable(void);
 extern void LCDRasterEOFIntDisable(void);
 extern void LCDRasterStart(void);
-extern void LCDRasterInit(int panelIndex);
+extern void LCDRasterInit(unsigned int moduleId,int panelIndex);
 extern void * LCDFrameBufferAddrGet(int num);
 extern unsigned int  LCDFrameBufferCurGet(void);
 extern void LCDFrameBufferCurSet(unsigned int num);
@@ -110,6 +110,26 @@ extern const  tLCD_PANEL *LCDTftInfoGet(void);
 #define FrameBuffer2D(X,Y) ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
 #define Pix(X,Y) FrameBuffer2D(X,Y)
 
+
+
+/**
+ * @brief  写一个像素点
+ * @param [in] x
+ * @param [in] y           
+ * @param [in] color 
+ * @return none
+
+ */
+inline void LCD_SetPixel(unsigned int x, unsigned int y, COLOR color) {
+   if ((color & 0xffff0000) == 0) {
+      Pix((x), (y)) = (unsigned short)color;
+   }
+}
+
+
+unsigned int inline  LCD_GetPixel(unsigned int x,unsigned int y ){
+   return Pix((x), (y));
+}
 
 #ifdef __cplusplus
 #endif

@@ -15,50 +15,16 @@
 
 
 
-/*
-* Copyright (C) 2010 Texas Instruments Incorporated - http://www.ti.com/
-*/
-/*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions
-*  are met:
-*
-*    Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-*
-*    Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the
-*    distribution.
-*
-*    Neither the name of Texas Instruments Incorporated nor the names of
-*    its contributors may be used to endorse or promote products derived
-*    from this software without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*/
-
-
 #include "dmtimer.h"
 #include "soc_AM335x.h"
 #include "pf_platform_cfg.h"
 #include "interrupt.h"
+#include "module.h"
 
 #define INTNUMBER   SYS_INT_TINT2
 
 #ifndef TIMER_TIMERTICK 
-#define TIMER_TIMERTICK  SOC_DMTIMER_2_REGS
+#define TIMER_TIMERTICK  MODULE_ID_TIMER2
 #endif
 
 static unsigned int tick = 0;
@@ -89,7 +55,8 @@ static unsigned int timerFindFree(){
 
 void isr_DTimer2(unsigned int intnum){
    UNUSED(intnum);
-   DMTimerIntStatusClear(TIMER_TIMERTICK,DMTIMER_INT_OVF_IT_FLAG );
+   unsigned int baseaddr = modulelist[intnum].baseAddr;
+   DMTimerIntStatusClear(baseaddr,DMTIMER_INT_OVF_IT_FLAG );
    tick++;
    if (NULL!=timertickhandle) {
       timertickhandle(tick);
@@ -191,19 +158,23 @@ unsigned int IsTimerElapsed(unsigned int timerindex){
 
 
 void TimerTickConfigure(){
-   DMTimerReset(TIMER_TIMERTICK);
-   DMTimerModeConfigure(TIMER_TIMERTICK, DMTIMER_AUTORLD_NOCMP_ENABLE);
-   DMTimerIntEnable(TIMER_TIMERTICK,  DMTIMER_INT_OVF_EN_FLAG);
-   DMTimerPreScalerClkEnable(TIMER_TIMERTICK, 2); //CLK_M_OSC =24M 
+   moduleEnable(TIMER_TIMERTICK);
+   unsigned int baseaddr = modulelist[TIMER_TIMERTICK].baseAddr;
+   DMTimerReset(baseaddr);
+   DMTimerModeConfigure(baseaddr, DMTIMER_AUTORLD_NOCMP_ENABLE);
+   DMTimerIntEnable(baseaddr,  DMTIMER_INT_OVF_EN_FLAG);
+   //DMTimerPreScalerClkEnable(baseaddr, 2); //CLK_M_OSC =24M 
                                            //PERCALE : 2^(2+1)=8
                                            //clkin = 24/8 = 3
-   unsigned int cnt = 0xfffffffe - 1000*3;
-   DMTimerReloadSet(TIMER_TIMERTICK, cnt);
-   DMTimerTriggerSet(TIMER_TIMERTICK); 
+   unsigned int  inclk = modulelist[TIMER_TIMERTICK].moduleClk->fClk[0]->clockSpeedHz;
+   unsigned int cnt = 0xfffffffe - inclk/1000;  //1ms
+   DMTimerReloadSet(baseaddr, cnt);
+   DMTimerCounterSet(baseaddr,cnt); 
 
    for (int i=0;i<sizeof(softtimer)/sizeof(softtimer[0]);i++) {
       softtimer[i].enable = 0;
    }
+   moduleIntConfigure(TIMER_TIMERTICK);
 }
 
 
@@ -216,35 +187,39 @@ void TimerTickRegistHandler(void (*pfnHandler)(unsigned int tick))
 void TimerTickPeriodSet(unsigned int microsecond)
 {
    unsigned int cnt = 0xffffffe - microsecond*3;
-   DMTimerReloadSet(TIMER_TIMERTICK, cnt);
-   DMTimerTriggerSet(TIMER_TIMERTICK);
+   unsigned int baseaddr = modulelist[TIMER_TIMERTICK].baseAddr; 
+   DMTimerReloadSet(baseaddr, cnt);
+   DMTimerTriggerSet(baseaddr);
 }
 
 void TimerTickStart(void)
 {	
-   DMTimerEnable(TIMER_TIMERTICK);
+   unsigned int baseaddr = modulelist[TIMER_TIMERTICK].baseAddr;
+   DMTimerEnable(baseaddr);
 }
 
 void TimerTickStop(void)
 {
-   DMTimerDisable(TIMER_TIMERTICK);
+    unsigned int baseaddr = modulelist[TIMER_TIMERTICK].baseAddr; 
+    DMTimerDisable(baseaddr);
 }
 
 
 
 unsigned int TimerTickTimeGet(void){
-   return DMTimerCounterGet(TIMER_TIMERTICK);
+   unsigned int baseaddr = modulelist[TIMER_TIMERTICK].baseAddr; 
+   return DMTimerCounterGet(baseaddr);
 }
 
 
 void Sysdelay(unsigned int mSec)
 {
-   unsigned int conter = TimerTickGet();
+   unsigned int counter = TimerTickGet();
    if (mSec==0) {
       return;
    }
    while (1) {
-      if (TimerTickGet() >= (conter+mSec+1)) {
+      if (TimerTickGet() >= (counter+mSec+1)) {
          break;
       }
    }

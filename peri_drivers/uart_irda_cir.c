@@ -155,6 +155,8 @@ unsigned int UARTDivisorValCompute(unsigned int moduleClk,
     return divisorValue;
 }
 
+
+
 /**
  * \brief  This API is used to write the specified divisor value to Divisor
  *         Latch registers DLL and DLH.

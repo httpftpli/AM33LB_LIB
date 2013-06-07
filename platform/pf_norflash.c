@@ -5,6 +5,7 @@
 #include "hw_cm_per.h"
 #include "debug.h"
 #include "type.h"
+#include "module.h"
 
 
 void GPMCClkConfig(void)
@@ -88,10 +89,13 @@ static void GPMCEnableCS(unsigned int baseAddr,unsigned char cs,BOOL enable){
 }
 
 
-void GPMCInitForNOR(unsigned int baseAddr ){
+void GPMCInitForNOR(){
+  MODULE *module = modulelist+MODULE_ID_GPMC;
+  unsigned int baseAddr = module->baseAddr;
   GPMCModuleSoftReset(baseAddr);
   GPMCIdleModeSelect(baseAddr, GPMC_IDLEMODE_NOIDLE);
   //NOR Timings Configuration
+  moduleEnable(MODULE_ID_GPMC);
   for (int i=0;i<7;i++) {
      // NOR Memory type Configuration
      HWREG(baseAddr + GPMC_CONFIG1(i)) = 0<<31   |  0 << 30   |  0<<29 |    0<<28    |  0<<27  |

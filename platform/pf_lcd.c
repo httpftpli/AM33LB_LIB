@@ -16,6 +16,7 @@
 #include "tft.h"
 #include "pf_lcd.h"
 #include "gpio_v2.h"
+#include "module.h"
 
 
 #ifdef LCD_16BIT_565RGB
@@ -45,8 +46,6 @@ const static  unsigned int palette_32b[PALETTE_SIZE/4] =
 static void *framebuffer = __section_begin("LCD_FRAMEBUFFER");
 
 tLCDCTRL lcdCtrl = {
-   .baseAddr = SOC_LCDC_0_REGS,
-   .lcd_clk = 192000000,
    .frame_num = 2,
    .pixsize = 2,
    .red.length = 5,
@@ -198,13 +197,14 @@ void LCDBackLightOFF(void)
 }
 
 
-void LCDRasterStart(void)
-{
-    /* configuring the base ceiling */
-	RasterDMAFBConfig(SOC_LCDC_0_REGS,(uint32)lcdCtrl.palette[0],(uint32)lcdCtrl.frameaddr[0] + lcdCtrl.framesize[0]-1,0);
-	RasterDMAFBConfig(SOC_LCDC_0_REGS,(uint32)lcdCtrl.palette[1],(uint32)lcdCtrl.frameaddr[1] + lcdCtrl.framesize[1]-1,1);
-     /* enable raster */
-	RasterEnable(SOC_LCDC_0_REGS);
+void LCDRasterStart(void) {
+   /* configuring the base ceiling */
+   RasterDMAFBConfig(SOC_LCDC_0_REGS, (uint32)lcdCtrl.palette[0], (uint32)lcdCtrl.frameaddr[0] + lcdCtrl.framesize[0] - 1, 0);
+   RasterDMAFBConfig(SOC_LCDC_0_REGS, (uint32)lcdCtrl.palette[1], (uint32)lcdCtrl.frameaddr[1] + lcdCtrl.framesize[1] - 1, 1);
+   memset(lcdCtrl.frameaddr[0], 0, lcdCtrl.pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
+   memset(lcdCtrl.frameaddr[1], 0, lcdCtrl.pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
+   /* enable raster */
+   RasterEnable(SOC_LCDC_0_REGS);
 }
 
 
@@ -221,8 +221,11 @@ void LCDSwapContex(){
 }
 
 
-void LCDRasterInit(int panelIndex) {
-   unsigned int baseaddr = lcdCtrl.baseAddr;
+void LCDRasterInit(unsigned int moduleId,int panelIndex) {
+   MODULE *module = modulelist+moduleId;
+   unsigned int baseaddr = module->baseAddr;
+   lcdCtrl.baseAddr = baseaddr;       
+   lcdCtrl.lcd_clk = module->moduleClk->fClk[0]->clockSpeedHz;
    const tLCD_PANEL *panel = lcd_panels + panelIndex;
    lcdCtrl.panel = panel;
    lcdCtrl.activeframe = 0;
@@ -239,6 +242,7 @@ void LCDRasterInit(int panelIndex) {
    lcdCtrl.palette[1] = (void *)((unsigned int)(lcdCtrl.frameaddr[0]) +  lcdCtrl.framesize[0]);
    lcdCtrl.frameaddr[1] = (void *)((unsigned int)lcdCtrl.palette[1] + 32);   
    lcdCtrl.activeframe = 0;
+  
 
    //init palette and framebuffer
 
@@ -248,12 +252,12 @@ void LCDRasterInit(int panelIndex) {
       ((unsigned short *)lcdCtrl.frameaddr[0])[i] = (0x1f<<11);//red
       ((unsigned short *)lcdCtrl.frameaddr[1])[i] = (0x1f<<11);//red
    }
- 
+   moduleEnable(moduleId);
    RasterClocksEnable(baseaddr);
    RasterAutoUnderFlowEnable(baseaddr);
    RasterIntEnable(baseaddr, RASTER_END_OF_FRAME0_INT | RASTER_END_OF_FRAME1_INT );
    RasterDisable(baseaddr);
-   RasterClkConfig(baseaddr, lcdCtrl.panel->pxl_clk, 192000000);
+   RasterClkConfig(baseaddr, lcdCtrl.panel->pxl_clk, lcdCtrl.lcd_clk);
    RasterDMAConfig(baseaddr, RASTER_DOUBLE_FRAME_BUFFER,
                    RASTER_BURST_SIZE_16, RASTER_FIFO_THRESHOLD_8,
                    RASTER_BIG_ENDIAN_DISABLE);
@@ -282,6 +286,8 @@ void LCDRasterInit(int panelIndex) {
    RasterVparamConfig(baseaddr, panel->height, panel->vsw, panel->vfp, panel->vbp);
 
    RasterFIFODMADelayConfig(baseaddr, 128);
+   
+   moduleIntConfigure(moduleId);
 }
 
 
@@ -303,6 +309,9 @@ unsigned int  LCDFrameBufferCurGet(void)
 const tLCD_PANEL *LCDTftInfoGet(void){
   return lcdCtrl.panel;
 }
+
+
+
 
 
 

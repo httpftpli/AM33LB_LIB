@@ -314,14 +314,4 @@ typedef struct {
                }POINT;
 
 
-typedef struct {
-                   signed int Divider;
-                   signed int An;
-                   signed int Bn;
-                   signed int Cn;
-                   signed int Dn;
-                   signed int En;
-                   signed int Fn;
-               }MATRIX;
-
 #endif

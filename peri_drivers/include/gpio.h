@@ -42,7 +42,7 @@
 #ifndef      __GPIO_H__
 #define      __GPIO_H__
 
-#include "hw_gpio.h"
+#include "hw_gpio_v2.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

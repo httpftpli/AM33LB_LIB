@@ -23,39 +23,11 @@
 #include "interrupt.h"
 #include "hw_gpio_v2.h"
 #include "debug.h"
-#include "pf_platform_cfg.h"
 #include "gpio_v2.h"
+#include "module.h"
 
 
-static inline unsigned int intnum2index(unsigned int intnum){
-   switch (intnum) {
-   case SYS_INT_GPIOINT0A:
-      return 0;
-   case SYS_INT_GPIOINT1A:
-       return 1;
-   case SYS_INT_GPIOINT2A:
-       return 2;
-   case SYS_INT_GPIOINT3A:
-       return 3;
-   default:break;
-   }
-   return 0;
-}
 
-static inline unsigned int index2baseaddr(unsigned int index){
-   switch (index) {
-   case 0:
-      return SOC_GPIO_0_REGS;
-   case 1:
-      return SOC_GPIO_1_REGS;
-   case 2:
-      return SOC_GPIO_2_REGS;
-   case 3:
-      return SOC_GPIO_3_REGS;
-   default:break;
-   }
-   return 0;
-}
 
 const unsigned char  unMapTbl[256] = { 
     0, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,      
@@ -81,8 +53,8 @@ typedef void (*GPIOIntHandler)();
 static  GPIOIntHandler handler[4][32];
 
 void isr_Gpio(unsigned int intnum){
-   unsigned int index = intnum2index(intnum);
-   unsigned int baseaddr = index2baseaddr(index);
+   unsigned int index = modulelist[intnum].index;
+   unsigned int baseaddr = modulelist[intnum].baseAddr;
    unsigned int irq = HWREG(baseaddr + GPIO_IRQSTATUS(0));
    unsigned char irqbyte;
    unsigned char irqpin;
@@ -397,34 +369,66 @@ void GPIO1ModuleClkConfig(void)
 }
 
 
+
 /**
- * @brief GPIO控制器初始化 
- * @return            
- * @date    2013/5/7
+ * @brief GPIO初始化
+ * @param [in] moduleId GPIO模块ID ,\b MODULE_ID_GPIOX
+ * @param [in] debounceTimer 消抖动时间  
+ *        ，为32频率的分频
+ * @param [in] debounceEnableBitmap 
+ *        32位位映射值，使能GPIO的某一位是否使能去抖动
+ * @return  NONE      
+ * @date    2013/5/29
  * @note
- * 示例代码如下：
  * @code
- * 
  * @endcode
- *
  * @pre
- *
  * @see 
  */
-void GPIOInit(){
-   unsigned int baseaddr ;
-   for (int i=0;i<4;i++) {
-      if (GPIO_USE & (1<<i)==1) {
-         baseaddr = index2baseaddr(i);
-         GPIOModuleReset(baseaddr);
-         GPIOModuleEnable(baseaddr);
-         GPIOIdleModeConfigure(baseaddr, GPIO_IDLE_MODE_NO_IDLE);
-         GPIOAutoIdleModeControl(baseaddr, GPIO_AUTO_IDLE_MODE_DISABLE);
-         GPIOAutoIdleModeControl(baseaddr, GPIO_AUTO_IDLE_MODE_DISABLE);
-         GPIODebounceTimeConfig(baseaddr, GPIODebounceTimer[i]);
-         HWREG(baseaddr + GPIO_DEBOUNCENABLE) = GPIODebounce[i];
+void GPIOInit(unsigned int moduleId, int debounceTimer,unsigned int debounceEnableBitmap) {
+   static unsigned int moduleinited0,moduleinited1,moduleinited2,moduleinited3;
+   switch(moduleId) {
+   case MODULE_ID_GPIO0:
+      if (1 == moduleinited0) {
+         return;
+      } else {
+         moduleinited0 = 1;
       }
+      break;
+   case MODULE_ID_GPIO1:
+      if (1 == moduleinited1) {
+         return;
+      } else {
+         moduleinited1 = 1;
+      }
+      break;
+   case MODULE_ID_GPIO2:
+      if (1 == moduleinited2) {
+         return;
+      } else {
+         moduleinited2 = 1;
+      }
+      break;
+   case MODULE_ID_GPIO3:
+      if (1 == moduleinited3) {
+         return;
+      } else {
+         moduleinited3 = 1;
+      }
+      break;
+   default:
+      return;
    }
+   moduleEnable(moduleId);
+   unsigned int baseaddr = modulelist[moduleId].baseAddr;
+   GPIOModuleReset(baseaddr);
+   GPIOModuleEnable(baseaddr);
+   GPIOIdleModeConfigure(baseaddr, GPIO_IDLE_MODE_NO_IDLE);
+   GPIOAutoIdleModeControl(baseaddr, GPIO_AUTO_IDLE_MODE_DISABLE);
+   GPIOAutoIdleModeControl(baseaddr, GPIO_AUTO_IDLE_MODE_DISABLE);
+   GPIODebounceTimeConfig(baseaddr,debounceTimer);
+   HWREG(baseaddr + GPIO_DEBOUNCENABLE) = debounceEnableBitmap;
+   moduleIntConfigure(moduleId);
 }
 
 //! @}

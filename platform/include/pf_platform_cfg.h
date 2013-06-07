@@ -2,6 +2,7 @@
 #define __PF_PLATFORM_CFG_H_
 
 #include "soc_AM335x.h"
+#include "module.h"
 
 //set witch usb instance use for udist : 0 or 1
 #define USB_INSTANCE_FOR_USBDISK   1
@@ -25,7 +26,14 @@
 #define INT_PRIORITY_RTC          (INT_PRIORITY_USER_NORMAL-5)
 #define INT_PRIORITY_DCAN0_LINE0  (INT_PRIORITY_USER_NORMAL-6)
 #define INT_PRIORITY_DCAN1_LINE0  (INT_PRIORITY_USER_NORMAL-6)
+#define INT_PRIORITY_TIMER0       (INT_PRIORITY_USER_NORMAL-7)
+#define INT_PRIORITY_TIMER1       (INT_PRIORITY_USER_NORMAL-7)
 #define INT_PRIORITY_TIMER2       (INT_PRIORITY_USER_NORMAL-7)
+#define INT_PRIORITY_TIMER3       (INT_PRIORITY_USER_NORMAL-7)
+#define INT_PRIORITY_TIMER4       (INT_PRIORITY_USER_NORMAL-7)
+#define INT_PRIORITY_TIMER5       (INT_PRIORITY_USER_NORMAL-7)
+#define INT_PRIORITY_TIMER6       (INT_PRIORITY_USER_NORMAL-7)
+#define INT_PRIORITY_TIMER7       (INT_PRIORITY_USER_NORMAL-7)
 #define INT_PRIORITY_EQEP2         (INT_PRIORITY_USER_NORMAL-8)
 #define INT_PRIORITY_USB0        (INT_PRIORITY_USER_NORMAL-9)
 #define INT_PRIORITY_USB1        (INT_PRIORITY_USER_NORMAL-10)
@@ -40,14 +48,15 @@
 #define INT_PRIORITY_LCD         (INT_PRIORITY_USER_NORMAL-16)
 
 #define INT_PRIORITY_eCAP0       (INT_PRIORITY_USER_NORMAL-16)
+#define INT_PRIORITY_eCAP1       (INT_PRIORITY_USER_NORMAL-16)
 #define INT_PRIORITY_eCAP2       (INT_PRIORITY_USER_NORMAL-16)
+#define INT_PRIORITY_UART1       (INT_PRIORITY_USER_NORMAL-16)
+#define INT_PRIORITY_UART2       (INT_PRIORITY_USER_NORMAL-16)
+#define INT_PRIORITY_UART3       (INT_PRIORITY_USER_NORMAL-16)
+#define INT_PRIORITY_UART4       (INT_PRIORITY_USER_NORMAL-16)
+#define INT_PRIORITY_UART5       (INT_PRIORITY_USER_NORMAL-16)
 
 
-//config GPIO
-#define GPIO_USE  0x03 //bit map of GPIO use , bit 0 for gpio0 ;bit1 for gpio1;bit3 for gpio3
-
-static const unsigned int  GPIODebounce[4] = {0xffffffff,0xffffffff,0xffffffff,0xffffffff}; 
-static const unsigned int  GPIODebounceTimer[4] = {24,24,24,24};// gpio debounce time 
 
 //config GPMC
 
@@ -63,7 +72,7 @@ static const unsigned int CS_ADDRLINE_BIT[7] = {24,24,24,24,24,24,24};
 
 //config timetick
 //config witch timer used for timertick
-#define TIMER_TIMERTICK   SOC_DMTIMER_2_REGS
+#define TIMER_TIMERTICK   MODULE_ID_TIMER2
 
 
 //config LCD backlight control gpio
@@ -74,8 +83,9 @@ static const unsigned int CS_ADDRLINE_BIT[7] = {24,24,24,24,24,24,24};
 
 #define TFT_AT080TN52    0
 #define TFT_AT070TN92    1
+#define TFT_LSA40AT9001  2
 //select TFT panel 
-#define TFT_PANEL    TFT_AT070TN92  
+#define TFT_PANEL    TFT_LSA40AT9001  
 
 
 

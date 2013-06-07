@@ -86,7 +86,7 @@ static  const tLCD_PANEL lcd_panels[] = {
 		.vfp = 12,
 		.vbp = 23-10,
 		.vsw = 10,
-		.pxl_clk = 40000000,
+		.pxl_clk = 34000000,
 		.invert_pxl_clk = 0,
 		}
 };

@@ -1651,7 +1651,7 @@ unsigned int TSCADCFIFOWordCountRead(unsigned int baseAdd, unsigned int FIFOSel)
 void TSCADCFIFOIRQThresholdLevelConfig(unsigned int baseAdd, unsigned char FIFOSel,
                                     unsigned char numberOfSamples)
 {
-    HWREG(baseAdd + TSC_ADC_SS_FIFOTHRESHOLD(FIFOSel)) = numberOfSamples ;
+    HWREG(baseAdd + TSC_ADC_SS_FIFOTHRESHOLD(FIFOSel)) = numberOfSamples-1 ;
 }
 
 /**

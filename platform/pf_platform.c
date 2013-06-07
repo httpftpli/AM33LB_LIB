@@ -24,6 +24,7 @@
 #include "pf_usbmsc.h"
 #include "pf_hs_mmcsd.h"
 #include "pf_tsc.h"
+#include "module.h"
 
 
 extern void EDMAModuleClkConfig(void);
@@ -141,6 +142,7 @@ MUX_VAL(CONTROL_PADCONF_LCD_DATA15, (IEN | OFF | MODE0 )) /* LCD_DATA15 */\
 MUX_VAL(CONTROL_PADCONF_LCD_VSYNC, (IDIS | OFF | MODE0 )) /* LCD_VSYNC */\
 MUX_VAL(CONTROL_PADCONF_LCD_HSYNC, (IDIS | OFF | MODE0 )) /* LCD_HSYNC */\
 MUX_VAL(CONTROL_PADCONF_LCD_PCLK, (IDIS | OFF | MODE0 )) /* LCD_PCLK */\
+MUX_VAL(CONTROL_PADCONF_GPMC_WAIT0, (IEN | PU | MODE7 )) /* GPIO0[30] */\
 MUX_VAL(CONTROL_PADCONF_LCD_AC_BIAS_EN, (IDIS | OFF | MODE0 )) /* LCD_AC_BIAS_EN */\
 MUX_VAL(CONTROL_PADCONF_ECAP0_IN_PWM0_OUT, (IEN | PU | MODE0 )) /* ECAP0_IN_PWM0_OUT */\
 MUX_VAL(CONTROL_PADCONF_AIN7, (IEN | OFF | MODE0 )) /* AIN7 */\
@@ -244,7 +246,7 @@ static void EDMAInit(){
 
 static void L3L4ClockInit(void){
    /*domain power state transition*/
-   HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) =
+    HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) =
                              CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP; //L3S
     while((HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
      CM_PER_L3S_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
@@ -308,35 +310,20 @@ void platformInit(void) {
    MMUConfigAndEnable();
    CacheEnable(CACHE_ICACHE);
    L3L4ClockInit();
-   IntAINTCInit();
-   I2C0ModuleClkConfig();
-   I2CInit(SOC_I2C_0_REGS,400000, NULL, 0);
-   I2C1ModuleClkConfig();
+   IntAINTCInit();  
+   I2CInit(MODULE_ID_I2C0,400000, NULL, 0);
    RTCInit(); 
    UARTStdioInit(); 
    EDMAInit();
-   DCANModuleClkConfig();
-   DCANMsgRAMInit(0);
-   DCANMsgRAMInit(1);  
-   DMTimer2ModuleClkConfig();  //dtimer2 for tick
-   PWMSSModuleClkConfig(2);    
-   PWMSSModuleClkConfig(1); 
-   PWMSSModuleClkConfig(0);   
-   HSMMCSDModuleClkConfig();
-   TSCADCModuleClkConfig();
-   GPMCClkConfig();
-   GPMCInitForNOR(SOC_GPMC_0_REGS);
+   PWMSSInit();
+   GPMCInitForNOR();
    USBModuleClkConfig(); 
-   perAINTCConfigure();   
+   USBIntConfigure(0);
    IntMasterIRQEnable();
    TimerTickConfigure();
    TimerTickStart();
-   GPIO0ModuleClkConfig();
-   GPIO1ModuleClkConfig();
-   GPIOInit();
    usbMscInit();
-   LCDModuleClkConfig();
-   LCDRasterInit(TFT_PANEL);		//LCD initation
+   LCDRasterInit(MODULE_ID_LCDC, TFT_PANEL);		//LCD initation
    ECAPInit(SOC_ECAP_0_REGS);
    
 } 

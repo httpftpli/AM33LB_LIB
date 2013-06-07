@@ -20,6 +20,7 @@
 #include "type.h"
 #include "mmath.h"
 #include "mmcsd_proto_hooks.h"
+#include "module.h"
 
 
 extern void hsMmcSdBusWidthSet(mmcsdCtrlInfo *ctrl, unsigned char buswidth, BOOL ddr);
@@ -562,8 +563,7 @@ static unsigned int mmcbuswidthset(mmcsdCtrlInfo *ctrl) {
  *  mmcsdCtrlInfo结构初始化 ，该结构体初始化后调用
  *  MMCSDP_CtrlInit()初始化mmcsd控制器
  * @param [out] ctrl    mmcsdCtrlInfo指针
- * @param [in]  memBase 控制器基地址  SOC_MMCHS_X_REGS       
- * @param [in]  ipClk   mmcsd控制器时钟频率 
+ * @param [in]  moduleId 控制器moduleId  \b MODULE_ID_MMCSDX 
  * @param [in]  opClk   mmcsd卡 clk频率 
  * @param [in]  ddrSupport       mmcsd卡双边沿 
  * @param [in]  card       mmcsdCardInfo结构，代表mmcsd卡 
@@ -585,7 +585,7 @@ static unsigned int mmcbuswidthset(mmcsdCtrlInfo *ctrl) {
  * busWidthSupport不能为 \b MMCSD_BUSWIDTH_8BIT 
  * @see 
  */
-void  MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int memBase,unsigned int ipClk,
+void  MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int moduleId,
                        unsigned int opClk,unsigned short busWidthSupport,
                        unsigned short ddrSupport, 
                        mmcsdCardInfo *card,
@@ -595,8 +595,9 @@ void  MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int memBase,unsigned int 
                        unsigned int xferstatusget(mmcsdCtrlInfo *ctrl)
                        ){
    memset(ctrl,0,sizeof(*ctrl));
-   ctrl->memBase = memBase;
-   ctrl->ipClk = ipClk;
+   ctrl->moduleId = moduleId;
+   ctrl->memBase = modulelist[moduleId].baseAddr;
+   ctrl->ipClk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
    ctrl->opClk = opClk;
    ctrl->busWidthSupport = busWidthSupport;
    ctrl->busDdrSupport = !!ddrSupport;

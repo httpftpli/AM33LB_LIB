@@ -149,4 +149,10 @@ BOOL ringBufRead(RINGBUF * ringBuf, void ** item){
    return TRUE;
 }
 
+
+void ringBufClear(RINGBUF * ringBuf){
+   ringBuf->readIndex = 0;
+   ringBuf->writeIndex = 0;
+}
+
 //! @}

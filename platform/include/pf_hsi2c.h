@@ -5,7 +5,7 @@
 
 
 
-extern void I2CInit(unsigned int baseAddr,unsigned int i2cClkFreq,
+extern void I2CInit(unsigned int moduleId,unsigned int i2cClkFreq,
              unsigned short *slaveAddr,
              unsigned int szSlave);
 BOOL I2CMasterWrite(unsigned baseAddr,unsigned short slaveAddr,const void *buf,unsigned int szWrite);

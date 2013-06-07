@@ -103,9 +103,6 @@ inline void  HWREGHBITARRAY(unsigned int addr, unsigned int bit,
 #define TRUE    1
 #define FALSE   0
 
-#define MIN(a,b)  (((a)>(b))?(b):(a))
-#define MAX(a,b)  (((a)>(b))?(a):(b))
-#define ABS(a)    (((a)<0)?(-(a)):(a))
 #define UNUSED(x) (void)(x)
 
 #define __mdisr 

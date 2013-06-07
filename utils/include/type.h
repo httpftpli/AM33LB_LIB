@@ -23,7 +23,8 @@ typedef double         FP64;                                            /*  Ë«¾«
 typedef signed long long int64; 
 
 #if defined(__IAR_SYSTEMS_ICC__)
-typedef unsigned char TEXTCHAR;
+typedef   char TEXTCHAR;
+#define T 
 #endif                       
 
 #define TRUE  1
@@ -40,6 +41,7 @@ typedef unsigned char TEXTCHAR;
 #define __int
 typedef char BOOL;
 typedef unsigned int size_t;
+typedef unsigned int size_t16;
 
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE*)0)->MEMBER)
 

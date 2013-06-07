@@ -447,10 +447,8 @@ static void enableClock(Clock *clkPtr)
  * \return  None.
  *
  **/
-void enableModule(unsigned int moduleId)
+void enableModule(ModuleClock *moduleClk)
 {
-	/*	with clock id get reference to corresponding module clock	*/
-	ModuleClock *moduleClk = ModuleClockList[moduleId];
 	
 	/*	Enable the module by configuring the control register	*/
 	if(NULL != moduleClk->clockCtrlReg)
@@ -497,12 +495,9 @@ void disableModule(unsigned int moduleId)
  * \return  None
  *
  **/
-void enableModuleClock(unsigned int moduleId)
+void enableModuleClock(ModuleClock *moduleClk)
 {
 	unsigned int index = 0;
-	
-	/*	with clock id get reference to corresponding module clock	*/
-	ModuleClock *moduleClk = ModuleClockList[moduleId];
 	
 	//enableModule(moduleId);
 	
@@ -533,7 +528,7 @@ void enableModuleClock(unsigned int moduleId)
 		enableClock(moduleClk->clkEnable[index++]);
 	}
 	
-	enableModule(moduleId);
+	enableModule(moduleClk);
 }
 
 
@@ -896,13 +891,13 @@ BOOL deviceClockGateStatus(unsigned int clockDomainStatusList[], unsigned noOfEl
  *
  * \return  None
  **/
-void deviceClockEnable(unsigned int enableList[], unsigned noOfElements)
+void deviceClockEnable(ModuleClock *moduleClks, unsigned noOfElements)
 {
 	unsigned int index = 0;
 	
 	for(index = 0; index < noOfElements; index++)
 	{
-		enableModuleClock(enableList[index]);
+		enableModuleClock(moduleClks+index);
 	}
 }
 

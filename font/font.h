@@ -17,6 +17,8 @@
 #include "ff.h"
 #include "type.h"
 
+#define MAX_FONT_NFONTLIB      4
+
 #define  PIXELS_PER_BYTE					8
 #define	FONT_INDEX_TAB_SIZE				4    //单个字符对应的字体检索信息长度为 4Byte  (b0~b25: 记录点阵信息的起始地址, b26~b31: 记录当前字符的象素宽度)
 #define	GET_FONT_WIDTH(charinfo)		(charinfo >> 26)
@@ -32,13 +34,20 @@ typedef struct tagFlSectionInfo {
 
 typedef struct tagFontLibHeader {
    char             magic[4];    //'U'(or ’M’), 'F', 'L', X---Unicode(or MBCS) Font Library, X: 表示版本号. 分高低4位。如 0x12表示 Ver 1.2
-   unsigned int 	   Size;
+   unsigned int 	Size;
    unsigned char    nSection; // 共分几段数据，主要针对 UNICODE 编码有效。
    unsigned char    YSize;
    unsigned short   wCpFlag;    // codepageflag:  bit0~bit13 每个bit分别代表一个CodePage 标志，如果是1，则表示当前CodePage 被选定，否则为非选定。
    unsigned short   bTotalChars;
-      char             reserved[2];      // 预留字节
+      char          reserved[2];      // 预留字节
 } FL_HEADER, *PFL_HEADER; 
+
+
+typedef struct __font{
+   FL_HEADER fl_header;
+   unsigned int memaddr;
+   FL_SECTION_INF *sectionInfoList[20];
+} FONT;
 
 
 
@@ -52,10 +61,16 @@ typedef struct tagCharInfo{
 }FL_CHARINFO, *PFL_CHARINFO;
 
 
+typedef struct tagmetric{
+   unsigned int width;
+   unsigned int height;
+}METRIC ;
 
 unsigned char  GetFontYSize();
-signed char loadFont(TCHAR * filepath, unsigned int memaddr);
-BOOL getCharInfo(unsigned short wCode,FL_CHARINFO *pcharinfo);
+signed char loadFont(TCHAR * filepath, FONT  *font);
+signed char  initFont(TCHAR * dirpath,unsigned int addr);
+BOOL getCharInfo(unsigned short wCode,unsigned int font,FL_CHARINFO *pcharinfo);
+void getStringMetric(const TEXTCHAR *string ,unsigned int font,METRIC *metric);
 
 
 #endif 

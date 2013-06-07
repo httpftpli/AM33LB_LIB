@@ -265,13 +265,30 @@ unsigned int CANSend_noblock(unsigned int baseAddr,CAN_FRAME *frame){
 }
 
 
+
+static void DCANMsgRAMInit(unsigned int instanceNum)
+{
+    if(0 == instanceNum)
+    {
+        HWREG(SOC_CONTROL_REGS + CONTROL_DCAN_RAMINIT) |= 
+              CONTROL_DCAN_RAMINIT_DCAN0_RAMINIT_START;
+        while (HWREG(SOC_CONTROL_REGS+CONTROL_DCAN_RAMINIT)&CONTROL_DCAN_RAMINIT_DCAN0_RAMINIT_DONE==0);       
+    }
+    else if (1==instanceNum) {
+       HWREG(SOC_CONTROL_REGS + CONTROL_DCAN_RAMINIT) |= 
+              CONTROL_DCAN_RAMINIT_DCAN1_RAMINIT_START;
+        while (HWREG(SOC_CONTROL_REGS+CONTROL_DCAN_RAMINIT)&CONTROL_DCAN_RAMINIT_DCAN1_RAMINIT_DONE==0);   
+       
+    }
+} 
+
+
 /**
  * @brief CAN控制器初始化
- * @param [in] baseAdd CAN控制器地址
+ * @param [in] moduleId CAN控制器模块号 \b MODULE_ID_DCANX
  * @param [in] mode 
  * - CAN_MODE_NORMAL \n  - CAN_MODE_TEST_LOOPBACK \n 
  * - CAN_MODE_TEST_LOOPBACK_SILENT
- * @param [in] clkInFreq 值为 \b DCAN_IN_CLK 
  * @param [in] bitRate CAN总线频率
  * @return   void        
  * @date    2013/5/7
@@ -285,9 +302,14 @@ unsigned int CANSend_noblock(unsigned int baseAddr,CAN_FRAME *frame){
  *
  * @see 
  */
-void CANInit(unsigned int baseAdd,unsigned int mode,unsigned int clkInFreq,unsigned int bitRate){
-   unsigned index = (SOC_DCAN_0_REGS==baseAdd)? 0:1;
+void DCANInit(unsigned int moduleId,unsigned int mode,unsigned int bitRate){
+   MODULE *module = modulelist+moduleId; 
+   unsigned int index = module->index;
    g_can[index].fgSendFinish = 1;
+   unsigned int baseAdd = module->baseAddr;
+   unsigned int clkInFreq = module->moduleClk->fClk[0]->clockSpeedHz;
+   moduleEnable(moduleId);
+   DCANMsgRAMInit(index);
    DCANReset(baseAdd);
    DCANIntLineEnable(baseAdd,DCAN_INT_LINE0);
    DCANIntEnable(baseAdd,DCAN_ERROR_INT); 
@@ -304,6 +326,7 @@ void CANInit(unsigned int baseAdd,unsigned int mode,unsigned int clkInFreq,unsig
    DCANConfigRegWriteAccessControl(baseAdd,DCAN_CONF_REG_WR_ACCESS_DISABLE);
    CANRxMsgObjectConfig(baseAdd);
    DCANNormalModeSet(baseAdd);
+   moduleIntConfigure(moduleId);
 }
 
 
@@ -384,21 +407,7 @@ void DCANModuleClkConfig(void)
 }
 
 
-void DCANMsgRAMInit(unsigned int instanceNum)
-{
-    if(0 == instanceNum)
-    {
-        HWREG(SOC_CONTROL_REGS + CONTROL_DCAN_RAMINIT) |= 
-              CONTROL_DCAN_RAMINIT_DCAN0_RAMINIT_START;
-        while (HWREG(SOC_CONTROL_REGS+CONTROL_DCAN_RAMINIT)&CONTROL_DCAN_RAMINIT_DCAN0_RAMINIT_DONE==0);       
-    }
-    else if (1==instanceNum) {
-       HWREG(SOC_CONTROL_REGS + CONTROL_DCAN_RAMINIT) |= 
-              CONTROL_DCAN_RAMINIT_DCAN1_RAMINIT_START;
-        while (HWREG(SOC_CONTROL_REGS+CONTROL_DCAN_RAMINIT)&CONTROL_DCAN_RAMINIT_DCAN1_RAMINIT_DONE==0);   
-       
-    }
-} 
+
 
 /**
  * @}

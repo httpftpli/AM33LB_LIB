@@ -47,6 +47,8 @@
 #include "hw_types.h"
 #include "hsi2c.h"
 #include "type.h"
+#include "module.h"
+#include "mmath.h"
 
 
 #define I2C_MODE_SLAVE     0
@@ -327,11 +329,27 @@ void I2C0ModuleClkConfig(void)
 
 
 
-
-void I2CInit(unsigned int baseAddr,unsigned int i2cClkFreq,
+/**
+ * @brief I2C初始化
+ * @param [in] I2C的moduleId \b MODULE_ID_I2CX
+ * @param [in] i2cClkFreq   I2C总线频率         
+ * @param [in] slaveAddr 
+ *        slaveAddr缓冲区，当I2C控制器作为从机时使用，不作为从机时时可为NULL
+ * @param [in] szSlave  从机地址个数，当szSlave最大为4
+ * @return    NONE       
+ * @date    2013/5/29
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
+void I2CInit(unsigned int moduleId,unsigned int i2cClkFreq,
              unsigned short *slaveAddr,
              unsigned int szSlave)
 {
+   moduleEnable(moduleId);
+   unsigned int baseAddr = modulelist[moduleId].baseAddr;
    I2CMasterReset(baseAddr);
    /* Put i2c in reset/disabled state */
    I2CMasterDisable(baseAddr);
@@ -341,7 +359,8 @@ void I2CInit(unsigned int baseAddr,unsigned int i2cClkFreq,
    I2CMasterInitExpClk(baseAddr, 48000000, 12000000, i2cClkFreq);
    I2CMasterIntEnableEx(baseAddr, I2C_INT_TRANSMIT_READY);
    if (slaveAddr!=NULL) {
-      for (int i = 0; i < szSlave; i++) {
+      unsigned int n = MIN(4,szSlave);
+      for (int i = 0; i < n; i++) {
          I2COwnAddressSet(baseAddr, slaveAddr[i], i);
       }
    }

@@ -133,6 +133,9 @@ typedef struct _module_ {
 
 extern MODULE modulelist[128];
 
+extern void moduleEnable(unsigned int moduleId);
+extern void moduleIntConfigure(unsigned int moduleID);
+
 
 
 

@@ -1,43 +1,15 @@
 /**
- * \file   uart.c
+ *  \file   pf_uart.c
  *
- * \brief  This file contains functions which does the platform specific
- *         configurations for UART.
+ *  \brief  
+ *  \author  李飞亮  
+ *  \addtogroup UART
+ *  @{ 
+ *   include "pf_uart.h" \n
+ *   include "uart_irda_cir.h" 
  */
 
-/*
-* Copyright (C) 2010 Texas Instruments Incorporated - http://www.ti.com/
-*/
-/*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions
-*  are met:
-*
-*    Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-*
-*    Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the
-*    distribution.
-*
-*    Neither the name of Texas Instruments Incorporated nor the names of
-*    its contributors may be used to endorse or promote products derived
-*    from this software without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*/
+
 
 
 #include "hw_control_AM335x.h"
@@ -46,32 +18,11 @@
 #include "hw_cm_per.h"
 #include "platform.h"
 #include "hw_types.h"
+#include "module.h"
+#include "uart_irda_cir.h"
+#include "pf_uart.h"
 
-/**
- * \brief   This function selects the UART pins for use. The UART pins
- *          are multiplexed with pins of other peripherals in the SoC
- *          
- * \param   instanceNum       The instance number of the UART to be used.
- *
- * \return  None.
- *
- * \note    This pin multiplexing depends on the profile in which the EVM
- *          is configured.
- */
-void UARTPinMuxSetup(unsigned int instanceNum)
-{
-     if(0 == instanceNum)
-     {
-          /* RXD */
-          HWREG(SOC_CONTROL_REGS + CONTROL_CONF_UART_RXD(0)) = 
-          (CONTROL_CONF_UART0_RXD_CONF_UART0_RXD_PUTYPESEL | 
-           CONTROL_CONF_UART0_RXD_CONF_UART0_RXD_RXACTIVE);
 
-          /* TXD */
-          HWREG(SOC_CONTROL_REGS + CONTROL_CONF_UART_TXD(0)) = 
-           CONTROL_CONF_UART0_TXD_CONF_UART0_TXD_PUTYPESEL;
-     }
-}
 
 /*
 ** This function enables the system L3 and system L4_WKUP clocks.
@@ -267,5 +218,132 @@ void UART0ModuleClkConfig(void)
           (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_UART0_CLKCTRL) &
            CM_WKUP_UART0_CLKCTRL_IDLEST));
 }
+
+
+
+
+
+
+
+
+void UARTRcvRegistHander(UARTRCVHANDLER handler){
+
+}
+
+
+UARTRCVHANDLER rcvhandler = NULL;
+
+void isr_uart(unsigned int intNum){
+   unsigned int baseaddr = modulelist[intNum].baseAddr;
+   if(UARTIntPendingStatusGet(baseaddr) == UART_N0_INT_PENDING)
+      return;
+   unsigned int intval =  UARTIntIdentityGet(baseaddr);
+   if (intval & UART_INTID_RX_THRES_REACH) {
+
+   }
+}
+
+static unsigned int UARTDivisorValCompute1(unsigned int moduleClk,unsigned int baudRate,unsigned int *mode_nX)
+{
+    unsigned int divisor13, devisor16, erate13,erate16;
+    divisor13 = (moduleClk)/(13 * baudRate);
+    devisor16 = (moduleClk)/(16 * baudRate);
+    erate13 = ABS((int)baudRate-(int)(moduleClk/divisor13/13)); 
+    erate16 = ABS((int)baudRate-(int)(moduleClk/devisor16/16));
+    if (erate13<erate16) {
+       *mode_nX = 13;
+       return divisor13;
+    }else{
+       *mode_nX = 16;
+       return erate16;      
+    }   
+}
+
+
+/**
+ * @brief 初始化UART
+ * @param [in] moduleId UART模块ID，\b MODULE_ID_UARTX
+ * @param [boudRate] 波特率          
+ * @param [in]  charLen 字符长度 
+ * @param [in]  parityFlag 奇偶校验 
+ * - UART_PARITY_REPR_1 \n - UART_PARITY_REPR_0 
+ * - UART_ODD_PARITY \n UART_EVEN_PARITY 
+ * - UART_PARITY_NONE 
+ * @param [in]  stopBit 停止位 
+ * - UART_FRAME_NUM_STB_1 
+ * - UART_FRAME_NUM_STB_1_5_2 
+ * @param [in] intFlag 中断使能标记 
+ *  - UART_INT_CTS - to enable Clear-To-Send interrupt,
+ *  - UART_INT_RTS - to enable Request-To-Send interrupt,
+ *  - UART_INT_XOFF - to enable XOFF interrupt,
+ *  - UART_INT_SLEEPMODE - to enable Sleep Mode,
+ *  - UART_INT_MODEM_STAT - to enable Modem Status interrupt,
+ *  - UART_INT_LINE_STAT - to enable Line Status interrupt,
+ *  - UART_INT_THR - to enable Transmitter Holding Register Empty interrupt,
+ *  - UART_INT_RHR_CTI - to enable Receiver Data available interrupt and
+ *                       Character timeout indication interrupt.
+ *  @param [in] rxFifoLen 接受缓冲区中断触发深度
+ *  @param [out] TxFifoLen 发送缓冲区中断触发深度
+ * @return  NONE         
+ * @date    2013/5/23
+ * @note 
+ */                                      
+void uartInit(unsigned int moduleId, unsigned int boudRate, 
+              unsigned int charLen,  unsigned int parityFlag,
+              unsigned int stopBit,  unsigned int intFlag,
+              unsigned int rxFifoLen,unsigned int txFiloLen) {
+   MODULE *module = &modulelist[moduleId];
+   moduleEnable(moduleId);
+   unsigned int baseaddr = module->baseAddr;
+   /* Performing a module reset. */
+   UARTModuleReset(baseaddr);
+
+   /* Setting the TX and RX FIFO Trigger levels */
+   unsigned int fifoConfig = UART_FIFO_CONFIG(UART_TRIG_LVL_GRANULARITY_1,
+                                              UART_TRIG_LVL_GRANULARITY_1,
+                                              txFiloLen,
+                                              rxFifoLen,
+                                              1,
+                                              1,
+                                              UART_DMA_EN_PATH_SCR,
+                                              UART_DMA_MODE_0_ENABLE);
+   
+   /* Configuring the FIFO settings. */
+   UARTFIFOConfig(baseaddr, fifoConfig);
+
+   /* Performing Baud Rate settings. */
+   /* Computing the Divisor Value. */
+   unsigned int mode_nX;
+   unsigned int divisorValue = UARTDivisorValCompute1(module->moduleClk->fClk[0]->clockSpeedHz,
+                                                      boudRate,&mode_nX);
+
+   /* Programming the Divisor Latches. */
+   UARTDivisorLatchWrite(baseaddr, divisorValue);
+
+   /* Switching to Configuration Mode B. */
+   UARTRegConfigModeEnable(baseaddr, UART_REG_CONFIG_MODE_B);
+
+   /* Programming the Line Characteristics. */
+   UARTLineCharacConfig(baseaddr,(charLen | stopBit),parityFlag);
+
+   /* Disabling write access to Divisor Latches. */
+   UARTDivisorLatchDisable(baseaddr);
+
+   /* Disabling Break Control. */
+   UARTBreakCtl(baseaddr, UART_BREAK_COND_DISABLE);
+   UARTIntEnable(baseaddr, intFlag);
+   UARTFIFORegisterWrite(baseaddr, UART_FCR_PROGRAM(rxFifoLen,txFiloLen,0,1,1,1));
+
+   /* Switching to operating mode. */
+   if (13==mode_nX) {
+      UARTOperatingModeSelect(baseaddr, UART13x_OPER_MODE);
+   }else{
+      UARTOperatingModeSelect(baseaddr, UART16x_OPER_MODE);
+   }
+   
+   moduleIntConfigure(moduleId);
+   
+}
+//! @}  
 
 /****************************** End of file *********************************/

@@ -2,6 +2,7 @@
 #include "hs_mmcsd.h"
 #include "type.h"
 #include "debug.h"
+#include "module.h"
 
 BOOL hsMmcSdCardPresent(mmcsdCtrlInfo *ctrl){
    return HSMMCSDIsCardInserted(ctrl->memBase);
@@ -18,47 +19,50 @@ void hsMmcSdBusFreqSet(mmcsdCtrlInfo *ctrl, unsigned int busFreq){
 void hsMmcSdInit(mmcsdCtrlInfo *ctrl)
 {
     int status = 0;
+    unsigned int baseaddr = modulelist[ctrl->moduleId].baseAddr;
+    moduleEnable(ctrl->moduleId);
 
     /*Refer to the MMC Host and Bus configuration steps in TRM */
     /* controller Reset */
-    status = HSMMCSDSoftReset(ctrl->memBase);
+    status = HSMMCSDSoftReset(baseaddr);
 
     if (status != 0)
     {
         mdError("HS MMC/SD Reset failed");
     }
     
-    HSMMCSDIntrStatusClear(ctrl->memBase,0xFFFFFFFF);
+    HSMMCSDIntrStatusClear(baseaddr,0xFFFFFFFF);
 
     /* Lines Reset */
-    HSMMCSDLinesReset(ctrl->memBase, HS_MMCSD_ALL_RESET);
+    HSMMCSDLinesReset(baseaddr, HS_MMCSD_ALL_RESET);
 
     /* Set supported voltage list */
-    HSMMCSDSupportedVoltSet(ctrl->memBase, HS_MMCSD_SUPPORT_VOLT_1P8 |
+    HSMMCSDSupportedVoltSet(baseaddr, HS_MMCSD_SUPPORT_VOLT_1P8 |
                                            HS_MMCSD_SUPPORT_VOLT_3P0
                              |HS_MMCSD_SUPPORT_VOLT_3P0);  
 
-    HSMMCSDSystemConfig(ctrl->memBase, HS_MMCSD_AUTOIDLE_ENABLE);
+    HSMMCSDSystemConfig(baseaddr, HS_MMCSD_AUTOIDLE_ENABLE);
 
     /* Set the bus width */
-    HSMMCSDBusWidthSet(ctrl->memBase, HS_MMCSD_BUS_WIDTH_1BIT );
+    HSMMCSDBusWidthSet(baseaddr, HS_MMCSD_BUS_WIDTH_1BIT );
 
     /* Set the bus voltage */
-    HSMMCSDBusVoltSet(ctrl->memBase, HS_MMCSD_BUS_VOLT_3P0);
+    HSMMCSDBusVoltSet(baseaddr, HS_MMCSD_BUS_VOLT_3P0);
 
     /* Bus power on */
-    status = HSMMCSDBusPower(ctrl->memBase, HS_MMCSD_BUS_POWER_ON);
+    status = HSMMCSDBusPower(baseaddr, HS_MMCSD_BUS_POWER_ON);
    
     mdAssert(status ==0 );
 
     /* Set the initialization frequency */  
-    HSMMCSDBusFreqSet(ctrl->memBase, ctrl->ipClk, 400000, 0);
+    HSMMCSDBusFreqSet(baseaddr, ctrl->ipClk, 400000, 0);
 
-    HSMMCSDInitStreamSend(ctrl->memBase);
+    HSMMCSDInitStreamSend(baseaddr);
 
     unsigned int intr = (HS_MMCSD_INTR_CMDCOMP | HS_MMCSD_INTR_CMDTIMEOUT |
                             HS_MMCSD_INTR_DATATIMEOUT | HS_MMCSD_INTR_TRNFCOMP);
-    HSMMCSDIntrEnable(ctrl->memBase, intr); 
+    HSMMCSDIntrEnable(baseaddr, intr); 
+    moduleIntConfigure(ctrl->moduleId);
 }
 
 /**

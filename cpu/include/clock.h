@@ -46,6 +46,7 @@ extern "C" {
 #define     CLK_CLOCK_SPEED_250_MHZ              (250*1000*1000)
 #define     CLK_CLOCK_SPEED_200_MHZ              (200*1000*1000)
 #define     CLK_CLOCK_SPEED_100_MHZ              (100*1000*1000)
+#define     CLK_CLOCK_SPEED_96_MHZ              (96*1000*1000)
 
 /*    Maximum inputs for the Mux    */
 #define     CLK_MUX_MAX_INPUT_CLOCKS             (0x6)
@@ -607,16 +608,16 @@ typedef struct {
 
 /*    Clock management API's    */
 
-void deviceClockEnable(unsigned int enableList[], unsigned noOfElements);
+void deviceClockEnable(ModuleClock *moduleClks, unsigned noOfElements);
 
 // disable all modules & their clocks
 BOOL deviceClockDisable(unsigned int moduleDisableList[], unsigned noOfElements);
 
-void enableModule(unsigned int moduleId);
+void enableModule(ModuleClock *moduleClk);
 
 void disableModule(unsigned int moduleId);
 
-void enableModuleClock(unsigned int moduleId);
+void enableModuleClock(ModuleClock *moduleClk);
 
 unsigned int disableModuleClock(unsigned int moduleId, tBoolean isBlockingCall);
 

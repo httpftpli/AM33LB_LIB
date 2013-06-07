@@ -524,6 +524,7 @@ extern "C" {
 ******************************************************************************/
 
 /* APIs pertaining to UART. */
+                         
 
 extern unsigned int UARTOperatingModeSelect(unsigned int baseAdd,
                                             unsigned int modeFlag);

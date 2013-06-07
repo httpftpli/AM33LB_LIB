@@ -30,6 +30,10 @@ BOOL SendMessage (MSG *msg){
    return ringBufPush(&msgRing,msg);
 }
 
+void clearMessageRing(){
+   ringBufClear(&msgRing);
+}
+
 
 //! @}
 

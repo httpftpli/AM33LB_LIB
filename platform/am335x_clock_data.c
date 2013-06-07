@@ -97,7 +97,9 @@ Clock clk24MhzGclkClock;
 Clock cpsw5MhzGclkClock;
 Clock i2c0GclkClock;
 Clock gpio0GclkClock;
+Clock gpio2GclkClock;
 Clock timer1IclkClock;
+Clock dcanGclkClock;
 ClockDomain wkupClkDomain;
 
 
@@ -584,6 +586,8 @@ Clock clk32KhzTimerClock = {
 };
 
 /**********************************************************************/
+
+
 MuxParentClockSel timer2ClkMux = {
 	.parentClock		 = 	{
 								&tclkinClock,
@@ -648,6 +652,27 @@ Clock timer4ClkClock 	= {
 	.muxInputSelVal		=	CM_DPLL_CLKSEL_TIMER4_CLK_CLKSEL_CLK_M_OSC, /*	MOSC	*/
 	.activeChildCount	=	0,
 };
+/*	TIMER5_CLK	*/
+Clock timer5ClkClock 	= {
+	.clkName			=	"timer5ClkClock",
+	.clockSpeedHz		=	CLK_EXT_CRYSTAL_SPEED,
+	.parentClock		=	&sysClkInClock,
+	.muxInputSelMask	=	CM_DPLL_CLKSEL_TIMER5_CLK_CLKSEL,
+	.muxInputSelReg		=	(unsigned int *)(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER5_CLK),
+	.muxInputSelVal		=	CM_DPLL_CLKSEL_TIMER5_CLK_CLKSEL_CLK_M_OSC, /*	MOSC	*/
+	.activeChildCount	=	0,
+};
+/*	TIMER6_CLK	*/
+Clock timer6ClkClock 	= {
+	.clkName			=	"timer6ClkClock",
+	.clockSpeedHz		=	CLK_EXT_CRYSTAL_SPEED,
+	.parentClock		=	&sysClkInClock,
+	.muxInputSelMask	=	CM_DPLL_CLKSEL_TIMER6_CLK_CLKSEL,
+	.muxInputSelReg		=	(unsigned int *)(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER6_CLK),
+	.muxInputSelVal		=	CM_DPLL_CLKSEL_TIMER6_CLK_CLKSEL_CLK_M_OSC, /*	MOSC	*/
+	.activeChildCount	=	0,
+};
+
 
 /*	TIMER7_CLK	*/
 Clock timer7ClkClock 	= {
@@ -696,6 +721,28 @@ Clock timer4GclkClock = {
 	.clockGateStatusMask =	CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER4_GCLK,
 	.clockGateStatusShift =	CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER4_GCLK_SHIFT,
 };
+/*	timer5_gclk	*/
+Clock timer5GclkClock = {
+	.clkName			=	"timer5GclkClock",
+	.clkDomainPtr		=	&l4lsClkDomain,
+	.clockSpeedHz		=	CLK_EXT_CRYSTAL_SPEED,
+	.parentClock		=	&timer5ClkClock,
+	.activeChildCount	=	0,
+	.clkGateStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL),
+	.clockGateStatusMask =	CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER5_GCLK,
+	.clockGateStatusShift =	CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER5_GCLK_SHIFT,
+};
+/*	timer6_gclk	*/
+Clock timer6GclkClock = {
+	.clkName			=	"timer6GclkClock",
+	.clkDomainPtr		=	&l4lsClkDomain,
+	.clockSpeedHz		=	CLK_EXT_CRYSTAL_SPEED,
+	.parentClock		=	&timer6ClkClock,
+	.activeChildCount	=	0,
+	.clkGateStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL),
+	.clockGateStatusMask =	CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER6_GCLK,
+	.clockGateStatusShift =	CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER6_GCLK_SHIFT,
+};
 
 /*	timer7_gclk	*/
 Clock timer7GclkClock = {
@@ -731,11 +778,16 @@ ClockDomain l4lsClkDomain = {
 								CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER7_GCLK |
 								CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_UART_GFCLK),
 	.clkList			= 	{
-								&timer2GclkClock,
+                                                                &dcanGclkClock,
+                                                                &timer2GclkClock,
 								&timer3GclkClock,
 								&timer4GclkClock,
+                                                                &timer5GclkClock,
+                                                                &timer6GclkClock,
 								&timer7GclkClock,
+                                
 								&lcdcGclkClock,
+								&gpio2GclkClock,
 								&gpio3GclkClock,
 								&i2cGclkClock,
 								&spiGclkClock,
@@ -774,6 +826,25 @@ Clock timer4FclkClock = {
 	.activeChildCount	=	0,
 };
 
+/*	timer5 functioanl clock	*/
+Clock timer5FclkClock = {
+	.clkName			=	"timer5FclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_EXT_CRYSTAL_SPEED,
+	.parentClock		=	&timer5GclkClock,
+	.activeChildCount	=	0,
+};
+
+/*	timer6 functioanl clock	*/
+Clock timer6FclkClock = {
+	.clkName			=	"timer6FclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_EXT_CRYSTAL_SPEED,
+	.parentClock		=	&timer6GclkClock,
+	.activeChildCount	=	0,
+};
+
+
 
 /*	timer7 functioanl clock	*/
 Clock timer7FclkClock = {
@@ -781,6 +852,30 @@ Clock timer7FclkClock = {
 	.isLeafClock		=	true,
 	.clockSpeedHz		=	CLK_EXT_CRYSTAL_SPEED,
 	.parentClock		=	&timer7GclkClock,
+	.activeChildCount	=	0,
+};
+
+
+/*	Timer0 Gclk clock	*/
+Clock timer0GclkClock = {
+	.clkName			=	"timer0GclkClock",
+	.isLeafClock		=	true,
+	.clkDomainPtr		=	&wkupClkDomain,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_32768_HZ,
+	.parentClock		=	&clkRC32KClock,
+	.activeChildCount	=	0,
+	.clkGateStatusReg	=	(unsigned int *)(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL),
+	.clockGateStatusMask =	CM_WKUP_CLKSTCTRL_CLKACTIVITY_TIMER0_GCLK,
+	.clockGateStatusShift =	CM_WKUP_CLKSTCTRL_CLKACTIVITY_TIMER0_GCLK_SHIFT,
+};
+
+
+/*	timer1 functioanl clock	*/
+Clock timer0FclkClock = {
+	.clkName			=	"timer0FclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_32768_HZ,
+	.parentClock		=	&timer0GclkClock,
 	.activeChildCount	=	0,
 };
 
@@ -801,7 +896,6 @@ Clock timer1GclkClock = {
 	.muxInputSelVal		=	(CM_DPLL_CLKSEL_TIMER1MS_CLK_CLKSEL_SEL5 << CM_DPLL_CLKSEL_TIMER1MS_CLK_CLKSEL_SHIFT),
 	
 };
-
 
 
 /*	timer1 functioanl clock	*/
@@ -943,6 +1037,7 @@ ClockDomain wkupClkDomain = {
 								&uart0GclkClock,
 								&i2c0GclkClock,
 								&gpio0GclkClock,
+								&timer0GclkClock,
 								&timer1GclkClock,
 							},
 };
@@ -1124,10 +1219,21 @@ Clock wdt1IclkClock = {
 Clock uart0IclkClock = {
 	.clkName			=	"uart0IclkClock",
 	.isLeafClock		=	true,
-	.clockSpeedHz		=	CLK_EXT_CRYSTAL_SPEED/2,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_200_MHZ/2,
 	.parentClock		=	&l4WkupGclkClock,
 	.activeChildCount	=	0,
 };
+
+
+Clock timer0IclkClock = {
+	.clkName			=	"timer0IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_200_MHZ/2,
+	.parentClock		=	&l4WkupGclkClock,
+	.activeChildCount	=	0,
+};
+
+
 
 /***********************************************************************/
 
@@ -1312,7 +1418,7 @@ MuxParentClockSel lcdClkMux = {
 /*	LCDC Mux clock	*/
 Clock lcdcMuxClock = {
 	.clkName			=	"lcdcMuxClock",
-	.clockSpeedHz		=	CLK_CLOCK_SPEED_600_MHZ,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_192_MHZ,
 	//.parentClock		=	&clkDispPllM2Clock,
 	.parentClock		=	&clk192MhzClock,
 	.muxInputSelMask	=	CM_DPLL_CLKSEL_LCDC_PIXEL_CLK_CLKSEL,
@@ -1326,7 +1432,7 @@ Clock lcdcMuxClock = {
 Clock lcdcGclkClock = {
 	.clkName			=	"lcdcGclkClock",
 	.clkDomainPtr		=	&l4lsClkDomain,
-	.clockSpeedHz		=	CLK_CLOCK_SPEED_600_MHZ,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_192_MHZ,
 	.parentClock		=	&lcdcMuxClock,
 	.activeChildCount	=	0,
 	.clkGateStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL),
@@ -1338,7 +1444,7 @@ Clock lcdcGclkClock = {
 Clock lcdcFclkClock = {
 	.clkName			=	"lcdcFclkClock",
 	.isLeafClock		=	true,
-	.clockSpeedHz		=	CLK_CLOCK_SPEED_600_MHZ,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_192_MHZ,
 	.parentClock		=	&lcdcGclkClock,
 	.activeChildCount	=	0,
 };
@@ -1683,6 +1789,33 @@ Clock epwmss0IclkClock = {
 	.activeChildCount	=	0,
 };
 
+/*	EPWMSS1 Interface clock	*/
+Clock epwmss1IclkClock = {
+	.clkName			=	"epwmss1IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
+
+/*	EPWMSS1 Interface clock	*/
+Clock epwmss2IclkClock = {
+	.clkName			=	"epwmss2IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
+
+/*	GPIO2 Interface clock	*/
+Clock gpio2IclkClock = {
+	.clkName			=	"gpio2IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
+
 /*	GPIO3 Interface clock	*/
 Clock gpio3IclkClock = {
 	.clkName			=	"gpio3IclkClock",
@@ -1717,6 +1850,15 @@ Clock spi0IclkClock = {
 /*	I2C1 Interface clock	*/
 Clock i2c1IclkClock = {
 	.clkName			=	"i2c1IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
+
+/*	I2C2 Interface clock	*/
+Clock i2c2IclkClock = {
+	.clkName			=	"i2c2IclkClock",
 	.isLeafClock		=	true,
 	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
 	.parentClock		=	&l4lsGclkClock,
@@ -1769,6 +1911,22 @@ Clock timer4IclkClock = {
 	.parentClock		=	&l4lsGclkClock,
 	.activeChildCount	=	0,
 };
+/*	TIMER5 Interface clock	*/
+Clock timer5IclkClock = {
+	.clkName			=	"timer5IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
+/*	TIMER6 Interface clock	*/
+Clock timer6IclkClock = {
+	.clkName			=	"timer6IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
 
 /*	TIMER7 Interface clock	*/
 Clock timer7IclkClock = {
@@ -1789,10 +1947,104 @@ Clock timer1IclkClock = {
 };
 
 
-/*	DCAN0		*/
-/*	DCAN1       */
+/*	DCAN		*/
+
+Clock dcan0IclkClock = {
+	.clkName			=	"dcan0GclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
+
+Clock dcan1IclkClock = {
+	.clkName			=	"dcan1IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
+
+
+
+Clock dcanGclkClock = {
+	.clkName			=	"dcanGclkClock",
+	.clkDomainPtr		=	&l4lsClkDomain,
+	.clockSpeedHz		=	CLK_EXT_CRYSTAL_SPEED,
+	.parentClock		=	&sysClkInClock,
+	.activeChildCount	=	0,
+	.clkGateStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL),
+	.clockGateStatusMask =	CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_CAN_CLK,
+	.clockGateStatusShift =	CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_CAN_CLK_SHIFT,	
+};
+
+Clock dcan0FclkClock = {
+        .clkName		=	"dcan0FclkClock",
+        .isLeafClock		=	true,
+        .clockSpeedHz		=	CLK_EXT_CRYSTAL_SPEED,
+        .parentClock		=	&dcanGclkClock,
+        .activeChildCount	=	0,
+};
+Clock dcan1FclkClock = {
+        .clkName		=	"dcan1FclkClock",
+        .isLeafClock		=	true,
+        .clockSpeedHz		=	CLK_EXT_CRYSTAL_SPEED,
+        .parentClock		=	&dcanGclkClock,
+        .activeChildCount	=	0,
+};
+
+
+
+
 /*	MMC0        */
 /*	MMC1        */
+
+Clock mmcsd0IclkClock = {
+	.clkName			=	"mmcsd0IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
+
+Clock mmcsd1IclkClock = {
+	.clkName			=	"mmcsd0IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
+
+
+Clock mmcsd0FclkClock = {
+	.clkName			=	"mmcsd0FclkClock",
+    .isLeafClock        =  1,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_96_MHZ,
+	.parentClock		=	&clk192MhzClock,
+	
+};
+Clock mmcsd1FclkClock = {
+	.clkName			=	"mmcsd1FclkClock",
+    .isLeafClock        =   1,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_96_MHZ,
+	.parentClock		=	&clk192MhzClock,	
+};
+
+Clock mmcsd0DBClock = {
+	.clkName			=	"mmcsd0DBClock",
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_32768_HZ,
+	.parentClock		=	&clk32KhzClock,
+	.activeChildCount	=	0,
+};
+
+Clock mmcsd1DBClock = {
+	.clkName			=	"mmcsd1DBClock",
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_32768_HZ,
+	.parentClock		=	&clk32KhzClock,
+	.activeChildCount	=	0,
+};
+
+
 /*	PKA         */
 /*	RNG         */
 /*	ELM         */
@@ -1804,10 +2056,47 @@ Clock timer1IclkClock = {
 /*	SPARE1      */
 /*	SPINLOCK    */
 /*	UART1       */
+
+/*	UART1 Interface clock	*/
+Clock uart1IclkClock = {
+	.clkName		=	"uart1IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
 /*	UART2       */
+Clock uart2IclkClock = {
+	.clkName		=	"uart2IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
 /*	UART3       */
+Clock uart3IclkClock = {
+	.clkName		=	"uart3IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
 /*	UART4       */
+Clock uart4IclkClock = {
+	.clkName		=	"uart4IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
 /*	UART5       */
+Clock uart5IclkClock = {
+	.clkName		=	"uart5IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
 /*	SPI1        */
 /*	GPIO1       */
 /*	GPIO2       */
@@ -2009,6 +2298,24 @@ Clock gpio1GclkClock = {
 
 
 /*	GPIO_2_GDBCLK   */
+Clock gpio2GclkClock = {
+	.clkName			=	"gpio2GclkClock",
+	.clkDomainPtr		=	&l4lsClkDomain,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_32768_HZ,
+	.parentClock		=	&clk32KhzClock,
+	.activeChildCount	=	0,
+	.clkGateStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL),
+	.clockGateStatusMask =	CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_GPIO_2_GDBCLK,
+	.clockGateStatusShift =	CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_GPIO_2_GDBCLK_SHIFT,	
+};
+
+Clock gpio2OptClock = {
+	.clkName			=	"gpio2OptClock",
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_32768_HZ,
+	.parentClock		=	&gpio2GclkClock,
+	.activeChildCount	=	0,
+};
+
 /*	GPIO_4_GDBCLK   */
 /*	GPIO_5_GDBCLK   */
 /*	GPIO_6_GDBCLK	*/
@@ -2107,6 +2414,15 @@ Clock i2c1FclkClock = {
 	.activeChildCount	=	0,
 };
 
+/*	i2c2 Functional Clock	*/
+Clock i2c2FclkClock = {
+	.clkName			=	"i2c2FclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_192_MHZ/4,
+	.parentClock		=	&i2cGclkClock,
+	.activeChildCount	=	0,
+};
+
 
 /*	I2C0_GFCLK */
 Clock i2c0GclkClock = {
@@ -2195,16 +2511,51 @@ Clock uartGclkClock = {
 	.clockGateStatusShift =	CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_UART_GFCLK_SHIFT,	
 };
 
-/*	UART1	*/
-/*	UART2	*/
-/*	UART3	*/
-/*	UART4	*/
-/*	UART5	*/
+/*	UART1 Functional Clock	*/
+Clock uart1FclkClock = {
+        .clkName		=	"uart1FclkClock",
+        .isLeafClock		=	true,
+        .clockSpeedHz		=	CLK_CLOCK_SPEED_192_MHZ/4,
+        .parentClock		=	&uartGclkClock,
+        .activeChildCount	=	0,
+};
+/*	UART2 Functional Clock	*/
+Clock uart2FclkClock = {
+        .clkName		=	"uart2FclkClock",
+        .isLeafClock		=	true,
+        .clockSpeedHz		=	CLK_CLOCK_SPEED_192_MHZ/4,
+        .parentClock		=	&uartGclkClock,
+        .activeChildCount	=	0,
+};
+/*	UART3 Functional Clock	*/
+Clock uart3FclkClock = {
+        .clkName		=	"uart3FclkClock",
+        .isLeafClock		=	true,
+        .clockSpeedHz		=	CLK_CLOCK_SPEED_192_MHZ/4,
+        .parentClock		=	&uartGclkClock,
+        .activeChildCount	=	0,
+};
+/*	UART4 Functional Clock	*/
+Clock uart4FclkClock = {
+        .clkName		=	"uart4FclkClock",
+        .isLeafClock		=	true,
+        .clockSpeedHz		=	CLK_CLOCK_SPEED_192_MHZ/4,
+        .parentClock		=	&uartGclkClock,
+        .activeChildCount	=	0,
+};
+/*	UART5 Functional Clock	*/
+Clock uart5FclkClock = {
+        .clkName		=	"uart5FclkClock",
+        .isLeafClock		=	true,
+        .clockSpeedHz		=	CLK_CLOCK_SPEED_192_MHZ/4,
+        .parentClock		=	&uartGclkClock,
+        .activeChildCount	=	0,
+};
 
 /***********************************************************************/
 /*	UART0_GFCLK */
 Clock uart0GclkClock = {
-	.clkName			=	"uart0GclkClock",
+	.clkName		=	"uart0GclkClock",
 	.clkDomainPtr		=	&wkupClkDomain,
 	.clockSpeedHz		=	CLK_CLOCK_SPEED_192_MHZ/4,
 	.parentClock		=	&clk192MhzClock,
@@ -2224,7 +2575,6 @@ Clock uart0FclkClock = {
 };
 /***********************************************************************/
 /*	MMC_CLK	*/
-/*	TIMER0	*/
 
 /***********************************************************************/
 
@@ -2306,6 +2656,37 @@ ModuleClock timer4ModClock = {
 		.fClk	=	{&timer4FclkClock},
 };
 
+/*	TIMER5	*/
+ModuleClock timer5ModClock = {
+		.clockCtrlReg		= 	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_TIMER5_CLKCTRL),
+		.enableValue		=	(CM_PER_TIMER5_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_TIMER5_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_TIMER5_CLKCTRL_MODULEMODE_DISABLED << 
+								CM_PER_TIMER5_CLKCTRL_MODULEMODE_SHIFT),	
+		.moduleStatusReg	=	(unsigned int *)(CM_PER_TIMER5_CLKCTRL + SOC_CM_PER_REGS),
+		.idleStatusMask		=	CM_PER_TIMER5_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_TIMER5_CLKCTRL_IDLEST_SHIFT,	
+
+		.iClk	=	{&timer5IclkClock},
+		.fClk	=	{&timer5FclkClock},
+};
+
+/*	TIMER6	*/
+ModuleClock timer6ModClock = {
+		.clockCtrlReg		= 	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_TIMER6_CLKCTRL),
+		.enableValue		=	(CM_PER_TIMER6_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_TIMER6_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_TIMER6_CLKCTRL_MODULEMODE_DISABLED << 
+								CM_PER_TIMER6_CLKCTRL_MODULEMODE_SHIFT),	
+		.moduleStatusReg	=	(unsigned int *)(CM_PER_TIMER6_CLKCTRL + SOC_CM_PER_REGS),
+		.idleStatusMask		=	CM_PER_TIMER6_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_TIMER6_CLKCTRL_IDLEST_SHIFT,	
+
+		.iClk	=	{&timer6IclkClock},
+		.fClk	=	{&timer6FclkClock},
+};
+
+
 
 /*	TIMER7	*/
 ModuleClock timer7ModClock = {
@@ -2322,7 +2703,20 @@ ModuleClock timer7ModClock = {
 		.fClk	=	{&timer7FclkClock},
 };
 
+/*	TIMER0	*/
+ModuleClock timer0ModClock = {
+		.clockCtrlReg		= 	(unsigned int *)(SOC_CM_WKUP_REGS + CM_WKUP_TIMER0_CLKCTRL),
+		.enableValue		=	(CM_WKUP_TIMER0_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_WKUP_TIMER0_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_WKUP_TIMER0_CLKCTRL_MODULEMODE_DISABLED << 
+								CM_WKUP_TIMER0_CLKCTRL_MODULEMODE_SHIFT),	
+		.moduleStatusReg	=	(unsigned int *)(CM_WKUP_TIMER0_CLKCTRL + SOC_CM_WKUP_REGS),
+		.idleStatusMask		=	CM_WKUP_TIMER0_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_WKUP_TIMER0_CLKCTRL_IDLEST_SHIFT,	
 
+		.iClk	=	{&timer0IclkClock},
+		.fClk	=	{&timer0FclkClock},
+};
 
 /*	TIMER1	*/
 ModuleClock timer1ModClock = {
@@ -2352,6 +2746,21 @@ ModuleClock i2c1ModClock = {
 	
 		.iClk	=	{&i2c1IclkClock},
 		.fClk	=	{&i2c1FclkClock},
+};
+
+/*	I2C2	*/
+ModuleClock i2c2ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_I2C2_CLKCTRL), 
+		.enableValue		=	(CM_PER_I2C2_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_I2C2_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_I2C2_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_I2C2_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_I2C2_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_I2C2_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_I2C2_CLKCTRL_IDLEST_SHIFT,
+	
+		.iClk	=	{&i2c2IclkClock},
+		.fClk	=	{&i2c2FclkClock},
 };
 
 /*	GPIO3	*/
@@ -2400,6 +2809,111 @@ ModuleClock uart0ModClock = {
 		.fClk	=	{&uart0FclkClock},
 };
 
+/*	UART1	*/
+ModuleClock uart1ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_UART1_CLKCTRL), 
+		.enableValue		=	(CM_PER_UART1_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_UART1_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_UART1_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_UART1_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_UART1_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_UART1_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_UART1_CLKCTRL_IDLEST_SHIFT,
+                
+		.iClk	=	{&uart1IclkClock},
+		.fClk	=	{&uart1FclkClock},
+};
+
+/*	UART2	*/
+ModuleClock uart2ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_UART2_CLKCTRL), 
+		.enableValue		=	(CM_PER_UART2_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_UART2_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_UART2_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_UART2_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_UART2_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_UART2_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_UART2_CLKCTRL_IDLEST_SHIFT,
+                
+		.iClk	=	{&uart1IclkClock},
+		.fClk	=	{&uart1FclkClock},
+};
+
+/*	UART3	*/
+ModuleClock uart3ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_UART3_CLKCTRL), 
+		.enableValue		=	(CM_PER_UART3_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_UART3_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_UART3_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_UART3_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_UART3_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_UART3_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_UART3_CLKCTRL_IDLEST_SHIFT,
+                
+		.iClk	=	{&uart1IclkClock},
+		.fClk	=	{&uart1FclkClock},
+};
+/*	UART4	*/
+ModuleClock uart4ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_UART4_CLKCTRL), 
+		.enableValue		=	(CM_PER_UART4_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_UART4_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_UART4_CLKCTRL_MODULEMODE_DISABLE <<
+								CM_PER_UART4_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_UART4_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_UART4_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_UART4_CLKCTRL_IDLEST_SHIFT,
+                
+		.iClk	=	{&uart1IclkClock},
+		.fClk	=	{&uart1FclkClock},
+};
+/*	UART5	*/
+ModuleClock uart5ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_UART5_CLKCTRL), 
+		.enableValue		=	(CM_PER_UART5_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_UART5_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_UART5_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_UART5_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_UART5_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_UART5_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_UART5_CLKCTRL_IDLEST_SHIFT,
+                
+		.iClk	=	{&uart1IclkClock},
+		.fClk	=	{&uart1FclkClock},
+};
+
+ModuleClock mmcsd0ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_MMC0_CLKCTRL), 
+		.enableValue		=	(CM_PER_MMC0_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_MMC0_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_MMC0_CLKCTRL_MODULEMODE_DISABLE <<
+								CM_PER_MMC0_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_MMC0_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_MMC0_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_MMC0_CLKCTRL_IDLEST_SHIFT,
+                
+		.iClk	=	{&mmcsd0IclkClock},
+		.fClk	=	{&mmcsd0FclkClock},
+		.optClk =   {&mmcsd0DBClock},	
+};
+
+ModuleClock mmcsd1ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_MMC1_CLKCTRL), 
+		.enableValue		=	(CM_PER_MMC1_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_MMC1_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_MMC1_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_MMC1_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_MMC1_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_MMC1_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_MMC1_CLKCTRL_IDLEST_SHIFT,
+                
+		.iClk	=	{&mmcsd1IclkClock},
+		.fClk	=	{&mmcsd1FclkClock},
+		.optClk =   {&mmcsd1DBClock},	
+};
+
+
+
 /*	MAILBOX0	*/
 ModuleClock mailbox0ModClock = {	
 		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_MAILBOX0_CLKCTRL),
@@ -2426,7 +2940,39 @@ ModuleClock epwmss0ModClock = {
 		.idleStatusShift	=	CM_PER_EPWMSS0_CLKCTRL_IDLEST_SHIFT,
 
 		.iClk	=	{&epwmss0IclkClock},
-};		
+};
+
+/*	EPWMSS1	*/
+ModuleClock epwmss1ModClock = {	
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_EPWMSS1_CLKCTRL),
+		.enableValue		=	(CM_PER_EPWMSS1_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_EPWMSS1_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_EPWMSS1_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_EPWMSS1_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_EPWMSS1_CLKCTRL),
+		.idleStatusMask		=	CM_PER_EPWMSS1_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_EPWMSS1_CLKCTRL_IDLEST_SHIFT,
+
+		.iClk	=	{&epwmss1IclkClock},
+};
+
+/*	EPWMSS2	*/
+ModuleClock epwmss2ModClock = {	
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_EPWMSS2_CLKCTRL),
+		.enableValue		=	(CM_PER_EPWMSS2_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_EPWMSS2_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_EPWMSS2_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_EPWMSS2_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_EPWMSS2_CLKCTRL),
+		.idleStatusMask		=	CM_PER_EPWMSS2_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_EPWMSS2_CLKCTRL_IDLEST_SHIFT,
+
+		.iClk	=	{&epwmss2IclkClock},
+};
+		
+
+		
+
 
 
 /*	RTC	*/
@@ -2751,6 +3297,50 @@ ModuleClock gpio1ModClock = {
 		.iClk	=	{&gpio1IclkClock},
 		.optClk	=	{&gpio1OptClock},
 };
+
+/*	GPIO2	*/
+ModuleClock gpio2ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_GPIO2_CLKCTRL), 
+		.enableValue		=	(CM_PER_GPIO2_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_GPIO2_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_GPIO2_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_GPIO2_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_GPIO2_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_GPIO2_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_GPIO2_CLKCTRL_IDLEST_SHIFT,
+	
+		.iClk	=	{&gpio2IclkClock},
+		.optClk	=	{&gpio2OptClock},
+};
+
+ModuleClock dcan0ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_DCAN0_CLKCTRL), 
+		.enableValue		=	(CM_PER_DCAN0_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_DCAN0_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_DCAN0_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_DCAN0_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_DCAN0_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_DCAN0_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_DCAN0_CLKCTRL_IDLEST_SHIFT,
+	
+		.iClk	=	{&dcan0IclkClock},
+		.fClk	=	{&dcan0FclkClock},
+};
+
+ModuleClock dcan1ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_DCAN1_CLKCTRL), 
+		.enableValue		=	(CM_PER_DCAN1_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_DCAN1_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_DCAN1_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_DCAN1_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_DCAN1_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_DCAN1_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_DCAN1_CLKCTRL_IDLEST_SHIFT,
+	
+		.iClk	=	{&dcan1IclkClock},
+		.fClk	=	{&dcan1FclkClock},
+};
+
 
 
 /*	List of clocks	*/

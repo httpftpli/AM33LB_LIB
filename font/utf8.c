@@ -3,7 +3,7 @@
 
 
 
-unsigned char  UTF8toUCS2(const unsigned char * utf8_code, unsigned short* ucs2_code){
+unsigned char  UTF8toUCS2(const char * utf8_code, unsigned short* ucs2_code){
        unsigned short temp1, temp2;
        unsigned char utf8size = 0 ;
        
@@ -70,9 +70,9 @@ unsigned int strLen_UTF8(const unsigned char *utf8_string) {
     
   
 
-unsigned char UCS2toUTF8(unsigned short ucs2_code, unsigned char* utf8_code){
+unsigned char UCS2toUTF8(unsigned short ucs2_code, char* utf8_code){
       int length = 0;
-      unsigned char * out = utf8_code;
+      char * out = utf8_code;
       if(!utf8_code){
            return length;
       }
@@ -98,7 +98,7 @@ unsigned char UCS2toUTF8(unsigned short ucs2_code, unsigned char* utf8_code){
 }
 
 
-unsigned int  UTF8toUCS2_string(const unsigned char * utf8_string, unsigned short* ucs2_string,unsigned int stringlen){
+unsigned int  UTF8toUCS2_string(const char * utf8_string, unsigned short* ucs2_string,unsigned int stringlen){
    unsigned int p=0,i=0;
    if (0==stringlen) {
       stringlen = 0xffffffff;
