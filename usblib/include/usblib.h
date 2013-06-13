@@ -1367,11 +1367,8 @@ typedef unsigned int (* tUSBCallback)(void *pvCBData, unsigned int ulEvent,
 // The below macro defines the number USB Instances.
 //
 //*****************************************************************************
-#if defined (am335x_15x15) || defined(am335x) || defined(c6a811x)
+
 #define USB_NUM_INSTANCE        2
-#else
-#define USB_NUM_INSTANCE        1
-#endif
 //
 // Event base identifiers for the various device classes supported in host
 // and device modes.

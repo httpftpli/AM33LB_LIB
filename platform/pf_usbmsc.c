@@ -253,7 +253,6 @@ void usbMscProcess() {
    USBHCDMain(USB_INSTANCE_FOR_USBDISK, g_ulMSCInstance);
    switch (g_usbMscState) {
    case USBMSC_NO_DEVICE:
-
       break;
    case USBMSC_DEVICE_ENUM:
       if (USBHMSCDriveReady(g_ulMSCInstance) == 0) {

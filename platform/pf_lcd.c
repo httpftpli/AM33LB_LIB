@@ -23,11 +23,6 @@
 #undef LCD_24BIT_888RGB
 #endif
 
-
-#ifdef LCD_BACKLIGHT
-#define  GPIO_INSTANCE_PIN_NUMBER      (7u)
-#endif
-
 void LCDModuleClkConfig(void);
 void LCDRasterEOFIntEnable(void);
 void LCDRasterEOFIntDisable(void);
@@ -180,20 +175,20 @@ void isr_lcd(unsigned int num) {
 
 
 void LCDBackLightON(void) {
-   if (GPIO_DIR_INPUT == GPIODirModeGet(GPIO_LCDBACKLIGHT_BASE,
-                                        GPIO_LCDBACKLIGHT_PIN)){
-       GPIODirModeSet(GPIO_LCDBACKLIGHT_BASE, GPIO_LCDBACKLIGHT_PIN, GPIO_DIR_OUTPUT);
+   if (GPIO_DIR_INPUT == GPIODirModeGet(SOC_GPIO_0_REGS,
+                                        30)){
+       GPIODirModeSet(SOC_GPIO_0_REGS, 30, GPIO_DIR_OUTPUT);
    }
-       GPIOPinWrite(GPIO_LCDBACKLIGHT_BASE, GPIO_LCDBACKLIGHT_PIN, LCD_BACKLIG_OFF);
+       GPIOPinWrite(SOC_GPIO_0_REGS, 30, 0);
 }
 
 void LCDBackLightOFF(void)
 {
-   if (GPIO_DIR_INPUT == GPIODirModeGet(GPIO_LCDBACKLIGHT_BASE,
-                                        GPIO_LCDBACKLIGHT_PIN)){
-      GPIODirModeSet(GPIO_LCDBACKLIGHT_BASE,GPIO_LCDBACKLIGHT_PIN,GPIO_DIR_OUTPUT);
+   if (GPIO_DIR_INPUT == GPIODirModeGet(SOC_GPIO_0_REGS,
+                                        30)){
+      GPIODirModeSet(SOC_GPIO_0_REGS,30,GPIO_DIR_OUTPUT);
    }  
-   GPIOPinWrite(GPIO_LCDBACKLIGHT_BASE, GPIO_LCDBACKLIGHT_PIN,LCD_BACKLIG_ON);
+   GPIOPinWrite(SOC_GPIO_0_REGS, 30,1);
 }
 
 

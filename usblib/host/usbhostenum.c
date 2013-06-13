@@ -4243,6 +4243,7 @@ USBHCDControlTransfer(unsigned int ulIndex, tUSBRequest *pSetupPacket,
             USBHCDTxAbort(ulIndex, 0);
             USBHCDRxAbort(ulIndex, 0);
             retStatus = 0;
+            g_sUSBHEP0State[ulIndex].eState = EP0_STATE_IDLE; //add by lfl
             break;
         }
 
@@ -4255,6 +4256,7 @@ USBHCDControlTransfer(unsigned int ulIndex, tUSBRequest *pSetupPacket,
         {
             USBHCDTxAbort(ulIndex, 0);
             USBHCDRxAbort(ulIndex, 0);
+            g_sUSBHEP0State[ulIndex].eState = EP0_STATE_IDLE; //add by lfl
             retStatus = 0;
             break;
         }
@@ -4316,8 +4318,7 @@ USBHCDEnumHandler(unsigned int ulIndex)
         //
         // Just go back to the idle state.
         //
-        g_sUSBHEP0State[ulIndex].eState = EP0_STATE_ERROR;
-
+        g_sUSBHEP0State[ulIndex].eState = EP0_STATE_IDLE; //modefied by lfl , EP0_STATE_ERROR to EP0_STATE_IDLE 
         return;
     }
 

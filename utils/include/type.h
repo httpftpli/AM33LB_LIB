@@ -39,6 +39,7 @@ typedef   char TEXTCHAR;
 
 #define __out
 #define __int
+
 typedef char BOOL;
 typedef unsigned int size_t;
 typedef unsigned int size_t16;

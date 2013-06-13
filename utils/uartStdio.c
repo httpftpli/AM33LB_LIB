@@ -48,6 +48,7 @@
 #include "hw_control_AM335x.h"
 #include "hw_cm_wkup.h"
 #include "hw_cm_per.h"
+#include "module.h"
 
 
 #define UART_CONSOLE_BASE        SOC_UART_0_REGS
@@ -98,9 +99,7 @@ void UARTStdioInit(void) {
    HWREG(SOC_CONTROL_REGS + CONTROL_CONF_UART_TXD(0)) =
       CONTROL_CONF_UART0_TXD_CONF_UART0_TXD_PUTYPESEL;
 
-    UART0ModuleClkConfig();
-
-
+    moduleEnable(MODULE_ID_UART0);
     UARTModuleReset(UART_CONSOLE_BASE);
 
     /* Performing FIFO configurations. */

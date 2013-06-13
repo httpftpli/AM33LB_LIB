@@ -46,6 +46,7 @@
 #include "hs_mmcsd.h"
 #include "hw_hs_mmcsd.h"
 #include "debug.h"
+#include "mmath.h"
 
 /*******************************************************************************
 *                        API FUNCTION DEFINITIONS

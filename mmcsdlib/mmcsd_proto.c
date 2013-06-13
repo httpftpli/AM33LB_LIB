@@ -797,8 +797,10 @@ unsigned int MMCSDP_StopCmdSend(mmcsdCtrlInfo *ctrl) {
  * \returns  NO
  **/
 void  MMCSDP_CtrlInit(mmcsdCtrlInfo *ctrl) {
-     hsMmcSdInit(ctrl);
-     ctrl->inited = 1;
+   if (ctrl->inited == 0) {
+      hsMmcSdInit(ctrl);
+   }
+   ctrl->inited = 1;
 }
 
 /*

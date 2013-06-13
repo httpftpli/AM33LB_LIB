@@ -32,10 +32,9 @@
 
 
 PARTITION VolToPart[] = {
-    {DRIVER_NUM_MMCSD1, 1},     /* Logical drive 0 ==> Physical drive 0, 1st partition */
-    {DRIVER_NUM_MMCSD1, 2},     /* Logical drive 1 ==> Physical drive 0, 2nd partition */
-    {DRIVER_NUM_USB,    1},     /* Logical drive 2 ==> Physical drive 1 (auto detection) */
-    {DRIVER_NUM_MMCSD0, 1},     /* Logical drive 3 ==> Physical drive 0, 3rd partition */    
+    {DRIVER_NUM_MMCSD0, 1},     // Logical drive 0
+    {DRIVER_NUM_MMCSD0, 2},     // Logical drive 1 
+    {DRIVER_NUM_USB,    1},     // Logical drive 2   
 };
 
 extern tUSBHMSCInstance g_USBHMSCDevice[];

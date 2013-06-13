@@ -95,9 +95,9 @@ signed char loadFont(TCHAR * filepath, FONT  *font) {
 
 signed char  initFont(TCHAR * dirpath,unsigned int addr){
    TCHAR filepath [200];
-   static const TCHAR *fontname0 = L"1_16.FONT";
-   static const TCHAR *fontname1 = L"1_24.FONT";
-   static const TCHAR *fontname2 = L"1_32.FONT";
+   static const TCHAR *fontname0 = _TEXT("1_16.FONT");
+   static const TCHAR *fontname1 = _TEXT("1_24.FONT");
+   static const TCHAR *fontname2 = _TEXT("1_32.FONT");
    
    int i;
    for(i=0;dirpath[i]!=0;i++){

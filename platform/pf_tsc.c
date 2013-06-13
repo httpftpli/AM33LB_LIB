@@ -24,9 +24,14 @@
 #include "atomic.h"
 #include "GUI.h"
 #include "pf_tsc.h"
+#include "mmcsd_proto.h"
+#include "type.h"
+#include "string.h"
 
 #define SAMPLES       8
 #define CALIBRATION_POINT_OFFSET  20
+
+extern mmcsdCtrlInfo mmcsdctr[2];
 
 
 typedef struct {
@@ -47,14 +52,12 @@ typedef struct {
 } TS_CALIBRATION;
 
 
-static TS_CALIBRATION tsCalibration = { .magic = 0xaaaaaaaa };
+static TS_CALIBRATION tsCalibration ;
 
 
-BOOL TouchCalibrate(void);
+BOOL TouchCalibrate(BOOL force);
 
-void loadCalibration() {
-   if (tsCalibration.magic != 0x55555555) TouchCalibrate();
-}
+
 
 volatile static TS_SAMPLE tsSampleRaw,ts;
 volatile TS_SAMPLE ts;
@@ -317,19 +320,26 @@ static void ts_linear(TS_CALIBRATION *cal,  int *x,  int *y) {
  * @pre
  * @see 
  */
-BOOL TouchCalibrate(void) {
+BOOL TouchCalibrate(BOOL  force) {
+#define CALIBRATION_SUCCESS   0x55555555
+#define CALIBRATION_FAIL    0xAAAAAAAA
    static const unsigned char calIcon[] = { 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80,
       0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0xFF, 0xFF,
       0xFF, 0xFF, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01,
-      0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80 };
+      0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80 }; 
 
+   static char inandsecterbuf[512];
    int x1, x2, x3;
    int y1, y2, y3, K;
    int xL1, xL2, xL3;
    int yL1, yL2, yL3;
    int A, B, C, D, E, F;
    int m, n;
-
+   MMCSDP_Read(mmcsdctr,inandsecterbuf,640,1);
+   memcpy(&tsCalibration,inandsecterbuf,sizeof tsCalibration ); 
+   if ((CALIBRATION_SUCCESS == tsCalibration.magic)&&(force==0)) {
+      return TRUE;
+   }
    const tLCD_PANEL  *panel = LCDTftInfoGet();
    Dis_Clear(C_Black);
    Dis_String("calibrate touch pad", panel->width / 2 - 100, panel->height / 2 + 50, 0, C_White, C_TRANSPARENT);
@@ -343,12 +353,14 @@ BOOL TouchCalibrate(void) {
    tsCalibration.yfb[1] = panel->height / 2;
    tsCalibration.yfb[2] = panel->height - CALIBRATION_POINT_OFFSET;
    tsCalibration.yfb[3] = panel->height / 2;
-   for (int i = 0; i < 4; i++) {
-      atomicClear(&touched);
+   for (int i = 0; i < 4; i++) {      
       Dis_DrawMask(calIcon, tsCalibration.xfb[i] - 8, tsCalibration.yfb[i] - 8, 16, 16, C_White, C_TRANSPARENT);
-      if (0 == i) {
+      if (0 == i) {        
+         delay(200);
+         atomicClear(&touched);
          while (!atomicTest(&touched));
-      } else {                                      
+      } else {
+         atomicClear(&touched);
          while (!(atomicTest(&touched) && ((ABS(tsCalibration.x[i-1] - tsSampleRaw.x) > 800) || ( ABS(tsCalibration.y[i-1] - tsSampleRaw.y) > 800))));
       }
       tsCalibration.x[i] = tsSampleRaw.x;
@@ -392,13 +404,17 @@ BOOL TouchCalibrate(void) {
       //Save_touchData(&Tch_ctrs);
       Dis_String("calibrate success", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_White, C_TRANSPARENT);
       delay(1000);
+      atomicClear(&touched);
+      tsCalibration.magic = CALIBRATION_SUCCESS;
+      memcpy(inandsecterbuf,&tsCalibration,sizeof tsCalibration );
+      MMCSDP_Write(mmcsdctr,inandsecterbuf,640,1);
       return TRUE;
    } else {
       Dis_String("calibrate fail", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_White, C_TRANSPARENT);
       delay(1000);
+      atomicClear(&touched);
       return FAIL;
    }
-
 }
 
 

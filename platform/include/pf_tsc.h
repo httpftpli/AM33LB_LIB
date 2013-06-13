@@ -13,7 +13,7 @@ extern atomic touched;
 extern void TouchScreenInit();
 extern void tsEnalbe(void);
 extern void tsDisable(void);
-extern BOOL TouchCalibrate(void);
+extern BOOL TouchCalibrate(BOOL force);
 extern void TSCADCModuleClkConfig(void);
 
 
