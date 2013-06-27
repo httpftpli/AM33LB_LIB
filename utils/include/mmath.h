@@ -10,6 +10,8 @@
 
 #define NARRAY(array) (sizeof((array))/sizeof((array[0])))
 
+#define BIT(x) (1 << x)
+
 
 
 #endif

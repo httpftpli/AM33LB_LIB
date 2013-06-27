@@ -1,7 +1,6 @@
 
 
 #include <string.h>
-
 #include "soc_AM335x.h"
 #include "hw_types.h"
 #include "platform.h"
@@ -175,20 +174,20 @@ void isr_lcd(unsigned int num) {
 
 
 void LCDBackLightON(void) {
-   if (GPIO_DIR_INPUT == GPIODirModeGet(SOC_GPIO_0_REGS,
-                                        30)){
-       GPIODirModeSet(SOC_GPIO_0_REGS, 30, GPIO_DIR_OUTPUT);
+   if (GPIO_DIR_INPUT == GPIODirModeGet(GPIO_LCDBACKLIGHT_BASE,GPIO_LCDBACKLIGHT_PIN)){
+       GPIODirModeSet(GPIO_LCDBACKLIGHT_BASE, GPIO_LCDBACKLIGHT_PIN, GPIO_DIR_OUTPUT);
    }
-       GPIOPinWrite(SOC_GPIO_0_REGS, 30, 0);
+       GPIOPinWrite(GPIO_LCDBACKLIGHT_BASE, GPIO_LCDBACKLIGHT_PIN, 0);
 }
+
 
 void LCDBackLightOFF(void)
 {
-   if (GPIO_DIR_INPUT == GPIODirModeGet(SOC_GPIO_0_REGS,
-                                        30)){
-      GPIODirModeSet(SOC_GPIO_0_REGS,30,GPIO_DIR_OUTPUT);
+   if (GPIO_DIR_INPUT == GPIODirModeGet(GPIO_LCDBACKLIGHT_BASE,
+                                        GPIO_LCDBACKLIGHT_PIN)){
+      GPIODirModeSet(GPIO_LCDBACKLIGHT_BASE,GPIO_LCDBACKLIGHT_PIN,GPIO_DIR_OUTPUT);
    }  
-   GPIOPinWrite(SOC_GPIO_0_REGS, 30,1);
+   GPIOPinWrite(GPIO_LCDBACKLIGHT_BASE, GPIO_LCDBACKLIGHT_PIN,1);
 }
 
 
@@ -196,12 +195,13 @@ void LCDRasterStart(void) {
    /* configuring the base ceiling */
    RasterDMAFBConfig(SOC_LCDC_0_REGS, (uint32)lcdCtrl.palette[0], (uint32)lcdCtrl.frameaddr[0] + lcdCtrl.framesize[0] - 1, 0);
    RasterDMAFBConfig(SOC_LCDC_0_REGS, (uint32)lcdCtrl.palette[1], (uint32)lcdCtrl.frameaddr[1] + lcdCtrl.framesize[1] - 1, 1);
-   memset(lcdCtrl.frameaddr[0], 0, lcdCtrl.pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
-   memset(lcdCtrl.frameaddr[1], 0, lcdCtrl.pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
    /* enable raster */
    RasterEnable(SOC_LCDC_0_REGS);
 }
 
+void LCDRasterEnd(void){
+   RasterDisable(SOC_LCDC_0_REGS);
+}
 
 
 void LCDSwapFb(void) {
@@ -216,18 +216,18 @@ void LCDSwapContex(){
 }
 
 
-void LCDRasterInit(unsigned int moduleId,int panelIndex) {
+void LCDRasterInit(unsigned int moduleId) {
    MODULE *module = modulelist+moduleId;
    unsigned int baseaddr = module->baseAddr;
    lcdCtrl.baseAddr = baseaddr;       
    lcdCtrl.lcd_clk = module->moduleClk->fClk[0]->clockSpeedHz;
-   const tLCD_PANEL *panel = lcd_panels + panelIndex;
+   const tLCD_PANEL *panel = lcd_panels + TFT_PANEL;
    lcdCtrl.panel = panel;
    lcdCtrl.activeframe = 0;
    lcdCtrl.contexFrame = 0;
    unsigned int pixsize = lcdCtrl.pixsize;
-   unsigned int width = lcd_panels[panelIndex].width;
-   unsigned int height = lcd_panels[panelIndex].height;
+   unsigned int width = lcd_panels[TFT_PANEL].width;
+   unsigned int height = lcd_panels[TFT_PANEL].height;
    lcdCtrl.palettesize[0] = 32;
    lcdCtrl.palettesize[1] = 32;
    lcdCtrl.framesize[0] = (unsigned int)(pixsize * width * height);
@@ -238,15 +238,12 @@ void LCDRasterInit(unsigned int moduleId,int panelIndex) {
    lcdCtrl.frameaddr[1] = (void *)((unsigned int)lcdCtrl.palette[1] + 32);   
    lcdCtrl.activeframe = 0;
   
-
    //init palette and framebuffer
 
    memcpy(lcdCtrl.palette[0],palette_32b,lcdCtrl.palettesize[0]);
    memcpy(lcdCtrl.palette[1],palette_32b,lcdCtrl.palettesize[1]);
-   for (int i=0;i<lcdCtrl.framesize[0]/2;i++) {
-      ((unsigned short *)lcdCtrl.frameaddr[0])[i] = (0x1f<<11);//red
-      ((unsigned short *)lcdCtrl.frameaddr[1])[i] = (0x1f<<11);//red
-   }
+   memset(lcdCtrl.frameaddr[0], 0, lcdCtrl.pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
+   memset(lcdCtrl.frameaddr[1], 0, lcdCtrl.pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
    moduleEnable(moduleId);
    RasterClocksEnable(baseaddr);
    RasterAutoUnderFlowEnable(baseaddr);

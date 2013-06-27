@@ -1868,7 +1868,7 @@ USBHCDInitInternal(unsigned int ulIndex, void *pvPool,
 #ifdef _TMS320C6X
         /* No DSP API to enable USB0 event */
 #else
-        IntSystemEnable(g_USBInstance[ulIndex].uiInterruptNum);
+        //IntSystemEnable(g_USBInstance[ulIndex].uiInterruptNum); //modified by lfl 
 #endif
 
         //

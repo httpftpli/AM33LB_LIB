@@ -22,6 +22,7 @@
 #include "uart_irda_cir.h"
 #include "pf_uart.h"
 #include "mmath.h"
+#include "pf_key_touchpad.h"
 
 
 
@@ -232,17 +233,45 @@ void UARTRcvRegistHander(UARTRCVHANDLER handler){
 }
 
 
+
 UARTRCVHANDLER rcvhandler = NULL;
 
-void isr_uart(unsigned int intNum){
+void isr_uart_for_keyboard(unsigned int intNum){
    unsigned int baseaddr = modulelist[intNum].baseAddr;
    if(UARTIntPendingStatusGet(baseaddr) == UART_N0_INT_PENDING)
       return;
    unsigned int intval =  UARTIntIdentityGet(baseaddr);
-   if (intval & UART_INTID_RX_THRES_REACH) {
-
+   if (intval == UART_INTID_RX_THRES_REACH) {
+      for (int i=0;i<8;i++) {
+          volatile  unsigned char tempval = HWREGB(baseaddr+UART_RHR);
+         ((unsigned char *)&keyTouchpadMsg)[i] = tempval;
+         //UARTPutc(tempval);
+      }
+      if (isKeyTouchEvent(&keyTouchpadMsg)) {
+         if(keyTouchpadMsg.type & MSG_TYPE_KEY){
+            g_keycode = keyCode(keyTouchpadMsg.keycode);
+            atomicSet(&g_keyPushed);
+         }
+         if (keyTouchpadMsg.type & MSG_TYPE_TOUCH) {
+            g_ts.x = g_tsRaw.x = keyTouchpadMsg.tscval & 0xffff;
+            g_ts.y = g_tsRaw.y = keyTouchpadMsg.tscval >>16;
+            ts_linear(&tsCalibration, (int *)&g_ts.x,  (int *)&g_ts.y);
+            atomicSet(&g_touched);
+         }
+         if (keyTouchpadMsg.type & MSG_TYPE_KEYRESET) {
+            atomicSet(&g_keyRest);
+         }
+      }    
+   }
+   if (intval == UART_INTID_CHAR_TIMEOUT ) {
+       unsigned int val = *(unsigned int *)0x48022064;
+       for (int i=0;i<val;i++) {
+          volatile  unsigned char tempval1 = HWREGB(baseaddr+UART_RHR);
+       }
    }
 }
+
+
 
 static unsigned int UARTDivisorValCompute1(unsigned int moduleClk,unsigned int baudRate,unsigned int *mode_nX)
 {
@@ -256,7 +285,7 @@ static unsigned int UARTDivisorValCompute1(unsigned int moduleClk,unsigned int b
        return divisor13;
     }else{
        *mode_nX = 16;
-       return erate16;      
+       return devisor16;      
     }   
 }
 
@@ -284,7 +313,15 @@ static unsigned int UARTDivisorValCompute1(unsigned int moduleClk,unsigned int b
  *  - UART_INT_RHR_CTI - to enable Receiver Data available interrupt and
  *                       Character timeout indication interrupt.
  *  @param [in] rxFifoLen 接受缓冲区中断触发深度
+ *  -- UART_FCR_RX_TRIG_LVL_8
+ *  -- UART_FCR_RX_TRIG_LVL_16
+ *  -- UART_FCR_RX_TRIG_LVL_56
+ *  -- UART_FCR_RX_TRIG_LVL_60
  *  @param [out] TxFifoLen 发送缓冲区中断触发深度
+ *  -- UART_FCR_RX_TRIG_LVL_8
+ *  -- UART_FCR_TX_TRIG_LVL_16
+ *  -- UART_FCR_TX_TRIG_LVL_32
+ *  -- UART_FCR_TX_TRIG_LVL_56
  * @return  NONE         
  * @date    2013/5/23
  * @note 
@@ -300,8 +337,8 @@ void uartInit(unsigned int moduleId, unsigned int boudRate,
    UARTModuleReset(baseaddr);
 
    /* Setting the TX and RX FIFO Trigger levels */
-   unsigned int fifoConfig = UART_FIFO_CONFIG(UART_TRIG_LVL_GRANULARITY_1,
-                                              UART_TRIG_LVL_GRANULARITY_1,
+   unsigned int fifoConfig = UART_FIFO_CONFIG(UART_TRIG_LVL_GRANULARITY_4,
+                                              UART_TRIG_LVL_GRANULARITY_4,
                                               txFiloLen,
                                               rxFifoLen,
                                               1,
@@ -325,7 +362,7 @@ void uartInit(unsigned int moduleId, unsigned int boudRate,
    UARTRegConfigModeEnable(baseaddr, UART_REG_CONFIG_MODE_B);
 
    /* Programming the Line Characteristics. */
-   UARTLineCharacConfig(baseaddr,(charLen | stopBit),parityFlag);
+   UARTLineCharacConfig(baseaddr,((charLen-5) | stopBit),parityFlag);
 
    /* Disabling write access to Divisor Latches. */
    UARTDivisorLatchDisable(baseaddr);
@@ -333,17 +370,15 @@ void uartInit(unsigned int moduleId, unsigned int boudRate,
    /* Disabling Break Control. */
    UARTBreakCtl(baseaddr, UART_BREAK_COND_DISABLE);
    UARTIntEnable(baseaddr, intFlag);
-   UARTFIFORegisterWrite(baseaddr, UART_FCR_PROGRAM(rxFifoLen,txFiloLen,0,1,1,1));
+   //UARTFIFORegisterWrite(baseaddr, UART_FCR_PROGRAM(rxFifoLen,txFiloLen,0,1,1,1));
 
    /* Switching to operating mode. */
    if (13==mode_nX) {
       UARTOperatingModeSelect(baseaddr, UART13x_OPER_MODE);
    }else{
       UARTOperatingModeSelect(baseaddr, UART16x_OPER_MODE);
-   }
-   
-   moduleIntConfigure(moduleId);
-   
+   }  
+   moduleIntConfigure(moduleId);  
 }
 //! @}  
 

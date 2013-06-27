@@ -27,29 +27,11 @@
 #include "mmcsd_proto.h"
 #include "type.h"
 #include "string.h"
+#include "pf_key_touchpad.h"
 
 #define SAMPLES       8
-#define CALIBRATION_POINT_OFFSET  20
 
 extern mmcsdCtrlInfo mmcsdctr[2];
-
-
-typedef struct {
-   int An;
-   int Bn;
-   int Cn;
-   int Dn;
-   int En;
-   int Fn;
-   int Divider;
-}MATRIX;
-
-typedef struct {
-   unsigned int magic;   //0x55555555 flag  CALIBRATION data valid
-   int  x[5], xfb[5];
-   int  y[5], yfb[5];
-   MATRIX  matrix;
-} TS_CALIBRATION;
 
 
 static TS_CALIBRATION tsCalibration ;
@@ -59,13 +41,10 @@ BOOL TouchCalibrate(BOOL force);
 
 
 
-volatile static TS_SAMPLE tsSampleRaw,ts;
-volatile TS_SAMPLE ts;
-atomic touched = 0;
+volatile static TS_SAMPLE tsSampleRaw;
 volatile static unsigned int tsenable = 1;
 
 static void StepEnable(void);
-static void ts_linear(TS_CALIBRATION *cal,  int *x,  int *y);
 
 //static void ts_linear_scale(int *x, int *y, int swap_xy);
 
@@ -116,20 +95,14 @@ void  isr_tsc(unsigned int intnum) {
          preTsSampleRaw.x = sum(arr_x + 2, SAMPLES - 4) / (SAMPLES - 4);
          preTsSampleRaw.y = sum(arr_y + 2, SAMPLES - 4) / (SAMPLES - 4);
       } else {
-         ts.x = tsSampleRaw.x =  preTsSampleRaw.x;
-         ts.y = tsSampleRaw.y =  preTsSampleRaw.y;
+         g_ts.x = tsSampleRaw.x =  preTsSampleRaw.x;
+         g_ts.y = tsSampleRaw.y =  preTsSampleRaw.y;
          preTsSampleRaw.x = sum(arr_x + 2, SAMPLES - 4) / (SAMPLES - 4);
          preTsSampleRaw.y = sum(arr_y + 2, SAMPLES - 4) / (SAMPLES - 4);
-         ts_linear(&tsCalibration,(int*)&(ts.x),(int *)&(ts.y));
-         atomicSet(&touched);
-
-         //MSG msg;
-         //msg.message = MSG_TOUCH;
-         //msg.xpt = sampletem.x;
-         //msg.ypt = sampletem.y;
+         ts_linear(&tsCalibration,(int*)&(g_ts.x),(int *)&(g_ts.y));
+         atomicSet(&g_touched);      
          //UARTprintf("x: %d  ; y: %d  ;", tsSampleRaw.x, tsSampleRaw.y);
          //UARTprintf("fbx: %d  ; fby: %d \n\r", msg.xpt, msg.ypt);
-         //SendMessage(&msg);*/
       }
    }
    if (status & TSCADC_PEN_UP_EVENT_INT) {
@@ -294,130 +267,11 @@ static void StepEnable(void) {
 
 void tsEnalbe(void) {
    tsenable = 1;
-   delay(10);
 }
 
 void tsDisable(void) {
    tsenable = 0;
 }
-
-
-static void ts_linear(TS_CALIBRATION *cal,  int *x,  int *y) {
-   *x  = (cal->matrix.An * (int)(*x)) / 1000 + cal->matrix.Bn * (int)(*y) / 1000 + cal->matrix.Cn;
-   *y  = (cal->matrix.Dn * (int)(*x)) / 1000 + cal->matrix.En * (int)(*y) / 1000 + cal->matrix.Fn;
-}
-
-
-
-/**
- * @brief 触摸屏校准 
- * @return           
- * @date    2013/5/31
- * @note 
- * 该函数会修改显存 
- * @code
- * @endcode
- * @pre
- * @see 
- */
-BOOL TouchCalibrate(BOOL  force) {
-#define CALIBRATION_SUCCESS   0x55555555
-#define CALIBRATION_FAIL    0xAAAAAAAA
-   static const unsigned char calIcon[] = { 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80,
-      0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0xFF, 0xFF,
-      0xFF, 0xFF, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01,
-      0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80 }; 
-
-   static char inandsecterbuf[512];
-   int x1, x2, x3;
-   int y1, y2, y3, K;
-   int xL1, xL2, xL3;
-   int yL1, yL2, yL3;
-   int A, B, C, D, E, F;
-   int m, n;
-   MMCSDP_Read(mmcsdctr,inandsecterbuf,640,1);
-   memcpy(&tsCalibration,inandsecterbuf,sizeof tsCalibration ); 
-   if ((CALIBRATION_SUCCESS == tsCalibration.magic)&&(force==0)) {
-      return TRUE;
-   }
-   const tLCD_PANEL  *panel = LCDTftInfoGet();
-   Dis_Clear(C_Black);
-   Dis_String("calibrate touch pad", panel->width / 2 - 100, panel->height / 2 + 50, 0, C_White, C_TRANSPARENT);
-   tsCalibration.xfb[0] = 0 + CALIBRATION_POINT_OFFSET;
-   tsCalibration.xfb[1] = panel->width - CALIBRATION_POINT_OFFSET;
-   tsCalibration.xfb[2] = panel->width / 2;
-   tsCalibration.xfb[3] = panel->width / 2;
-
-
-   tsCalibration.yfb[0] = 0 + CALIBRATION_POINT_OFFSET;
-   tsCalibration.yfb[1] = panel->height / 2;
-   tsCalibration.yfb[2] = panel->height - CALIBRATION_POINT_OFFSET;
-   tsCalibration.yfb[3] = panel->height / 2;
-   for (int i = 0; i < 4; i++) {      
-      Dis_DrawMask(calIcon, tsCalibration.xfb[i] - 8, tsCalibration.yfb[i] - 8, 16, 16, C_White, C_TRANSPARENT);
-      if (0 == i) {        
-         delay(200);
-         atomicClear(&touched);
-         while (!atomicTest(&touched));
-      } else {
-         atomicClear(&touched);
-         while (!(atomicTest(&touched) && ((ABS(tsCalibration.x[i-1] - tsSampleRaw.x) > 800) || ( ABS(tsCalibration.y[i-1] - tsSampleRaw.y) > 800))));
-      }
-      tsCalibration.x[i] = tsSampleRaw.x;
-      tsCalibration.y[i] = tsSampleRaw.y;
-      Dis_RectFill(tsCalibration.xfb[i] - 8, tsCalibration.yfb[i] - 8, 16, 16, C_Black);
-   }
-
-   x1 = tsCalibration.x[0];
-   x2 = tsCalibration.x[1];
-   x3 = tsCalibration.x[2];
-   y1 = tsCalibration.y[0];
-   y2 = tsCalibration.y[1];
-   y3 = tsCalibration.y[2];
-   xL1 = tsCalibration.xfb[0];
-   xL2 = tsCalibration.xfb[1];
-   xL3 = tsCalibration.xfb[2];
-   yL1 = tsCalibration.yfb[0];
-   yL2 = tsCalibration.yfb[1];
-   yL3 = tsCalibration.yfb[2];
-   K = (x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2);
-   m = (int)((xL1 - xL3) * (y2 - y3));
-   n = (int)((xL2 - xL3) * (y1 - y3));
-   m = m - n;
-   A = ((int)((xL1 - xL2) * (y2 - y3)) - (int)((xL2 - xL3) * (y1 - y2))) * 1000 / K;
-   B = ((xL2 - xL3) * (x1 - x2) - (x2 - x3) * (xL1 - xL2)) * 1000 / K;
-   C = xL1 - (A * x1 + B * y1) / 1000;
-   D = ((yL1 - yL2) * (y2 - y3) - (yL2 - yL3) * (y1 - y2)) * 1000 / K;
-   E = ((yL2 - yL3) * (x1 - x2) - (x2 - x3) * (yL1 - yL2)) * 1000 / K;
-   F = yL1 - (D * x1 + E * y1) / 1000;
-   tsCalibration.matrix.An = A;
-   tsCalibration.matrix.Bn = B;
-   tsCalibration.matrix.Cn = C;
-   tsCalibration.matrix.Dn = D;
-   tsCalibration.matrix.En = E;
-   tsCalibration.matrix.Fn = F;
-
-   int tempx = tsCalibration.x[3];
-   int tempy = tsCalibration.x[3];
-   ts_linear(&tsCalibration, &tempx, &tempy);
-   if ((ABS(tempx - tsCalibration.xfb[3]) < 30) && (ABS(tempy - tsCalibration.yfb[3]) < 30)) {
-      //Save_touchData(&Tch_ctrs);
-      Dis_String("calibrate success", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_White, C_TRANSPARENT);
-      delay(1000);
-      atomicClear(&touched);
-      tsCalibration.magic = CALIBRATION_SUCCESS;
-      memcpy(inandsecterbuf,&tsCalibration,sizeof tsCalibration );
-      MMCSDP_Write(mmcsdctr,inandsecterbuf,640,1);
-      return TRUE;
-   } else {
-      Dis_String("calibrate fail", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_White, C_TRANSPARENT);
-      delay(1000);
-      atomicClear(&touched);
-      return FAIL;
-   }
-}
-
-
 
 
 void TouchScreenInit() {

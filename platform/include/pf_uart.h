@@ -1,6 +1,7 @@
 #ifndef  __PF_UART_H__
 #define  __PF_UART_H__
 
+#include "uart_irda_cir.h"
 
 typedef void (*UARTRCVHANDLER)(void *rcvBuf,unsigned int bufLen);
 

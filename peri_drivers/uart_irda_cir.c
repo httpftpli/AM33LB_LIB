@@ -1520,17 +1520,7 @@ unsigned int UARTRxErrorGet(unsigned int baseAdd)
 
 unsigned int UARTIntIdentityGet(unsigned int baseAdd)
 {
-    unsigned int lcrRegValue = 0;
-    unsigned int retVal = 0;
-
-    /* Switching to Register Operational Mode of operation. */
-    lcrRegValue = UARTRegConfigModeEnable(baseAdd, UART_REG_OPERATIONAL_MODE);
-
-    retVal = (HWREG(baseAdd + UART_IIR) & UART_IIR_IT_TYPE);
-
-    /* Restoring the value of LCR. */
-    HWREG(baseAdd + UART_LCR) = lcrRegValue;
-
+    unsigned int retVal = (HWREG(baseAdd + UART_IIR) & UART_IIR_IT_TYPE);
     return retVal;
 }
 
@@ -2286,6 +2276,13 @@ void UARTFIFOTrigLvlGranControl(unsigned int baseAdd,
 
     /* Programming the TXTRIGGRANU1 bit in SCR. */
     HWREG(baseAdd + UART_SCR) |= (txFIFOGranCtrl & UART_SCR_TX_TRIG_GRANU1);
+}
+
+
+void UARTFIFOClear(unsigned int baseAddr,unsigned int flag){
+      unsigned int regval = HWREG (baseAddr+UART_FCR);
+      regval = (regval& 0xfd)| (flag & 0x06);
+      HWREG (baseAddr+UART_FCR) = regval;
 }
 
 /**

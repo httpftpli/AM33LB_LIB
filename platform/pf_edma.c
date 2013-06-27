@@ -1,44 +1,13 @@
 /**
  * \file  edma.c
  *
- * \brief Platform related APIs for EDMA
+ * \brief Platform related APIs for EDMA 
+ * @addtogroup EDMA 
+ * @brief EDMA 
+ *  
+ * \#include  "pf_edma.h" 
+ * @{ 
  */
-
-
-
-/*
-* Copyright (C) 2010 Texas Instruments Incorporated - http://www.ti.com/
-*/
-/*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions
-*  are met:
-*
-*    Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-*
-*    Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the
-*    distribution.
-*
-*    Neither the name of Texas Instruments Incorporated nor the names of
-*    its contributors may be used to endorse or promote products derived
-*    from this software without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*/
 
 
 #include "hw_control_AM335x.h"
@@ -311,6 +280,35 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
 }
 
 
+
+
+
+/**
+ * @brief 
+ *        在某个固定地址缓冲区和一连续的内存区域间传送数据
+ * @param [in] trigMode DMA触发方式
+ * -- EDMA3_TRIG_MODE_MANUAL    手动触发
+ * -- EDMA3_TRIG_MODE_EVENT     事件出发
+ * -- EDMA3_TRIG_MODE_IMMEDIATE  立即出发 
+ * @param [in] chNum   DMA通道号 \b EDMA3_CHA_XXX 
+ * @param [in] entryAddr 固定地址缓冲区的地址
+ * @param [in] bufAddr   连续的内存区地址
+ * @param [in] rwFlag   读写标识 
+ * -- 1 读 
+ * -- 0 写 
+ * @param [in] entryBitWidth 固定缓冲区位宽
+ * @param [in] blkSize 每次传送的字节数
+ * @param [in] nblks 传送的次数
+ * @param [in] handlerIndex 
+ *        数据传送完成后执行的回调函数索引
+ * @return  总是 1        
+ * @date    2013/6/19
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
                                             unsigned int chNum,
                                             unsigned int entryAddr,
@@ -324,8 +322,8 @@ unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
    volatile EDMA3CCPaRAMEntry *paramSet;
    
    mdAssert(handlerIndex < 64);
-   //scrAddr and destAddr shoud 4bit allign;
-   mdAssert(((bufAddr&0x03UL) == 0)&& ((entryAddr&0x1fUL) == 0));
+   //entryAddr should 5bit allign;
+   mdAssert((entryAddr&0x1fUL) == 0);
    mdAssert((entryBitWidth == 8) || (entryBitWidth == 16) || (entryBitWidth == 32));
    mdAssert(blkSize%(entryBitWidth/8)==0);
 
@@ -649,5 +647,9 @@ void EDMAModuleClkConfig(void)
             CM_PER_TPTC2_CLKCTRL_STBYST));
 }
 
+
+/**
+ * @} 
+ */
 
 

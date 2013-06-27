@@ -184,6 +184,8 @@ FIQHandler:
 ; if nothing is done in the abort mode, the execution enters infinite loop.
 ;
 AbortHandler:
+loopabort:
+        B       loopabort
 UndefInstHandler:
 ;
 ; Disable all the interrupts
@@ -196,8 +198,8 @@ UndefInstHandler:
 ;
 ; Go to infinite loop if returned from C handler
 ;
-loop0:
-        B       loop0                      
+loopundefinst:
+        B       loopundefinst                      
 
 ;*****************************************************************************
 ;

@@ -45,9 +45,7 @@
 extern "C" {
 #endif
 
-#define BIT(x) (1 << x)
 
-#define ARRYDIM(x)        ((sizeof (x))/(sizeof (x[0])))
 #define BITFILD(x,y,z)         (((x) >> (y)) & (~((-1)<<((z)-(y)))))
 
 

@@ -472,6 +472,11 @@ extern "C" {
 /*
 ** Miscellaneous macros.
 */
+
+
+#define FIFOCLEAR_TX          4
+#define FIFOCLEAR_RX          2
+
 /*
 ** Values used to choose the trigger level granularity.
 */
@@ -616,6 +621,9 @@ extern void UARTWakeUpEventsDisable(unsigned int baseAdd,
 extern void UARTFIFOTrigLvlGranControl(unsigned int baseAdd,
                                        unsigned int rxFIFOGranCtrl,
                                        unsigned int txFIFOGranCtrl);
+
+extern void UARTFIFOClear(unsigned int baseAddr,unsigned int flag);
+
 extern void UARTDSRInterruptControl(unsigned int baseAdd,
                                     unsigned int controlFlag);
 extern void UARTTxEmptyIntControl(unsigned int baseAdd,

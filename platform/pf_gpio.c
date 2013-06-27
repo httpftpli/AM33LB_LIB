@@ -6,7 +6,7 @@
  *  
  * 
  * @addtogroup GPIO 
- * @brief GPIO模块 
+ * @brief GPIO 
  *  
  * \#include  "gpio_v2.h" 
  * @{ 
@@ -75,16 +75,16 @@ void isr_Gpio(unsigned int intnum){
 
 /**
  * @brief 
- *        注册GPIO回调函数，回调函数在中断线程中执行
+ *        娉ㄥ唽GPIO鍥炶皟鍑芥暟锛屽洖璋冨嚱鏁板湪涓柇绾跨▼涓墽琛?
  * @param [in] modulOfGpio 
- *        GPIO组号，比如GPIO2_8,modulOfGpio=2
- * @param [in] bitOfGpio GPIO位号，比如 GPIO2_8, 
+ *        GPIO缁勫彿锛屾瘮濡侴PIO2_8,modulOfGpio=2
+ * @param [in] bitOfGpio GPIO浣嶅彿锛屾瘮濡?GPIO2_8, 
  *        bitOfGpio=8
  * @param [in]  gpiohandler
  * @return  void         
  * @date    2013/5/7
  * @note
- * 示例代码如下：
+ * 绀轰緥浠ｇ爜濡備笅锛?
  * @code
  * 
  * @endcode
@@ -102,9 +102,9 @@ void GPIORegistHandler(unsigned char modulOfGpio,unsigned bitOfGpio,
 
 
 /**
- * @brief 清楚GPIO中断回调函数
- * @param [in] modulOfGpio 见 GPIORegistHandler()
- * @param [in] bitOfGpio 见 GPIORegistHandler() 
+ * @brief 娓呮GPIO涓柇鍥炶皟鍑芥暟
+ * @param [in] modulOfGpio 瑙?GPIORegistHandler()
+ * @param [in] bitOfGpio 瑙?GPIORegistHandler() 
  * @return           
  * @date    2013/5/7
  * @note 
@@ -371,12 +371,12 @@ void GPIO1ModuleClkConfig(void)
 
 
 /**
- * @brief GPIO初始化
- * @param [in] moduleId GPIO模块ID ,\b MODULE_ID_GPIOX
- * @param [in] debounceTimer 消抖动时间  
- *        ，为32频率的分频
+ * @brief GPIO鍒濆鍖?
+ * @param [in] moduleId GPIO妯″潡ID ,\b MODULE_ID_GPIOX
+ * @param [in] debounceTimer 娑堟姈鍔ㄦ椂闂? 
+ *        锛屼负32棰戠巼鐨勫垎棰?
  * @param [in] debounceEnableBitmap 
- *        32位位映射值，使能GPIO的某一位是否使能去抖动
+ *        32浣嶄綅鏄犲皠鍊硷紝浣胯兘GPIO鐨勬煇涓€浣嶆槸鍚︿娇鑳藉幓鎶栧姩
  * @return  NONE      
  * @date    2013/5/29
  * @note
@@ -421,8 +421,8 @@ void GPIOInit(unsigned int moduleId, int debounceTimer,unsigned int debounceEnab
    }
    moduleEnable(moduleId);
    unsigned int baseaddr = modulelist[moduleId].baseAddr;
-   GPIOModuleReset(baseaddr);
    GPIOModuleEnable(baseaddr);
+   GPIOModuleReset(baseaddr);   
    GPIOIdleModeConfigure(baseaddr, GPIO_IDLE_MODE_NO_IDLE);
    GPIOAutoIdleModeControl(baseaddr, GPIO_AUTO_IDLE_MODE_DISABLE);
    GPIOAutoIdleModeControl(baseaddr, GPIO_AUTO_IDLE_MODE_DISABLE);

@@ -3,6 +3,9 @@
 #include "type.h"
 #include "debug.h"
 #include "module.h"
+#include "mmath.h"
+
+mmcsdCtrlInfo mmcsdctr[2];
 
 BOOL hsMmcSdCardPresent(mmcsdCtrlInfo *ctrl){
    return HSMMCSDIsCardInserted(ctrl->memBase);

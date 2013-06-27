@@ -459,6 +459,10 @@ void enableModule(ModuleClock *moduleClk)
 	/*	Wait till the module is fully functional	*/
     while(((moduleClk->idleStatusMask) & (~moduleClk->idleStatusMask))!=
           (HWREG(moduleClk->clockCtrlReg) & (moduleClk->idleStatusMask)));
+    if (moduleClk->optFckEn==1) {
+        unsigned int regval = HWREG(moduleClk->clockCtrlReg);
+        HWREG(moduleClk->clockCtrlReg) = regval | (1<<18);
+    }
 }
 
 

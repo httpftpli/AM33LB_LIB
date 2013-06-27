@@ -43,6 +43,7 @@ typedef   char TEXTCHAR;
 typedef char BOOL;
 typedef unsigned int size_t;
 typedef unsigned int size_t16;
+typedef short wchar;
 
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE*)0)->MEMBER)
 

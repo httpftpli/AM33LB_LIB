@@ -2774,6 +2774,8 @@ ModuleClock gpio3ModClock = {
 		.idleStatusMask		=	CM_PER_GPIO3_CLKCTRL_IDLEST,
 		.idleStatusShift	=	CM_PER_GPIO3_CLKCTRL_IDLEST_SHIFT,
 
+                .optFckEn  = 1,
+         
 		.iClk	=	{&gpio3IclkClock},
 		.optClk =	{&gpio3OptClock},
 };
@@ -3277,6 +3279,7 @@ ModuleClock gpio0ModClock = {
 		.moduleStatusReg	=	(unsigned int *)(SOC_CM_WKUP_REGS + CM_WKUP_GPIO0_CLKCTRL), 
 		.idleStatusMask		=	CM_WKUP_GPIO0_CLKCTRL_IDLEST,
 		.idleStatusShift	=	CM_WKUP_GPIO0_CLKCTRL_IDLEST_SHIFT,
+        .optFckEn  = 1,
 	
 		.iClk	=	{&gpio0IclkClock},
 		.optClk	=	{&gpio0OptClock},
@@ -3293,6 +3296,8 @@ ModuleClock gpio1ModClock = {
 		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_GPIO1_CLKCTRL), 
 		.idleStatusMask		=	CM_PER_GPIO1_CLKCTRL_IDLEST,
 		.idleStatusShift	=	CM_PER_GPIO1_CLKCTRL_IDLEST_SHIFT,
+
+        .optFckEn  = 1,
 	
 		.iClk	=	{&gpio1IclkClock},
 		.optClk	=	{&gpio1OptClock},
@@ -3308,6 +3313,8 @@ ModuleClock gpio2ModClock = {
 		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_GPIO2_CLKCTRL), 
 		.idleStatusMask		=	CM_PER_GPIO2_CLKCTRL_IDLEST,
 		.idleStatusShift	=	CM_PER_GPIO2_CLKCTRL_IDLEST_SHIFT,
+
+        .optFckEn  = 1,
 	
 		.iClk	=	{&gpio2IclkClock},
 		.optClk	=	{&gpio2OptClock},

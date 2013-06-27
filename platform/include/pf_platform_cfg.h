@@ -3,10 +3,12 @@
 
 #include "soc_AM335x.h"
 #include "module.h"
-#include "platform_cfg.h"
+#include "platform_cfg.h" 
 
 //set witch usb instance use for udist : 0 or 1
+#ifndef USB_INSTANCE_FOR_USBDISK
 #define USB_INSTANCE_FOR_USBDISK   0
+#endif
 //define USBDISK logic volume
 #define FatFS_Drive_Index          2
 //set if use use dma or pull
@@ -174,11 +176,6 @@
 #define CS_USE   0x7f 
 #endif
 
-/*config cs bank baseAddr ,baseaddr  decoder from
- to A29, A28, A27, A26, A25, and A24 ,so baseAddr should 24 bit align*/
-static const unsigned int CS_BASEADDR[7]= {1<<24,2<<24,3<<24,4<<24,5<<24,6<<24,7<<24}; 
-/*config address line width ,7 demeasion for 7 CS*/
-static const unsigned int CS_ADDRLINE_BIT[7] = {24,24,24,24,24,24,24};
 
 //config timetick
 //config witch timer used for timertick

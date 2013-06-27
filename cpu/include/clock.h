@@ -547,6 +547,8 @@ typedef struct {
          */
         unsigned int disableValue;
 
+        unsigned int optFckEn;
+
         /**
          * \brief Module status register
          * Register to read to get the clock status

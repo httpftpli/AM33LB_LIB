@@ -3954,7 +3954,7 @@ FRESULT f_fdiskEx (
 		p[1] = 0;						/* Start head */
 		p[2] = (BYTE)(0);	/* Start sector */
 		p[3] = (BYTE)0;					/* Start cylinder */
-		p[4] = 0x06;						/* System type (temporary setting) */
+		p[4] = (sz_part==0)? 0: 0x06;						/* System type (temporary setting) */
 		p[5] = 0;						/* End head */
 		p[6] = (BYTE)(0);	/* End sector */
 		p[7] = (BYTE)0;					/* End cylinder */
