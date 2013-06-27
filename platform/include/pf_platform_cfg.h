@@ -181,9 +181,42 @@
 //config witch timer used for timertick
 #define TIMER_TIMERTICK   MODULE_ID_TIMER2
 
+
+
+//config LCD backlight control gpio
+#ifndef GPIO_LCDBACKLIGHT_MODULE
+#define GPIO_LCDBACKLIGHT_MODULE   MODULE_ID_GPIO0
+#endif
+#ifndef GPIO_LCDBACKLIGHT_PIN
+#define GPIO_LCDBACKLIGHT_PIN    30
+#endif
+#ifndef LCD_BACKLIG_ON
+#define LCD_BACKLIG_ON           1  
+#endif
+#ifndef LCD_BACKLIG_OFF
+#define LCD_BACKLIG_OFF          0
+#endif
+
+//config LCD backlight control gpio
+#ifndef GPIO_BEEP_MODULE
+#define GPIO_BEEP_MODULE   MODULE_ID_GPIO2
+#endif
+#ifndef GPIO_BEEP_PIN
+#define GPIO_BEEP_PIN    20
+#endif
+#ifndef LCD_BEEP_ON
+#define LCD_BEEP_ON           1  
+#endif
+#ifndef LCD_BEEP_OFF
+#define LCD_BEEP_OFF          0
+#endif
+
+
+
 #define TFT_AT080TN52    0
 #define TFT_AT070TN92    1
 #define TFT_LSA40AT9001  2
+
 //select TFT panel 
 #ifndef TFT_PANEL
 #define TFT_PANEL    TFT_LSA40AT9001  

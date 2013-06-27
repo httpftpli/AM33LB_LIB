@@ -41,6 +41,9 @@
 
 #ifndef __MMCSD_PROTO_H__
 #define __MMCSD_PROTO_H__
+
+#include "mmath.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -139,9 +142,9 @@ typedef struct _mmcsdCtrlInfo {
 
 
 
-#define MMCSD_BUSWIDTH_1BIT             (BIT(0))
-#define MMCSD_BUSWIDTH_4BIT             (BIT(3))
-#define MMCSD_BUSWIDTH_8BIT             (BIT(7))
+#define MMCSD_BUSWIDTH_1BIT             (1<<0) 
+#define MMCSD_BUSWIDTH_4BIT             (1<<3)
+#define MMCSD_BUSWIDTH_8BIT             (1<<7)
 
 
 
