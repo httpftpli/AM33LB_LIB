@@ -30,7 +30,7 @@ typedef enum
     USBMSC_POWER_FAULT
 } tUsbMscState;
 
-extern  volatile tUsbMscState g_usbMscState;
+extern volatile tUsbMscState g_usbMscState;
 extern void usbMscProcess();
 extern void usbMscInit();
 

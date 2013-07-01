@@ -10,7 +10,11 @@
 #include "utf8.h"
 #include "mem.h"
 #include "debug.h"
+#include "pf_platform_cfg.h"
 
+#ifndef CHARACTER_DIS_CODEC
+#error "must define CHARACTER_DIS_CODEC"
+#endif
 
 //窗体标题栏渐变色------------
 static const uint16 FormTitleColor[3][24]={
@@ -605,12 +609,19 @@ unsigned int Dis_String(const TEXTCHAR *text, unsigned int x, unsigned int y, ui
    unsigned char charoffset = 0;
    unsigned char signelcharlen = 0;
    while (1) {
+#if (CHARACTER_DIS_CODEC==UTF8_CODEC)
       signelcharlen = UTF8toUCS2(text + charoffset, &ucs2);
       charoffset += signelcharlen;
       if (0 == signelcharlen) {
          break;
       }
       xoffset += Dis_DrawChar_Ucs2(ucs2, x + xoffset, y, font, color_f, color_b);
+#else
+      if (*text == 0) {
+         break;
+      }
+      xoffset += Dis_DrawChar_Ucs2(*text++, x + xoffset, y, font, color_f, color_b);
+#endif
    }
    return x + xoffset;
 #else

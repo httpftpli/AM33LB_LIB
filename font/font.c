@@ -2,9 +2,9 @@
  *  \file   font.c
  *
  *  \brief
- *  \author  李飞亮  
+ *  \author  鏉庨浜? 
  *  \addtogroup FONT
- *  @brief 字体显示
+ *  @brief 瀛椾綋鏄剧ず
  *  @{
  *   
  */
@@ -31,14 +31,14 @@ static unsigned int fontmemaddr = 0;
 
 
 /**
- * @brief 载入字体
- * @param [in] filepath 字体文件路径
+ * @brief 杞藉叆瀛椾綋
+ * @param [in] filepath 瀛椾綋鏂囦欢璺緞
  * @param [inout] font 
- *        字体结构体，必须先初始化font->memaddr成员
+ *        瀛椾綋缁撴瀯浣擄紝蹇呴』鍏堝垵濮嬪寲font->memaddr鎴愬憳
  * @return 
- * - -1 字体文件打开或者读取失败 \n 
- * - -2 字体文件格式不正确 \n
- * - 0 字体载入成功 \n
+ * - -1 瀛椾綋鏂囦欢鎵撳紑鎴栬€呰鍙栧け璐?\n 
+ * - -2 瀛椾綋鏂囦欢鏍煎紡涓嶆纭?\n
+ * - 0 瀛椾綋杞藉叆鎴愬姛 \n
  * @date    2013/5/8
  * @note
  * @code
@@ -63,7 +63,7 @@ signed char loadFont(TCHAR * filepath, FONT  *font) {
       f_close(&fontfile);
       return -1;
    }
-   //检测标识头
+   //妫€娴嬫爣璇嗗ご
    if ((font->fl_header.magic[0] != 'U' && font->fl_header.magic[0] != 'M')
        || font->fl_header.magic[1] != 'F' || font->fl_header.magic[2] != 'L') {
       f_close(&fontfile);
@@ -84,7 +84,7 @@ signed char loadFont(TCHAR * filepath, FONT  *font) {
       return -1;
    }
    
-   if ('U' == font->fl_header.magic[0]) {     //unicode 编码
+   if ('U' == font->fl_header.magic[0]) {     //unicode 缂栫爜
       unsigned int nsection = font->fl_header.nSection;
       for (int i=0;i<nsection;i++) {
          font->sectionInfoList[i] = (FL_SECTION_INF *)(font->memaddr+i*sizeof(FL_HEADER));
@@ -120,9 +120,9 @@ signed char  initFont(TCHAR * dirpath,unsigned int addr){
 
 
 /**
- * @brief 获取字体高度
+ * @brief 鑾峰彇瀛椾綋楂樺害
  * @param [in] 
- * @return 字体高度          
+ * @return 瀛椾綋楂樺害          
  * @date    2013/5/8
  * @note
  * @code
@@ -140,10 +140,10 @@ unsigned char  GetFontYSize(unsigned int font)
 extern const uint8 Asc8x16[1536];
 
 /**
- * @brief 获取字体信息
- * @param [in] wCode 字体编码,unicode方式 
- * @param [in] font 字体
- * @param [out] pcharinfo FL_CHARINFO 结构体
+ * @brief 鑾峰彇瀛椾綋淇℃伅
+ * @param [in] wCode 瀛椾綋缂栫爜,unicode鏂瑰紡 
+ * @param [in] font 瀛椾綋
+ * @param [out] pcharinfo FL_CHARINFO 缁撴瀯浣?
  * @return  BOOL         
  * @date    2013/5/8
  * @note
@@ -164,7 +164,7 @@ BOOL getCharInfo(unsigned short wCode,unsigned int font ,FL_CHARINFO *pcharinfo)
    return TRUE; 
 
 FONT_IN_SOURCE:
-   if (wCode > 0xff) {
+   if ((unsigned char )wCode & 0x80) {
       return FALSE;
    }
    pcharinfo->height = 16;
@@ -172,19 +172,32 @@ FONT_IN_SOURCE:
    pcharinfo->pixaddr = 16 * (wCode - 32) + (unsigned int)Asc8x16;
    return TRUE;
 }
+
+
 void getStringMetric(const TEXTCHAR *string ,unsigned int font,METRIC *metric){
    const TEXTCHAR *index = string;
    unsigned int width = 0,w = 0,w1 = 0;
    unsigned short ucs2;
    FL_CHARINFO info;
    while (1) {
-       w = UTF8toUCS2(index+w1,&ucs2);
-       w1+=w;
-       if (0==w) {
-          break;
-       }
-       getCharInfo(ucs2,font,&info);
-       width += info.width;
+#if (CHARACTER_DIS_CODEC==UTF8_CODEC)
+      w = UTF8toUCS2(index + w1, &ucs2);
+      w1 += w;
+      if (0 == w) {
+         break;
+      }
+      if (FALSE == getCharInfo(ucs2, font, &info)) {
+         getCharInfo('?', font, &info);
+      }
+#else
+      if (*string == 0) {
+         break;
+      }
+      if (FALSE == getCharInfo(*string++, font, &info)) {
+         getCharInfo('?', font, &info);
+      }
+#endif;
+      width += info.width;
    }
    metric->width = width;
    metric->height = info.height;

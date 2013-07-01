@@ -32,8 +32,7 @@ FRESULT f_scandir(
 }
 
 
-
-FRESULT f_copy(const TCHAR *scrpath,const TCHAR * despath, unsigned char *workbuf,unsigned int sz_workbuf){
+FRESULT f_copy(const TCHAR *scrpath,const TCHAR * despath, void *workbuf,unsigned int sz_workbuf){
    FRESULT res;
    mdAssert(sz_workbuf%512==0);
    FIL scrfile,desfile;
@@ -72,5 +71,16 @@ ERROR:
    f_close(&scrfile);
    f_close(&desfile);
    return res; 
+}
 
+
+unsigned int long long  getpartitionfree(const TCHAR* driverpath){
+   unsigned long  freeclst;
+   FATFS *fs;
+   FRESULT r ;
+   r = f_getfree(driverpath,&freeclst,&fs);
+   if (FR_OK!=r) {
+      return 0;
+   }
+   return (long long)freeclst * fs->csize * SS(fs);
 }
