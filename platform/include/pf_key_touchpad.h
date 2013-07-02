@@ -52,7 +52,7 @@
 #define KEY_RE1		37
 #define KEY_RE2		38
 #define KEY_RE3		39
-#define KEY_No		0xff
+#define KEY_NO		0xff
 
 
 #pragma pack(1)
@@ -97,6 +97,7 @@ extern TS_CALIBRATION tsCalibration;
 
 extern BOOL isKeyTouchEvent(KEYTOUCHMSG *msg);
 extern unsigned int keyCode(unsigned int scancode);
+extern void registKeyHandler(void handler(int keycode));
 extern BOOL TouchCalibrate(BOOL force);
 extern void ts_linear(TS_CALIBRATION *cal,  int *x,  int *y);
 

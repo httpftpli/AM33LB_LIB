@@ -42,12 +42,8 @@
 #endif
 #define ASSERT(A)   mdAssert(A)
 
+#define STATIC_ASSERT(A)  static_assert(A, #A) 
+
 #endif
-
-
-
-
-
-
 
 

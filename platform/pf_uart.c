@@ -236,6 +236,8 @@ void UARTRcvRegistHander(UARTRCVHANDLER handler){
 
 UARTRCVHANDLER rcvhandler = NULL;
 
+
+extern void (*keyhandler)(int keycode);
 void isr_uart_for_keyboard(unsigned int intNum){
    unsigned int baseaddr = modulelist[intNum].baseAddr;
    if(UARTIntPendingStatusGet(baseaddr) == UART_N0_INT_PENDING)
@@ -251,6 +253,8 @@ void isr_uart_for_keyboard(unsigned int intNum){
          if(keyTouchpadMsg.type & MSG_TYPE_KEY){
             g_keycode = keyCode(keyTouchpadMsg.keycode);
             atomicSet(&g_keyPushed);
+            if(keyhandler!=NULL)
+              keyhandler(g_keycode);
          }
          if (keyTouchpadMsg.type & MSG_TYPE_TOUCH) {
             g_ts.x = g_tsRaw.x = keyTouchpadMsg.tscval & 0xffff;

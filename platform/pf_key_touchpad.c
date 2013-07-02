@@ -58,6 +58,8 @@ unsigned char g_keycode;
 volatile TS_SAMPLE g_ts ,g_tsRaw;
 TS_CALIBRATION tsCalibration;
 
+void (*keyhandler)(int keycode) = NULL;
+
 unsigned int keyCode(unsigned int scancode) {
    unsigned int key;
    switch (scancode) {
@@ -170,7 +172,7 @@ unsigned int keyCode(unsigned int scancode) {
       key =   KEY_POP;
       break;
    default:
-      key =   KEY_No;
+      key =   KEY_NO;
       break;
    }
    return key;
@@ -189,6 +191,10 @@ BOOL isKeyTouchEvent(KEYTOUCHMSG *msg){
       return TRUE;
    }
    return FALSE;
+}
+
+void registKeyHandler(void handler(int keycode)){
+  keyhandler = handler;
 }
 
 
