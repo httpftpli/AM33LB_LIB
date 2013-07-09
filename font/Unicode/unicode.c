@@ -13,6 +13,9 @@ extern FONT fonts[MAX_FONT_NFONTLIB];
 // 获取字符的像素宽度和字符图像数据的地址
 BOOL getCharInfo_U(unsigned short wCode,unsigned int font ,FL_CHARINFO *charinfo) {
    int   i;
+   if (FALSE == fonts[font].available) {
+      return FALSE;
+   }
    unsigned int nsection = fonts[font].fl_header.nSection;
    for (i = 0; i < nsection; i++) {
       if (wCode >= fonts[font].sectionInfoList[i]->First && wCode <= fonts[font].sectionInfoList[i]->Last) break;

@@ -47,6 +47,7 @@ typedef struct __font{
    FL_HEADER fl_header;
    unsigned int memaddr;
    FL_SECTION_INF *sectionInfoList[20];
+   unsigned int available;
 } FONT;
 
 
@@ -68,7 +69,7 @@ typedef struct tagmetric{
 
 unsigned char  GetFontYSize();
 signed char loadFont(TCHAR * filepath, FONT  *font);
-signed char  initFont(TCHAR * dirpath,unsigned int addr);
+void  initFont(TCHAR * dirpath,unsigned int addr);
 BOOL getCharInfo(unsigned short wCode,unsigned int font,FL_CHARINFO *pcharinfo);
 void getStringMetric(const TEXTCHAR *string ,unsigned int font,METRIC *metric);
 

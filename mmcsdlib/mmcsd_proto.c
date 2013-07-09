@@ -1,7 +1,7 @@
 /**
  *  \file   mmcsd_proto.c
  *
- *  \brief  MMCSD协议实现
+ *  \brief  MMCSD
  *
  *   
  *   
@@ -559,30 +559,36 @@ static unsigned int mmcbuswidthset(mmcsdCtrlInfo *ctrl) {
 
 
 /**
- * @brief mmcsdCtrlInfo结构初始化 
- *  mmcsdCtrlInfo结构初始化 ，该结构体初始化后调用
- *  MMCSDP_CtrlInit()初始化mmcsd控制器
- * @param [out] ctrl    mmcsdCtrlInfo指针
+ * @brief mmcsdCtrlInfo结构体初始化
+ *  mmcsdCtrlInfo结构体代表主机控制器，首先需调用本函数初始化，然后调用
+ *  MMCSDP_CtrlInit()完成控制器的初始化
+ * @param [out] ctrl    mmcsdCtrlInfo结构体
  * @param [in]  moduleId 控制器moduleId  \b MODULE_ID_MMCSDX 
- * @param [in]  opClk   mmcsd卡 clk频率 
- * @param [in]  ddrSupport       mmcsd卡双边沿 
- * @param [in]  card       mmcsdCardInfo结构，代表mmcsd卡 
+ * @param [in]  opClk 
+ *        mmcsd的时钟频率，由mmcclk引脚输出
+ * @param [in]  ddrSupport 
+ *        mmcsd双边沿支持，48mhz时不支持ddr
+ * @param [in]  card 
+ *        mmcsdCardInfo结构体，该结构体代表卡
  * @param [in]  preXferHook 
- *        回调函数，NULL时使用默认回调函数
+ *        发送数据前的回调函数，如果 \b NULL
+ *        ,使用默认回调函数
  * @param [in]  cmdstatusget 
- *        回调函数，NULL时使用默认回调函数
+ *        获取控制器命令信息回调函数，如果 \b
+ *        NULL ,使用默认回调函数
  * @param [in]  xferstatusget 
- *        回调函数，NULL时使用默认回调函数
+ *        获取控制器发送数据状态回调函数 如果 \b
+ *        NULL ,使用默认回调函数
  * 
- * @param [in]  busWidthSupport  数据线宽度 \b
- *        MMCSD_BUSWIDTH_8BIT， \b MMCSD_BUSWIDTH_4BIT，
+ * @param [in]  busWidthSupport  总线宽度支持
+ *        MMCSD_BUSWIDTH_8BIT  \b MMCSD_BUSWIDTH_4BIT
  *        \b MMCSD_BUSWIDTH_1BIT
  *  
  * @return  void 
  * @date    2013/5/4 
  * @note 
- * opClk = 48000000时不支持ddr  
- * busWidthSupport不能为 \b MMCSD_BUSWIDTH_8BIT 
+ * opClk = 48000000是 不支持ddr busWidthSupport不支持 \b 
+ * MMCSD_BUSWIDTH_8BIT 
  * @see 
  */
 void  MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int moduleId,

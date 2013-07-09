@@ -103,10 +103,7 @@ extern void DMTimer4ModuleClkConfig(void);
 extern void DMTimer7ModuleClkConfig(void);
 extern void EVMPortMIIModeSelect(void);
 extern void RTCModuleClkConfig(void);
-extern void GPMCClkConfig(void);
 extern void GPMCInitForNOR();
-extern void I2C0ModuleClkConfig(void);
-extern void I2C1ModuleClkConfig(void);
 extern void USBModuleClkConfig(void); 
 extern void GpioPinMuxSetup(unsigned int offsetAddr,
                             unsigned int padConfValue);

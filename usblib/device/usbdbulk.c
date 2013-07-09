@@ -1,26 +1,3 @@
-//*****************************************************************************
-//
-// usbdbulk.c - USB bulk device class driver.
-//
-// Copyright (c) 2008-2010 Texas Instruments Incorporated.  All rights reserved.
-// Software License Agreement
-// 
-// Texas Instruments (TI) is supplying this software for use solely and
-// exclusively on TI's microcontroller products. The software is owned by
-// TI and/or its suppliers, and is protected under applicable copyright
-// laws. You may not combine this software with "viral" open-source
-// software in order to form a larger program.
-// 
-// THIS SOFTWARE IS PROVIDED "AS IS" AND WITH ALL FAULTS.
-// NO WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT
-// NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. TI SHALL NOT, UNDER ANY
-// CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
-// DAMAGES, FOR ANY REASON WHATSOEVER.
-// 
-// This is part of revision 6288 of the Stellaris USB Library.
-//
-//*****************************************************************************
 
 #include "hw_usb.h"
 #include "hw_types.h"
@@ -35,8 +12,8 @@
 
 //*****************************************************************************
 //
-//! \addtogroup bulk_device_class_api
-//! @{
+// \addtogroup bulk_device_class_api
+// @{
 //
 //*****************************************************************************
 
@@ -735,53 +712,51 @@ HandleResume(void *pvInstance)
 }
 
 
-//*****************************************************************************
-//
-//! Initializes bulk device operation for a given USB controller.
-//!
-//! \param ulIndex is the index of the USB controller which is to be
-//! initialized for bulk device operation.
-//! \param psDevice points to a structure containing parameters customizing
-//! the operation of the bulk device.
-//!
-//! An application wishing to make use of a USB bulk communication channel
-//! must call this function to initialize the USB controller and attach the
-//! device to the USB bus.  This function performs all required USB
-//! initialization.
-//!
-//! On successful completion, this function will return the \e psDevice pointer
-//! passed to it.  This must be passed on all future calls to the device driver
-//! related to this device.
-//!
-//! The USBDBulk interface offers packet-based transmit and receive operation.
-//! If the application would rather use block based communication with
-//! transmit and receive buffers, USB buffers may be used above the bulk
-//! transmit and receive channels to offer this functionality.
-//!
-//! Transmit Operation:
-//!
-//! Calls to USBDBulkPacketWrite must send no more than 64 bytes of data at a
-//! time and may only be made when no other transmission is currently
-//! outstanding.
-//!
-//! Once a packet of data has been acknowledged by the USB host, a
-//! USB_EVENT_TX_COMPLETE event is sent to the application callback to inform
-//! it that another packet may be transmitted.
-//!
-//! Receive Operation:
-//!
-//! An incoming USB data packet will result in a call to the application
-//! callback with event USBD_EVENT_RX_AVAILABLE.  The application must then
-//! call USBDBulkPacketRead(), passing a buffer capable of holding 64 bytes, to
-//! retrieve the data and acknowledge reception to the USB host.
-//!
-//! \note The application must not make any calls to the low level USB Device
-//! API if interacting with USB via the USB bulk device class API.  Doing so
-//! will cause unpredictable (though almost certainly unpleasant) behavior.
-//!
-//! \return Returns NULL on failure or the psDevice pointer on success.
-//
-//*****************************************************************************
+/*
+* Initializes bulk device operation for a given USB controller.
+*
+* \param ulIndex is the index of the USB controller which is to be
+* initialized for bulk device operation.
+* \param psDevice points to a structure containing parameters customizing
+* the operation of the bulk device.
+*
+* An application wishing to make use of a USB bulk communication channel
+* must call this function to initialize the USB controller and attach the
+* device to the USB bus.  This function performs all required USB
+* initialization.
+*
+* On successful completion, this function will return the \e psDevice pointer
+* passed to it.  This must be passed on all future calls to the device driver
+* related to this device.
+*
+* The USBDBulk interface offers packet-based transmit and receive operation.
+* If the application would rather use block based communication with
+* transmit and receive buffers, USB buffers may be used above the bulk
+* transmit and receive channels to offer this functionality.
+*
+* Transmit Operation:
+*
+* Calls to USBDBulkPacketWrite must send no more than 64 bytes of data at a
+* time and may only be made when no other transmission is currently
+* outstanding.
+*
+* Once a packet of data has been acknowledged by the USB host, a
+* USB_EVENT_TX_COMPLETE event is sent to the application callback to inform
+* it that another packet may be transmitted.
+*
+* Receive Operation:
+*
+* An incoming USB data packet will result in a call to the application
+* callback with event USBD_EVENT_RX_AVAILABLE.  The application must then
+* call USBDBulkPacketRead(), passing a buffer capable of holding 64 bytes, to
+* retrieve the data and acknowledge reception to the USB host.
+*
+* \note The application must not make any calls to the low level USB Device
+* API if interacting with USB via the USB bulk device class API.  Doing so
+* will cause unpredictable (though almost certainly unpleasant) behavior.
+*
+* \return Returns NULL on failure or the psDevice pointer on success.
+*/
 void *
 USBDBulkInit(unsigned int ulIndex, const tUSBDBulkDevice *psDevice)
 {
@@ -810,24 +785,22 @@ USBDBulkInit(unsigned int ulIndex, const tUSBDBulkDevice *psDevice)
     return(pvInstance);
 }
 
-//*****************************************************************************
-//
-//! Initializes bulk device operation for a given USB controller.
-//!
-//! \param ulIndex is the index of the USB controller which is to be
-//! initialized for bulk device operation.
-//! \param psDevice points to a structure containing parameters customizing
-//! the operation of the bulk device.
-//!
-//! An application wishing to make use of a composite  
-//! USB bulk communication channel needs to call this function.
-//! This function is used for initializing an instance related information of the 
-//! bulk device. 
-//!
-//! \return Returns zero on failure or a non-zero value that should be
-//! used with the remaining USB HID Bulk APIs.
-//
-//*****************************************************************************
+/*
+* Initializes bulk device operation for a given USB controller.
+*
+* \param ulIndex is the index of the USB controller which is to be
+* initialized for bulk device operation.
+* \param psDevice points to a structure containing parameters customizing
+* the operation of the bulk device.
+*
+* An application wishing to make use of a composite  
+* USB bulk communication channel needs to call this function.
+* This function is used for initializing an instance related information of the 
+* bulk device. 
+*
+* \return Returns zero on failure or a non-zero value that should be
+* used with the remaining USB HID Bulk APIs.
+*/ 
 void *
 USBDBulkCompositeInit(unsigned int ulIndex, const tUSBDBulkDevice *psDevice)
 {
@@ -916,25 +889,23 @@ USBDBulkCompositeInit(unsigned int ulIndex, const tUSBDBulkDevice *psDevice)
     return((void *)psDevice);
 }
 
-//*****************************************************************************
-//
-//! Shut down the bulk device.
-//!
-//! \param pvInstance is the pointer to the device instance structure as
-//! returned by USBDBulkInit().
-//!
-//! This function terminates device operation for the instance supplied and
-//! removes the device from the USB bus.  This function should not be called
-//! if the bulk device is part of a composite device and instead the
-//! USBDCompositeTerm() function should be called for the full composite
-//! device.
-//!
-//! Following this call, the \e pvInstance instance should not me used in any
-//! other calls.
-//!
-//! \return None.
-//
-//*****************************************************************************
+/*
+* Shut down the bulk device.
+*
+* \param pvInstance is the pointer to the device instance structure as
+* returned by USBDBulkInit().
+*
+* This function terminates device operation for the instance supplied and
+* removes the device from the USB bus.  This function should not be called
+* if the bulk device is part of a composite device and instead the
+* USBDCompositeTerm() function should be called for the full composite
+* device.
+*
+* Following this call, the \e pvInstance instance should not me used in any
+* other calls.
+*
+* \return None.
+*/
 void
 USBDBulkTerm(void *pvInstance)
 {
@@ -961,29 +932,28 @@ USBDBulkTerm(void *pvInstance)
     return;
 }
 
-//*****************************************************************************
-//
-//! Sets the client-specific pointer parameter for the receive channel
-//! callback.
-//!
-//! \param pvInstance is the pointer to the device instance structure as
-//! returned by USBDBulkInit().
-//! \param pvCBData is the pointer that client wishes to be provided on each
-//! event sent to the receive channel callback function.
-//!
-//! The client uses this function to change the callback pointer passed in
-//! the first parameter on all callbacks to the \e pfnRxCallback function
-//! passed on USBDBulkInit().
-//!
-//! If a client wants to make runtime changes in the callback pointer, it must
-//! ensure that the \e pvInstance structure passed to USBDBulkInit() resides in
-//! RAM.  If this structure is in flash, callback pointer changes will not be
-//! possible.
-//!
-//! \return Returns the previous callback pointer that was being used for
-//! this instance's receive callback.
-//
-//*****************************************************************************
+/*
+* Sets the client-specific pointer parameter for the receive channel
+* callback.
+*
+* \param pvInstance is the pointer to the device instance structure as
+* returned by USBDBulkInit().
+* \param pvCBData is the pointer that client wishes to be provided on each
+* event sent to the receive channel callback function.
+*
+* The client uses this function to change the callback pointer passed in
+* the first parameter on all callbacks to the \e pfnRxCallback function
+* passed on USBDBulkInit().
+*
+* If a client wants to make runtime changes in the callback pointer, it must
+* ensure that the \e pvInstance structure passed to USBDBulkInit() resides in
+* RAM.  If this structure is in flash, callback pointer changes will not be
+* possible.
+*
+* \return Returns the previous callback pointer that was being used for
+* this instance's receive callback.
+*/
+
 void *
 USBDBulkSetRxCBData(void *pvInstance, void *pvCBData)
 {
@@ -1004,28 +974,26 @@ USBDBulkSetRxCBData(void *pvInstance, void *pvCBData)
     return (pvOldValue);
 }
 
-//*****************************************************************************
-//
-//! Sets the client-specific pointer parameter for the transmit callback.
-//!
-//! \param pvInstance is the pointer to the device instance structure as
-//! returned by USBDBulkInit().
-//! \param pvCBData is the pointer that client wishes to be provided on each
-//! event sent to the transmit channel callback function.
-//!
-//! The client uses this function to change the callback pointer passed in
-//! the first parameter on all callbacks to the \e pfnTxCallback function
-//! passed on USBDBulkInit().
-//!
-//! If a client wants to make runtime changes in the callback pointer, it must
-//! ensure that the \e pvInstance structure passed to USBDBulkInit() resides in
-//! RAM.  If this structure is in flash, callback pointer changes will not be
-//! possible.
-//!
-//! \return Returns the previous callback pointer that was being used for
-//! this instance's transmit callback.
-//
-//*****************************************************************************
+/*
+* Sets the client-specific pointer parameter for the transmit callback.
+*
+* \param pvInstance is the pointer to the device instance structure as
+* returned by USBDBulkInit().
+* \param pvCBData is the pointer that client wishes to be provided on each
+* event sent to the transmit channel callback function.
+*
+* The client uses this function to change the callback pointer passed in
+* the first parameter on all callbacks to the \e pfnTxCallback function
+* passed on USBDBulkInit().
+*
+* If a client wants to make runtime changes in the callback pointer, it must
+* ensure that the \e pvInstance structure passed to USBDBulkInit() resides in
+* RAM.  If this structure is in flash, callback pointer changes will not be
+* possible.
+*
+* \return Returns the previous callback pointer that was being used for
+* this instance's transmit callback.
+*/
 void *
 USBDBulkSetTxCBData(void *pvInstance, void *pvCBData)
 {
@@ -1046,42 +1014,40 @@ USBDBulkSetTxCBData(void *pvInstance, void *pvCBData)
     return (pvOldValue);
 }
 
-//*****************************************************************************
-//
-//! Transmits a packet of data to the USB host via the bulk data interface.
-//!
-//! \param pvInstance is the pointer to the device instance structure as
-//! returned by USBDBulkInit().
-//! \param pcData points to the first byte of data which is to be transmitted.
-//! \param ulLength is the number of bytes of data to transmit.
-//! \param bLast indicates whether more data is to be written before a packet
-//! should be scheduled for transmission.  If \b true, the client will make
-//! a further call to this function.  If \b false, no further call will be
-//! made and the driver should schedule transmission of a short packet.
-//!
-//! This function schedules the supplied data for transmission to the USB
-//! host in a single USB packet.  If no transmission is currently ongoing,
-//! the data is immediately copied to the relevant USB endpoint FIFO for
-//! transmission.  Whenever a USB packet is acknowledged by the host, a
-//! USB_EVENT_TX_COMPLETE event will be sent to the transmit channel callback
-//! indicating that more data can now be transmitted.
-//!
-//! The maximum value for \e ulLength is 64 bytes (the maximum USB packet size
-//! for the bulk endpoints in use by the device).  Attempts to send more data
-//! than this will result in a return code of 0 indicating that the data cannot
-//! be sent.
-//!
-//! The \e bLast parameter allows a client to make multiple calls to this
-//! function before scheduling transmission of the packet to the host.  This
-//! can be helpful if, for example, constructing a packet on the fly or
-//! writing a packet which spans the wrap point in a ring buffer.
-//!
-//! \return Returns the number of bytes actually sent.  At this level, this
-//! will either be the number of bytes passed (if less than or equal to the
-//! maximum packet size for the USB endpoint in use and no outstanding
-//! transmission ongoing) or 0 to indicate a failure.
-//
-//*****************************************************************************
+/*
+* Transmits a packet of data to the USB host via the bulk data interface.
+*
+* \param pvInstance is the pointer to the device instance structure as
+* returned by USBDBulkInit().
+* \param pcData points to the first byte of data which is to be transmitted.
+* \param ulLength is the number of bytes of data to transmit.
+* \param bLast indicates whether more data is to be written before a packet
+* should be scheduled for transmission.  If \b true, the client will make
+* a further call to this function.  If \b false, no further call will be
+* made and the driver should schedule transmission of a short packet.
+*
+* This function schedules the supplied data for transmission to the USB
+* host in a single USB packet.  If no transmission is currently ongoing,
+* the data is immediately copied to the relevant USB endpoint FIFO for
+* transmission.  Whenever a USB packet is acknowledged by the host, a
+* USB_EVENT_TX_COMPLETE event will be sent to the transmit channel callback
+* indicating that more data can now be transmitted.
+*
+* The maximum value for \e ulLength is 64 bytes (the maximum USB packet size
+* for the bulk endpoints in use by the device).  Attempts to send more data
+* than this will result in a return code of 0 indicating that the data cannot
+* be sent.
+*
+* The \e bLast parameter allows a client to make multiple calls to this
+* function before scheduling transmission of the packet to the host.  This
+* can be helpful if, for example, constructing a packet on the fly or
+* writing a packet which spans the wrap point in a ring buffer.
+*
+* \return Returns the number of bytes actually sent.  At this level, this
+* will either be the number of bytes passed (if less than or equal to the
+* maximum packet size for the USB endpoint in use and no outstanding
+* transmission ongoing) or 0 to indicate a failure.
+*/
 unsigned int
 USBDBulkPacketWrite(void *pvInstance, unsigned char *pcData,
                     unsigned int ulLength, tBoolean bLast)
@@ -1159,30 +1125,29 @@ USBDBulkPacketWrite(void *pvInstance, unsigned char *pcData,
     }
 }
 
-//*****************************************************************************
-//
-//! Reads a packet of data received from the USB host via the bulk data
-//! interface.
-//!
-//! \param pvInstance is the pointer to the device instance structure as
-//! returned by USBDBulkInit().
-//! \param pcData points to a buffer into which the received data will be
-//! written.
-//! \param ulLength is the size of the buffer pointed to by pcData.
-//! \param bLast indicates whether the client will make a further call to
-//! read additional data from the packet.
-//!
-//! This function reads up to \e ulLength bytes of data received from the USB
-//! host into the supplied application buffer.  If the driver detects that the
-//! entire packet has been read, it is acknowledged to the host.
-//!
-//! The \e bLast parameter is ignored in this implementation since the end of
-//! a packet can be determined without relying upon the client to provide
-//! this information.
-//!
-//! \return Returns the number of bytes of data read.
-//
-//*****************************************************************************
+/*
+* Reads a packet of data received from the USB host via the bulk data
+* interface.
+*
+* \param pvInstance is the pointer to the device instance structure as
+* returned by USBDBulkInit().
+* \param pcData points to a buffer into which the received data will be
+* written.
+* \param ulLength is the size of the buffer pointed to by pcData.
+* \param bLast indicates whether the client will make a further call to
+* read additional data from the packet.
+*
+* This function reads up to \e ulLength bytes of data received from the USB
+* host into the supplied application buffer.  If the driver detects that the
+* entire packet has been read, it is acknowledged to the host.
+*
+* The \e bLast parameter is ignored in this implementation since the end of
+* a packet can be determined without relying upon the client to provide
+* this information.
+*
+* \return Returns the number of bytes of data read.
+*
+*/
 unsigned int
 USBDBulkPacketRead(void *pvInstance, unsigned char *pcData,
                    unsigned int ulLength, tBoolean bLast)
@@ -1261,21 +1226,20 @@ USBDBulkPacketRead(void *pvInstance, unsigned char *pcData,
     return (0);
 }
 
-//*****************************************************************************
-//
-//! Returns the number of free bytes in the transmit buffer.
-//!
-//! \param pvInstance is the pointer to the device instance structure as
-//! returned by USBDBulkInit().
-//!
-//! This function returns the maximum number of bytes that can be passed on a
-//! call to USBDBulkPacketWrite and accepted for transmission.  The value
-//! returned will be the maximum USB packet size (64) if no transmission is
-//! currently outstanding or 0 if a transmission is in progress.
-//!
-//! \return Returns the number of bytes available in the transmit buffer.
-//
-//*****************************************************************************
+/*
+* Returns the number of free bytes in the transmit buffer.
+*
+* \param pvInstance is the pointer to the device instance structure as
+* returned by USBDBulkInit().
+*
+* This function returns the maximum number of bytes that can be passed on a
+* call to USBDBulkPacketWrite and accepted for transmission.  The value
+* returned will be the maximum USB packet size (64) if no transmission is
+* currently outstanding or 0 if a transmission is in progress.
+*
+* \return Returns the number of bytes available in the transmit buffer.
+*
+*/
 unsigned int
 USBDBulkTxPacketAvailable(void *pvInstance)
 {
@@ -1308,22 +1272,21 @@ USBDBulkTxPacketAvailable(void *pvInstance)
     }
 }
 
-//*****************************************************************************
-//
-//! Determines whether a packet is available and, if so, the size of the
-//! buffer required to read it.
-//!
-//! \param pvInstance is the pointer to the device instance structure as
-//! returned by USBDBulkInit().
-//!
-//! This function may be used to determine if a received packet remains to be
-//! read and allows the application to determine the buffer size needed to
-//! read the data.
-//!
-//! \return Returns 0 if no received packet remains unprocessed or the
-//! size of the packet if a packet is waiting to be read.
-//
-//*****************************************************************************
+
+/*
+* Determines whether a packet is available and, if so, the size
+* of the buffer required to read it.
+
+* \param pvInstance is the pointer to the device instance
+* structure as returned by USBDBulkInit().
+
+* This function may be used to determine if a received packet
+* remains to be read and allows the application to determine the
+* buffer size needed to read the data.
+
+* \return Returns 0 if no received packet remains unprocessed
+* or the size of the packet if a packet is waiting to be read.
+*/
 unsigned int
 USBDBulkRxPacketAvailable(void *pvInstance)
 {
@@ -1361,23 +1324,23 @@ USBDBulkRxPacketAvailable(void *pvInstance)
     }
 }
 
-//*****************************************************************************
-//
-//! Reports the device power status (bus- or self-powered) to the USB library.
-//!
-//! \param pvInstance is the pointer to the bulk device instance structure.
-//! \param ucPower indicates the current power status, either \b
-//! USB_STATUS_SELF_PWR or \b USB_STATUS_BUS_PWR.
-//!
-//! Applications which support switching between bus- or self-powered
-//! operation should call this function whenever the power source changes
-//! to indicate the current power status to the USB library.  This information
-//! is required by the USB library to allow correct responses to be provided
-//! when the host requests status from the device.
-//!
-//! \return None.
-//
-//*****************************************************************************
+/*
+*  Reports the device power status (bus- or self-powered) to the
+*  USB library.
+
+* \param pvInstance is the pointer to the bulk device instance
+         structure.
+* \param ucPower indicates the current power status, either \b
+* USB_STATUS_SELF_PWR or \b USB_STATUS_BUS_PWR.
+
+* Applications which support switching between bus- or
+* self-powered operation should call this function whenever the
+* power source changes to indicate the current power status to
+* the USB library.  This information is required by the USB
+* library to allow correct responses to be provided when the
+  host requests status from the device.
+  \return None.
+*/
 void
 USBDBulkPowerStatusSet(void *pvInstance, unsigned char ucPower)
 {
@@ -1389,25 +1352,24 @@ USBDBulkPowerStatusSet(void *pvInstance, unsigned char ucPower)
     USBDCDPowerStatusSet(0, ucPower);
 }
 
-//*****************************************************************************
-//
-//! Requests a remote wake up to resume communication when in suspended state.
-//!
-//! \param pvInstance is the pointer to the bulk device instance structure.
-//!
-//! When the bus is suspended, an application which supports remote wake up
-//! (advertised to the host via the configuration descriptor) may call this function
-//! to initiate remote wake up signaling to the host.  If the remote wake up
-//! feature has not been disabled by the host, this will cause the bus to
-//! resume operation within 20mS.  If the host has disabled remote wake up,
-//! \b false will be returned to indicate that the wake up request was not
-//! successful.
-//!
-//! \return Returns \b true if the remote wake up is not disabled and the
-//! signaling was started or \b false if remote wake up is disabled or if
-//! signaling is currently ongoing following a previous call to this function.
-//
-//*****************************************************************************
+/*
+* Requests a remote wake up to resume communication when in suspended state.
+*
+* \param pvInstance is the pointer to the bulk device instance structure.
+*
+* When the bus is suspended, an application which supports remote wake up
+* (advertised to the host via the configuration descriptor) may call this function
+* to initiate remote wake up signaling to the host.  If the remote wake up
+* feature has not been disabled by the host, this will cause the bus to
+* resume operation within 20mS.  If the host has disabled remote wake up,
+* \b false will be returned to indicate that the wake up request was not
+* successful.
+*
+* \return Returns \b true if the remote wake up is not disabled and the
+* signaling was started or \b false if remote wake up is disabled or if
+* signaling is currently ongoing following a previous call to this function.
+*
+**/
 tBoolean
 USBDBulkRemoteWakeupRequest(void *pvInstance)
 {
@@ -1422,6 +1384,6 @@ USBDBulkRemoteWakeupRequest(void *pvInstance)
 //*****************************************************************************
 //
 // Close the Doxygen group.
-//! @}
+// @}
 //
 //*****************************************************************************

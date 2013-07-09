@@ -537,7 +537,6 @@ void Dis_Clear(COLOR color) {
 
 
 
-
 /**
  * @brief 显示一个unicode(UCS2)编码的字符
  * @param [in] character

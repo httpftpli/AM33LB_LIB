@@ -28,6 +28,8 @@ extern BOOL isRingBufEmpty(RINGBUF *ringBuf);
 extern BOOL ringBufPush(RINGBUF *ringBuf, void *item);
 extern BOOL ringBufPop(RINGBUF * ringBuf, void * item);
 extern BOOL ringBufRead(RINGBUF * ringBuf, void ** item);
+extern unsigned short crc16_IBM(void* dataIn, int length);
+extern unsigned short crc16_MD(void *date, uint16 len);
 
 #endif
 

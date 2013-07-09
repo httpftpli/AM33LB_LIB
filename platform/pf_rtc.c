@@ -335,5 +335,7 @@ void RTCRead(unsigned char *year, unsigned char *month,
    *second = (time & SECOND_MASK) >> SECOND_SHIFT;
 }
 
+
+
 //! @}
 /******************************* End of file ********************************/

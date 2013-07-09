@@ -950,6 +950,8 @@ const uint8 Asc12x24[4608] = {
 
 };
 
+const uint8 Asc10x20[2000];
+
 
 #endif		//__Asc8X16_dot_H
 	

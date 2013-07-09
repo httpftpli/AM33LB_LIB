@@ -3,8 +3,9 @@
  *
  *  \brief
  *  \author  李飞亮  
- *  \addtogroup 
- *  @{ 
+ *  \addtogroup ECAP
+ *  \# include "pf_ecap.h"
+ *  @{
  *   
  */
 
@@ -111,7 +112,6 @@ void ECAPInit(unsigned int baseAddr) {
 
    ECAPCounterControl(baseAddr, ECAP_COUNTER_FREE_RUNNING);
 }
-
 
 //! @}
 

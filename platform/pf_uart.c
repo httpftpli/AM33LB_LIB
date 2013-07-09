@@ -1,12 +1,12 @@
 /**
  *  \file   pf_uart.c
  *
- *  \brief  
- *  \author  李飞亮  
+ *  \brief
+ *  \# include "pf_uart.h" \n \# include "uart_irda_cir.h"
+ *  \author  lfl  
  *  \addtogroup UART
  *  @{ 
- *   include "pf_uart.h" \n
- *   include "uart_irda_cir.h" 
+ 
  */
 
 
@@ -301,7 +301,7 @@ static unsigned int UARTDivisorValCompute1(unsigned int moduleClk,unsigned int b
  * @param [in]  charLen 字符长度 
  * @param [in]  parityFlag 奇偶校验 
  * - UART_PARITY_REPR_1 \n - UART_PARITY_REPR_0 
- * - UART_ODD_PARITY \n UART_EVEN_PARITY 
+ * - UART_ODD_PARITY \n - UART_EVEN_PARITY 
  * - UART_PARITY_NONE 
  * @param [in]  stopBit 停止位 
  * - UART_FRAME_NUM_STB_1 
@@ -317,15 +317,15 @@ static unsigned int UARTDivisorValCompute1(unsigned int moduleClk,unsigned int b
  *  - UART_INT_RHR_CTI - to enable Receiver Data available interrupt and
  *                       Character timeout indication interrupt.
  *  @param [in] rxFifoLen 接受缓冲区中断触发深度
- *  -- UART_FCR_RX_TRIG_LVL_8
- *  -- UART_FCR_RX_TRIG_LVL_16
- *  -- UART_FCR_RX_TRIG_LVL_56
- *  -- UART_FCR_RX_TRIG_LVL_60
+ *  - UART_FCR_RX_TRIG_LVL_8  
+ *  - UART_FCR_RX_TRIG_LVL_16 
+ *  - UART_FCR_RX_TRIG_LVL_56 
+ *  - UART_FCR_RX_TRIG_LVL_60 
  *  @param [out] TxFifoLen 发送缓冲区中断触发深度
- *  -- UART_FCR_RX_TRIG_LVL_8
- *  -- UART_FCR_TX_TRIG_LVL_16
- *  -- UART_FCR_TX_TRIG_LVL_32
- *  -- UART_FCR_TX_TRIG_LVL_56
+ *  - UART_FCR_RX_TRIG_LVL_8  
+ *  - UART_FCR_TX_TRIG_LVL_16 
+ *  - UART_FCR_TX_TRIG_LVL_32 
+ *  - UART_FCR_TX_TRIG_LVL_56 
  * @return  NONE         
  * @date    2013/5/23
  * @note 

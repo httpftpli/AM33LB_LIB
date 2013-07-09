@@ -1,42 +1,17 @@
 /**
- * \file   hsi2c.c
+ *  \file   pf_hsi2c.c
  *
- * \brief  This file contains functions which configure the hsi2c
+ *  \brief
+ *  \author  lfl 
+ *  \addtogroup 
+ *  \# include "pf_hsi2c.h"
+ *  @{
+ *   
  */
 
-/*
-* Copyright (C) 2010 Texas Instruments Incorporated - http://www.ti.com/
-*/
-/*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions
-*  are met:
-*
-*    Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-*
-*    Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the
-*    distribution.
-*
-*    Neither the name of Texas Instruments Incorporated nor the names of
-*    its contributors may be used to endorse or promote products derived
-*    from this software without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*/
+//! @}
+
+
 
 
 #include "hw_control_AM335x.h"
@@ -53,289 +28,15 @@
 
 #define I2C_MODE_SLAVE     0
 #define I2C_MODE_MASTER    1
-/**
- * \brief   This function will configure the required clocks for I2C1 instance.
- *
- * \return  None.
- *
- */
-void I2C1ModuleClkConfig(void)
-{
-    HWREG(SOC_PRCM_REGS + CM_PER_L3S_CLKSTCTRL) |= 
-                             CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_PRCM_REGS + CM_PER_L3S_CLKSTCTRL) & 
-     CM_PER_L3S_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKSTCTRL) |= 
-                             CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKSTCTRL) & 
-     CM_PER_L3_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_PRCM_REGS + CM_PER_L3_INSTR_CLKCTRL) |= 
-                             CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_PRCM_REGS + CM_PER_L3_INSTR_CLKCTRL) & 
-                               CM_PER_L3_INSTR_CLKCTRL_MODULEMODE) != 
-                                   CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKCTRL) |= 
-                             CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKCTRL) & 
-        CM_PER_L3_CLKCTRL_MODULEMODE) != CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_PRCM_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) |= 
-                             CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_PRCM_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) & 
-                              CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL) != 
-                                CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKSTCTRL) |= 
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKSTCTRL) & 
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL) != 
-                               CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKCTRL) |= 
-                             CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKCTRL) & 
-      CM_PER_L4LS_CLKCTRL_MODULEMODE) != CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_PRCM_REGS + CM_PER_I2C1_CLKCTRL) |= 
-                             CM_PER_I2C1_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_PRCM_REGS + CM_PER_I2C1_CLKCTRL) & 
-      CM_PER_I2C1_CLKCTRL_MODULEMODE) != CM_PER_I2C1_CLKCTRL_MODULEMODE_ENABLE);
-
-    while(!(HWREG(SOC_PRCM_REGS + CM_PER_L3S_CLKSTCTRL) & 
-            CM_PER_L3S_CLKSTCTRL_CLKACTIVITY_L3S_GCLK));
-
-    while(!(HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKSTCTRL) & 
-            CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK));
-
-    while(!(HWREG(SOC_PRCM_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) & 
-           (CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L3_GCLK | 
-            CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L4_GCLK)));
-
-    while(!(HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKSTCTRL) & 
-           (CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_L4LS_GCLK | 
-            CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_I2C_FCLK)));
-    
-}
-
-
-/*
-** This function enables the system L3 and system L4_WKUP clocks.
-** This also enables the clocks for I2C0 instance.
-*/
-
-void I2C0ModuleClkConfig(void)
-{
-    /* Configuring L3 Interface Clocks. */
-
-    /* Writing to MODULEMODE field of CM_PER_L3_CLKCTRL register. */
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) |=
-          CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE;
-
-    /* Waiting for MODULEMODE field to reflect the written value. */
-    while(CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE !=
-          (HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) &
-           CM_PER_L3_CLKCTRL_MODULEMODE));
-
-    /* Writing to MODULEMODE field of CM_PER_L3_INSTR_CLKCTRL register. */
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) |=
-          CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE;
-
-    /* Waiting for MODULEMODE field to reflect the written value. */
-    while(CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE !=
-          (HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) &
-           CM_PER_L3_INSTR_CLKCTRL_MODULEMODE));
-
-    /* Writing to CLKTRCTRL field of CM_PER_L3_CLKSTCTRL register. */
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) |=
-          CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    /* Waiting for CLKTRCTRL field to reflect the written value. */
-    while(CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP !=
-          (HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-           CM_PER_L3_CLKSTCTRL_CLKTRCTRL));
-
-    /* Writing to CLKTRCTRL field of CM_PER_OCPWP_L3_CLKSTCTRL register. */
-    HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) |=
-          CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    /*Waiting for CLKTRCTRL field to reflect the written value. */
-    while(CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP !=
-          (HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-           CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL));
-
-    /* Writing to CLKTRCTRL field of CM_PER_L3S_CLKSTCTRL register. */
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) |=
-          CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    /*Waiting for CLKTRCTRL field to reflect the written value. */
-    while(CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP !=
-          (HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-           CM_PER_L3S_CLKSTCTRL_CLKTRCTRL));
-
-    /* Checking fields for necessary values.  */
-
-    /* Waiting for IDLEST field in CM_PER_L3_CLKCTRL register to be set to 0x0. */
-    while((CM_PER_L3_CLKCTRL_IDLEST_FUNC << CM_PER_L3_CLKCTRL_IDLEST_SHIFT)!=
-          (HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) &
-           CM_PER_L3_CLKCTRL_IDLEST));
-
-    /*
-    ** Waiting for IDLEST field in CM_PER_L3_INSTR_CLKCTRL register to attain the
-    ** desired value.
-    */
-    while((CM_PER_L3_INSTR_CLKCTRL_IDLEST_FUNC <<
-           CM_PER_L3_INSTR_CLKCTRL_IDLEST_SHIFT)!=
-          (HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) &
-           CM_PER_L3_INSTR_CLKCTRL_IDLEST));
-
-    /*
-    ** Waiting for CLKACTIVITY_L3_GCLK field in CM_PER_L3_CLKSTCTRL register to
-    ** attain the desired value.
-    */
-    while(CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK !=
-          (HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-           CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK));
-
-    /*
-    ** Waiting for CLKACTIVITY_OCPWP_L3_GCLK field in CM_PER_OCPWP_L3_CLKSTCTRL
-    ** register to attain the desired value.
-    */
-    while(CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L3_GCLK !=
-          (HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-           CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L3_GCLK));
-
-    /*
-    ** Waiting for CLKACTIVITY_L3S_GCLK field in CM_PER_L3S_CLKSTCTRL register
-    ** to attain the desired value.
-    */
-    while(CM_PER_L3S_CLKSTCTRL_CLKACTIVITY_L3S_GCLK !=
-          (HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-          CM_PER_L3S_CLKSTCTRL_CLKACTIVITY_L3S_GCLK));
-
-
-    /* Configuring registers related to Wake-Up region. */
-
-    /* Writing to MODULEMODE field of CM_WKUP_CONTROL_CLKCTRL register. */
-    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CONTROL_CLKCTRL) |=
-          CM_WKUP_CONTROL_CLKCTRL_MODULEMODE_ENABLE;
-
-    /* Waiting for MODULEMODE field to reflect the written value. */
-    while(CM_WKUP_CONTROL_CLKCTRL_MODULEMODE_ENABLE !=
-          (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CONTROL_CLKCTRL) &
-           CM_WKUP_CONTROL_CLKCTRL_MODULEMODE));
-
-    /* Writing to CLKTRCTRL field of CM_PER_L3S_CLKSTCTRL register. */
-    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL) |=
-          CM_WKUP_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    /*Waiting for CLKTRCTRL field to reflect the written value. */
-    while(CM_WKUP_CLKSTCTRL_CLKTRCTRL_SW_WKUP !=
-          (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL) &
-           CM_WKUP_CLKSTCTRL_CLKTRCTRL));
-
-    /* Writing to CLKTRCTRL field of CM_L3_AON_CLKSTCTRL register. */
-    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CM_L3_AON_CLKSTCTRL) |=
-          CM_WKUP_CM_L3_AON_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    /*Waiting for CLKTRCTRL field to reflect the written value. */
-    while(CM_WKUP_CM_L3_AON_CLKSTCTRL_CLKTRCTRL_SW_WKUP !=
-          (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CM_L3_AON_CLKSTCTRL) &
-           CM_WKUP_CM_L3_AON_CLKSTCTRL_CLKTRCTRL));
-
-    /* Writing to MODULEMODE field of CM_WKUP_I2C0_CLKCTRL register. */
-    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_I2C0_CLKCTRL) |=
-          CM_WKUP_I2C0_CLKCTRL_MODULEMODE_ENABLE;
-
-    /* Waiting for MODULEMODE field to reflect the written value. */
-    while(CM_WKUP_I2C0_CLKCTRL_MODULEMODE_ENABLE !=
-          (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_I2C0_CLKCTRL) &
-           CM_WKUP_I2C0_CLKCTRL_MODULEMODE));
-
-    /* Verifying if the other bits are set to required settings. */
-
-    /*
-    ** Waiting for IDLEST field in CM_WKUP_CONTROL_CLKCTRL register to attain
-    ** desired value.
-    */
-    while((CM_WKUP_CONTROL_CLKCTRL_IDLEST_FUNC <<
-           CM_WKUP_CONTROL_CLKCTRL_IDLEST_SHIFT) !=
-          (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CONTROL_CLKCTRL) &
-           CM_WKUP_CONTROL_CLKCTRL_IDLEST));
-
-    /*
-    ** Waiting for CLKACTIVITY_L3_AON_GCLK field in CM_L3_AON_CLKSTCTRL
-    ** register to attain desired value.
-    */
-    while(CM_WKUP_CM_L3_AON_CLKSTCTRL_CLKACTIVITY_L3_AON_GCLK !=
-          (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CM_L3_AON_CLKSTCTRL) &
-           CM_WKUP_CM_L3_AON_CLKSTCTRL_CLKACTIVITY_L3_AON_GCLK));
-
-    /*
-    ** Waiting for IDLEST field in CM_WKUP_L4WKUP_CLKCTRL register to attain
-    ** desired value.
-    */
-    while((CM_WKUP_L4WKUP_CLKCTRL_IDLEST_FUNC <<
-           CM_WKUP_L4WKUP_CLKCTRL_IDLEST_SHIFT) !=
-          (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_L4WKUP_CLKCTRL) &
-           CM_WKUP_L4WKUP_CLKCTRL_IDLEST));
-
-    /*
-    ** Waiting for CLKACTIVITY_L4_WKUP_GCLK field in CM_WKUP_CLKSTCTRL register
-    ** to attain desired value.
-    */
-    while(CM_WKUP_CLKSTCTRL_CLKACTIVITY_L4_WKUP_GCLK !=
-          (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL) &
-           CM_WKUP_CLKSTCTRL_CLKACTIVITY_L4_WKUP_GCLK));
-
-    /*
-    ** Waiting for CLKACTIVITY_L4_WKUP_AON_GCLK field in CM_L4_WKUP_AON_CLKSTCTRL
-    ** register to attain desired value.
-    */
-    while(CM_WKUP_CM_L4_WKUP_AON_CLKSTCTRL_CLKACTIVITY_L4_WKUP_AON_GCLK !=
-          (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CM_L4_WKUP_AON_CLKSTCTRL) &
-           CM_WKUP_CM_L4_WKUP_AON_CLKSTCTRL_CLKACTIVITY_L4_WKUP_AON_GCLK));
-
-    /*
-    ** Waiting for CLKACTIVITY_I2C0_GFCLK field in CM_WKUP_CLKSTCTRL
-    ** register to attain desired value.
-    */
-    while(CM_WKUP_CLKSTCTRL_CLKACTIVITY_I2C0_GFCLK !=
-          (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL) &
-           CM_WKUP_CLKSTCTRL_CLKACTIVITY_I2C0_GFCLK));
-
-    /*
-    ** Waiting for IDLEST field in CM_WKUP_I2C0_CLKCTRL register to attain
-    ** desired value.
-    */
-    while((CM_WKUP_I2C0_CLKCTRL_IDLEST_FUNC <<
-           CM_WKUP_I2C0_CLKCTRL_IDLEST_SHIFT) !=
-          (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_I2C0_CLKCTRL) &
-           CM_WKUP_I2C0_CLKCTRL_IDLEST));
-}
-
-
-
-
 
 
 /**
- * @brief I2C��ʼ��
- * @param [in] I2C��moduleId \b MODULE_ID_I2CX
- * @param [in] i2cClkFreq   I2C����Ƶ��         
+ * @brief I2C初始化
+ * @param [in] I2C的moduleId \b MODULE_ID_I2CX
+ * @param [in] i2cClkFreq   I2C总线频率         
  * @param [in] slaveAddr 
- *        slaveAddr����������I2C��������Ϊ�ӻ�ʱʹ�ã�����Ϊ�ӻ�ʱʱ��ΪNULL
- * @param [in] szSlave  �ӻ���ַ��������szSlave���Ϊ4
+ *        slaveAddr缓冲区，当I2C控制器作为从机时使用，不作为从机时时可为NULL
+ * @param [in] szSlave  从机地址个数，当szSlave最大为4
  * @return    NONE       
  * @date    2013/5/29
  * @note
@@ -370,6 +71,20 @@ void I2CInit(unsigned int moduleId,unsigned int i2cClkFreq,
 }
 
 
+/**
+ * @brief 主机向从机写数据
+ * @param [in] baseAddr I2C控制器基地址 \b SOC_I2C_X_REGS
+ * @param [in] addr  从机地址       
+ * @param [in] buf   缓冲区地址
+ * @param [in] szWrite 数据长度 
+ * @return  BOOL         
+ * @date    2013/7/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 BOOL I2CMasterWrite(unsigned baseAddr,unsigned short addr,const void *buf,unsigned int szWrite){
    unsigned int datap = 0;
    I2CMasterIntClearEx(baseAddr, 0xffffffff);
@@ -405,6 +120,25 @@ BOOL I2CMasterWrite(unsigned baseAddr,unsigned short addr,const void *buf,unsign
    }
 }
 
+
+/**
+ * @brief 主机向从机写数据，本函数阻塞执行，
+ * @param [in] baseAddr I2C控制器基地址 \b SOC_I2C_X_REGS
+ * @param [in] slaveAddr  从机地址       
+ * @param [in] w1buf   缓冲区1地址
+ * @param [in] szWrite 数据长度1 
+ * @param [in] w2buf 缓冲区2地址
+ * @param [in] szW2 数据长度2  
+ * @return  BOOL         
+ * @date    2013/7/8
+ * @note 
+ * 该函数连续写2次数据，方便操作像eeprom 
+ * 这样的器件，先写入字节地址，再写入数据 
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 BOOL I2CMasterWriteEx(unsigned baseAddr,unsigned short slaveAddr,const void *w1buf,unsigned int szW1,
                       const void *w2buf,unsigned int szW2){
    unsigned int datap1=0,datap2=0;
@@ -471,6 +205,20 @@ NEXT:
 
 
 
+/**
+ * @brief 主机向从机读数据
+ * @param [in] baseAddr I2C控制器基地址 \b SOC_I2C_X_REGS
+ * @param [in] slaveAddr  从机地址 
+ * @param [out] buf 读缓冲区 
+ * @param [in] szRead 读长度
+ * @return  BOOL         
+ * @date    2013/7/8
+ * @note 
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 BOOL I2CMasterRead(unsigned int baseAddr,unsigned short slaveAddr,void *buf,unsigned int szRead)
 {
    unsigned int datap = 0;
@@ -502,7 +250,24 @@ BOOL I2CMasterRead(unsigned int baseAddr,unsigned short slaveAddr,void *buf,unsi
    }
 }
 
-
+/**
+ * @brief 主机向从机先写入数据，再读 ，本函数阻塞执行
+ * @param [in] baseAddr I2C控制器基地址 \b SOC_I2C_X_REGS
+ * @param [in] slaveAddr  从机地址       
+ * @param [in] writeBuf   写入缓冲区地址
+ * @param [in] szWrite 写入长度
+ * @param [out] readBuf 读缓冲区
+ * @param [in] szRead 读长度  
+ * @return  BOOL         
+ * @date    2013/7/8
+ * @note 
+ * 该函数方便操作像eeprom 
+ * 这样的器件，先写入字节地址，再在该地址读出数据 
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 BOOL I2CMasterReadEx(unsigned baseAddr,unsigned short slaveAddr,const void *writeBuf ,unsigned int szWrite,
                      void *readBuf,unsigned int szRead){
    unsigned int datap1=0,datap2 =0;
@@ -564,3 +329,5 @@ NEXT:
    }
 
 }
+
+//! @}

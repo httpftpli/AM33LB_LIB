@@ -1,27 +1,3 @@
-//*****************************************************************************
-//
-// usbdhid.c - USB HID device class driver.
-//
-// Copyright (c) 2008-2010 Texas Instruments Incorporated.  All rights reserved.
-// Software License Agreement
-// 
-// Texas Instruments (TI) is supplying this software for use solely and
-// exclusively on TI's microcontroller products. The software is owned by
-// TI and/or its suppliers, and is protected under applicable copyright
-// laws. You may not combine this software with "viral" open-source
-// software in order to form a larger program.
-// 
-// THIS SOFTWARE IS PROVIDED "AS IS" AND WITH ALL FAULTS.
-// NO WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT
-// NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. TI SHALL NOT, UNDER ANY
-// CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
-// DAMAGES, FOR ANY REASON WHATSOEVER.
-// 
-// This is part of AM1808 StarterWare USB Library and reused from revision 6288 
-// of the  Stellaris USB Library.
-//
-//*****************************************************************************
 
 #include "hw_usb.h"
 #include "hw_types.h"
@@ -36,8 +12,8 @@
 
 //*****************************************************************************
 //
-//! \addtogroup hid_device_class_api
-//! @{
+// \addtogroup hid_device_class_api
+// @{
 //
 //*****************************************************************************
 
@@ -380,7 +356,7 @@ tDeviceInfo g_sHIDDeviceInfo =
     &g_sUSBDefaultFIFOConfig
 };
 
-//*****************************************************************************
+/*
 //
 // Set or clear deferred operation flags in an "atomic" manner.
 //
@@ -395,7 +371,7 @@ tDeviceInfo g_sHIDDeviceInfo =
 //
 // \return None.
 //
-//*****************************************************************************
+*/
 static void
 SetDeferredOpFlag(volatile unsigned short *pusDeferredOp,
                   unsigned short usBit, tBoolean bSet)
@@ -2642,6 +2618,6 @@ USBDHIDRemoteWakeupRequest(void *pvInstance)
 //*****************************************************************************
 //
 // Close the Doxygen group.
-//! @}
+// @}
 //
 //*****************************************************************************

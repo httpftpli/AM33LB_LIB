@@ -1,3 +1,16 @@
+/**
+ *  \file   pf_key_touchpad.c
+ *
+ *  \brief
+ *  \#include  "pf_key_touchpad.h" 
+ *  \author  lfl  
+ *  \addtogroup KEY_TOUCHPAD
+ *  @{ 
+ *   
+ */
+
+
+
 #include "pf_key_touchpad.h"
 #include "type.h"
 #include "pf_lcd.h"
@@ -51,12 +64,33 @@
 
 KEYTOUCHMSG keyTouchpadMsg;
 
+/** @brief 标记是否有按键 */
 atomic g_keyPushed;
+/**
+* @brief 
+*  标记键盘复位，键盘首次上电或者复位是会发送复位信息
+*/
 atomic g_keyRest;
+/**
+* @brief 标记是否有触摸
+*/
 atomic g_touched;
+/**
+* @brief 按键值
+*/
 unsigned char g_keycode;
-volatile TS_SAMPLE g_ts ,g_tsRaw;
-TS_CALIBRATION tsCalibration;
+
+/**
+* @brief 触摸坐标
+*/
+volatile TS_SAMPLE g_ts;
+/**
+* @brief 摸触AD采样值
+*/
+
+volatile TS_SAMPLE g_tsRaw;
+TS_CALIBRATION tsCalibration = {.matrix.An=-238,.matrix.Bn=-4,.matrix.Cn=874,
+   .matrix.Dn=1,.matrix.En=173,.matrix.Fn=-56};
 
 void (*keyhandler)(int keycode) = NULL;
 
@@ -186,6 +220,7 @@ extern mmcsdCtrlInfo mmcsdctr[2];
 BOOL TouchCalibrate(BOOL force);
 
 
+
 BOOL isKeyTouchEvent(KEYTOUCHMSG *msg){
    if (0x55 == msg->magic) {
       return TRUE;
@@ -193,6 +228,16 @@ BOOL isKeyTouchEvent(KEYTOUCHMSG *msg){
    return FALSE;
 }
 
+
+
+/**
+ * @brief 注册特定按键的中断回调函数
+ * @param [in] handler 回调函数
+ * @return NONE          
+ * @date    2013/7/8
+ * @note 
+ * 注册的回调函数可用于处理全局快捷键 
+ */
 void registKeyHandler(void handler(int keycode)){
   keyhandler = handler;
 }
@@ -207,7 +252,18 @@ void  ts_linear(TS_CALIBRATION *cal,  int *x,  int *y) {
 
 /**
  * @brief 触摸屏校准 
- * @return           
+ *        ,该函数只校准一次，如果校准不成功函数返回FALSE,需重新调用该函数
+ * @param force 
+ *         - FALSE --
+ *         当前触摸参数有效时读取当前校准参数
+ *         \n
+ *         - TRUE --
+ *           不管当前校准参数有没有效，都强制重新校准，如果校准成功保存当前参数
+ *           \n
+ * @return 
+ * - TRUE 成功 \n 
+ * - FALSE 失败 \n 
+ *  
  * @date    2013/5/31
  * @note 
  * 该函数会修改显存 
@@ -313,7 +369,7 @@ BOOL TouchCalibrate(BOOL  force) {
    }
 }
 
-
+//! @}
 
 
 

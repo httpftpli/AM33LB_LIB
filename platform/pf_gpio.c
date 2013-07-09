@@ -75,16 +75,15 @@ void isr_Gpio(unsigned int intnum){
 
 /**
  * @brief 
- *        娉ㄥ唽GPIO鍥炶皟鍑芥暟锛屽洖璋冨嚱鏁板湪涓柇绾跨▼涓墽琛?
+ *        注册GPIO中断服务程序
  * @param [in] modulOfGpio 
- *        GPIO缁勫彿锛屾瘮濡侴PIO2_8,modulOfGpio=2
- * @param [in] bitOfGpio GPIO浣嶅彿锛屾瘮濡?GPIO2_8, 
- *        bitOfGpio=8
+ *        GPIO模块号，例如GPIO2_8,modulOfGpio=2
+ * @param [in] bitOfGpio GPIO位,例如GPIO2_8, bitOfGpio=8 
  * @param [in]  gpiohandler
  * @return  void         
  * @date    2013/5/7
  * @note
- * 绀轰緥浠ｇ爜濡備笅锛?
+ * 只有响应GPIO使能中断的情况下，才会执行gpiohandler函数，gpiohandler在中断线程中执行
  * @code
  * 
  * @endcode
@@ -102,9 +101,9 @@ void GPIORegistHandler(unsigned char modulOfGpio,unsigned bitOfGpio,
 
 
 /**
- * @brief 娓呮GPIO涓柇鍥炶皟鍑芥暟
- * @param [in] modulOfGpio 瑙?GPIORegistHandler()
- * @param [in] bitOfGpio 瑙?GPIORegistHandler() 
+ * @brief 删除GPIO中断服务程序
+ * @param [in] modulOfGpio 见 GPIORegistHandler()
+ * @param [in] bitOfGpio 见 GPIORegistHandler() 
  * @return           
  * @date    2013/5/7
  * @note 
@@ -371,12 +370,11 @@ void GPIO1ModuleClkConfig(void)
 
 
 /**
- * @brief GPIO鍒濆鍖?
- * @param [in] moduleId GPIO妯″潡ID ,\b MODULE_ID_GPIOX
- * @param [in] debounceTimer 娑堟姈鍔ㄦ椂闂? 
- *        锛屼负32棰戠巼鐨勫垎棰?
+ * @brief GPIO初始化
+ * @param [in] moduleId GPIOID 模块,\b MODULE_ID_GPIOX
+ * @param [in] debounceTimer GPIO消抖动时间 
  * @param [in] debounceEnableBitmap 
- *        32浣嶄綅鏄犲皠鍊硷紝浣胯兘GPIO鐨勬煇涓€浣嶆槸鍚︿娇鑳藉幓鎶栧姩
+ *        32位gpio使能消抖为映射
  * @return  NONE      
  * @date    2013/5/29
  * @note

@@ -4,41 +4,8 @@
  * \brief Driver for the USB Interface.
  */
 
-/*
-* Copyright (C) 2010 Texas Instruments Incorporated - http://www.ti.com/
-*/
-/*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions
-*  are met:
-*
-*    Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-*
-*    Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the
-*    distribution.
-*
-*    Neither the name of Texas Instruments Incorporated nor the names of
-*    its contributors may be used to endorse or promote products derived
-*    from this software without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-*  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-*  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-*  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*/
 
-/**
+/*
  * \addtogroup usb_api
  * @{
  */
@@ -76,7 +43,7 @@
 #define EP_OFFSET(Endpoint)     (Endpoint - 0x10)
 
 
-/**
+/*
  * Sets one of the indexed registers.
  *
  * \param ulBase specifies the USB module base address.
@@ -125,7 +92,7 @@ USBIndexWrite(unsigned int ulBase, unsigned int ulEndpoint,
     HWREGB(ulBase + USB_O_EPIDX) = ulIndex;
 }
 
-/**
+/*
  * Reads one of the indexed registers.
  *
  * \param ulBase specifies the USB module base address.
@@ -176,7 +143,7 @@ USBIndexRead(unsigned int ulBase, unsigned int ulEndpoint,
     return(ulValue);
 }
 
-/**
+/*
  * Puts the USB bus in a suspended state.
  *
  * \param ulBase specifies the USB module base address.
@@ -198,7 +165,7 @@ USBHostSuspend(unsigned int ulBase)
     HWREGB(ulBase + USB_O_POWER) |= USB_POWER_SUSPEND;
 }
 
-/**
+/*
  * Handles the USB bus reset condition.
  *
  * \param ulBase specifies the USB module base address.
@@ -231,7 +198,7 @@ USBHostReset(unsigned int ulBase, tBoolean bStart)
     }
 }
 
-/**
+/*
  * Handles the USB bus resume condition.
  *
  * \param ulBase specifies the USB module base address.
@@ -270,7 +237,7 @@ USBHostResume(unsigned int ulBase, tBoolean bStart)
     }
 }
 
-/**
+/*
  * Returns the current speed of the USB device connected.
  *
  * \param ulBase specifies the USB module base address.
@@ -310,7 +277,7 @@ USBHostSpeedGet(unsigned int ulBase)
     return(USB_UNDEF_SPEED);
 }
 
-/**
+/*
  * Returns the status of the USB interrupts.
  *
  * \param ulBase specifies the USB module base address.
@@ -376,7 +343,7 @@ USBIntStatus(unsigned int ulBase)
 }
 #endif
 
-/**
+/*
  * Disables the sources for USB interrupts.
  *
  * \param ulBase specifies the USB module base address.
@@ -442,7 +409,7 @@ USBIntDisable(unsigned int ulBase, unsigned int ulFlags)
 }
 #endif
 
-/**
+/*
  * Enables the sources for USB interrupts.
  *
  * \param ulBase specifies the USB module base address.
@@ -515,7 +482,7 @@ USBIntEnable(unsigned int ulBase, unsigned int ulFlags)
 }
 #endif
 
-/**
+/*
  * Disable control interrupts on a given USB controller.
  *
  * \param ulBase specifies the USB module base address.
@@ -556,7 +523,7 @@ USBIntDisableControl(unsigned int ulBase, unsigned int ulFlags)
     }
 }
 
-/**
+/*
  * Enable control interrupts on a given USB controller.
  *
  * \param ulBase specifies the USB module base address.
@@ -597,7 +564,7 @@ USBIntEnableControl(unsigned int ulBase, unsigned int ulFlags)
     }
 }
 
-/**
+/*
  * Returns the control interrupt status on a given USB controller.
  *
  * \param ulBase specifies the USB module base address.
@@ -673,7 +640,7 @@ USBIntStatusControl(unsigned int ulBase)
     return(ulStatus);
 }
 
-/**
+/*
  * Disable endpoint interrupts on a given USB controller.
  *
  * \param ulBase specifies the USB module base address.
@@ -705,7 +672,7 @@ USBIntDisableEndpoint(unsigned int ulBase, unsigned int ulFlags)
           USB_INTEP_RX_SHIFT);
 }
 
-/**
+/*
  * Enable endpoint interrupts on a given USB controller.
  *
  * \param ulBase specifies the USB module base address.
@@ -735,7 +702,7 @@ USBIntEnableEndpoint(unsigned int ulBase, unsigned int ulFlags)
          USB_INTEP_RX_SHIFT);
 }
 
-/**
+/*
  * Returns the endpoint interrupt status on a given USB controller.
  *
  * \param ulBase specifies the USB module base address.
@@ -770,7 +737,7 @@ USBIntStatusEndpoint(unsigned int ulBase)
 
 
 
-/**
+/*
  * Returns the current status of an endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -866,7 +833,7 @@ USBEndpointStatus(unsigned int ulBase, unsigned int ulEndpoint)
     return(ulStatus);
 }
 
-/**
+/*
  * Clears the status bits in this endpoint in host mode.
  *
  * \param ulBase specifies the USB module base address.
@@ -909,7 +876,7 @@ USBHostEndpointStatusClear(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Clears the status bits in this endpoint in device mode.
  *
  * \param ulBase specifies the USB module base address.
@@ -977,7 +944,7 @@ USBDevEndpointStatusClear(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Sets the value data toggle on an endpoint in host mode.
  *
  * \param ulBase specifies the USB module base address.
@@ -1061,7 +1028,7 @@ USBHostEndpointDataToggle(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Sets the Data toggle on an endpoint to zero.
  *
  * \param ulBase specifies the USB module base address.
@@ -1105,7 +1072,7 @@ USBEndpointDataToggleClear(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Stalls the specified endpoint in device mode.
  *
  * \param ulBase specifies the USB module base address.
@@ -1159,7 +1126,7 @@ USBDevEndpointStall(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Clears the stall condition on the specified endpoint in device mode.
  *
  * \param ulBase specifies the USB module base address.
@@ -1221,7 +1188,7 @@ USBDevEndpointStallClear(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Connects the USB controller to the bus in device mode.
  *
  * \param ulBase specifies the USB module base address.
@@ -1243,7 +1210,7 @@ USBDevConnect(unsigned int ulBase)
     HWREGB(ulBase + USB_O_POWER) |= USB_POWER_SOFTCONN;
 }
 
-/**
+/*
  * Removes the USB controller from the bus in device mode.
  *
  * \param ulBase specifies the USB module base address.
@@ -1266,7 +1233,7 @@ USBDevDisconnect(unsigned int ulBase)
     HWREGB(ulBase + USB_O_POWER) &= (~USB_POWER_SOFTCONN);     
 }
 
-/**
+/*
  * Sets the address in device mode.
  *
  * \param ulBase specifies the USB module base address.
@@ -1289,7 +1256,7 @@ USBDevAddrSet(unsigned int ulBase, unsigned int ulAddress)
     HWREGB(ulBase + USB_O_FADDR) = (unsigned char)ulAddress;
 }
 
-/**
+/*
  * Returns the current device address in device mode.
  *
  * \param ulBase specifies the USB module base address.
@@ -1311,7 +1278,7 @@ USBDevAddrGet(unsigned int ulBase)
     return(HWREGB(ulBase + USB_O_FADDR));
 }
 
-/**
+/*
  * Sets the base configuration for a host endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -1550,7 +1517,7 @@ USBHostEndpointConfig(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Sets the configuration for an endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -1696,7 +1663,7 @@ USBDevEndpointConfigSet(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Gets the current configuration for an endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -1841,7 +1808,7 @@ USBDevEndpointConfigGet(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Sets the FIFO configuration for an endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -1905,7 +1872,7 @@ USBFIFOConfigSet(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Returns the FIFO configuration for an endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -1964,7 +1931,7 @@ USBFIFOConfigGet(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Enable DMA on a given endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -1997,7 +1964,7 @@ USBEndpointDMAEnable(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Disable DMA on a given endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -2030,7 +1997,7 @@ USBEndpointDMADisable(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Determine the number of bytes of data available in a given endpoint's FIFO.
  *
  * \param ulBase specifies the USB module base address.
@@ -2081,7 +2048,7 @@ USBEndpointDataAvail(unsigned int ulBase, unsigned int ulEndpoint)
     return(HWREGH(ulBase + USB_O_COUNT0 + ulEndpoint));
 }
 
-/**
+/*
  * Retrieves data from the given endpoint's FIFO.
  *
  * \param ulBase specifies the USB module base address.
@@ -2163,7 +2130,7 @@ USBEndpointDataGet(unsigned int ulBase, unsigned int ulEndpoint,
     return(0);
 }
 
-/**
+/*
  * Acknowledge that data was read from the given endpoint's FIFO in device
  * mode.
  *
@@ -2212,7 +2179,7 @@ USBDevEndpointDataAck(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Acknowledge that data was read from the given endpoint's FIFO in host
  * mode.
  *
@@ -2253,7 +2220,7 @@ USBHostEndpointDataAck(unsigned int ulBase, unsigned int ulEndpoint)
     }
 }
 
-/**
+/*
  * Puts data into the given endpoint's FIFO.
  *
  * \param ulBase specifies the USB module base address.
@@ -2318,7 +2285,7 @@ USBEndpointDataPut(unsigned int ulBase, unsigned int ulEndpoint,
     return(0);
 }
 
-/**
+/*
  * Starts the transfer of data from an endpoint's FIFO.
  *
  * \param ulBase specifies the USB module base address.
@@ -2381,7 +2348,7 @@ USBEndpointDataSend(unsigned int ulBase, unsigned int ulEndpoint,
     return(0);
 }
 
-/**
+/*
  * Forces a flush of an endpoint's FIFO.
  *
  * \param ulBase specifies the USB module base address.
@@ -2449,7 +2416,7 @@ USBFIFOFlush(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Schedules a request for an IN transaction on an endpoint in host mode.
  *
  * \param ulBase specifies the USB module base address.
@@ -2493,7 +2460,7 @@ USBHostRequestIN(unsigned int ulBase, unsigned int ulEndpoint)
     HWREGB(ulBase + ulRegister) = USB_RXCSRL1_REQPKT;
 }
 
-/**
+/*
  * Stop any request for an IN transaction on an endpoint in host mode.
  * This is used to stop further requests during teardown process.
  *
@@ -2538,7 +2505,7 @@ USBHostRequestINClear(unsigned int ulBase, unsigned int ulEndpoint)
     HWREGB(ulBase + ulRegister) &= ~USB_RXCSRL1_REQPKT;
 }
 
-/**
+/*
  * Autorequest for packet when FIFOs are empty.
  *
  * \param ulBase specifies the USB module base address.
@@ -2581,7 +2548,7 @@ USBHostAutoReqSet(unsigned int ulBase, unsigned int ulEndpoint)
     HWREGB(ulBase + ulRegister) |= USB_RXCSRH1_AUTORQ;
 }
 
-/**
+/*
  * Donot autorequest for packet when FIFOs are empty.
  * This is used to stop further requests during teardown process.
  *
@@ -2625,7 +2592,7 @@ USBHostAutoReqClear(unsigned int ulBase, unsigned int ulEndpoint)
     HWREGB(ulBase + ulRegister) &= ~USB_RXCSRH1_AUTORQ;
 }
 
-/**
+/*
  * Issues a request for a status IN transaction on endpoint zero.
  *
  * \param ulBase specifies the USB module base address.
@@ -2648,7 +2615,7 @@ USBHostRequestStatus(unsigned int ulBase)
     HWREGB(ulBase + USB_O_CSRL0) = USB_CSRL0_REQPKT | USB_CSRL0_STATUS;
 }
 
-/**
+/*
  * Sets the functional address for the device that is connected to an
  * endpoint in host mode.
  *
@@ -2695,7 +2662,7 @@ USBHostAddrSet(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Gets the current functional device address for an endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -2738,7 +2705,7 @@ USBHostAddrGet(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Set the hub address for the device that is connected to an endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -2782,7 +2749,7 @@ USBHostHubAddrSet(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Get the current device hub address for this endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -2826,7 +2793,7 @@ USBHostHubAddrGet(unsigned int ulBase, unsigned int ulEndpoint,
     }
 }
 
-/**
+/*
  * Sets the configuration for USB power fault.
  *
  * \param ulBase specifies the USB module base address.
@@ -2910,7 +2877,7 @@ USBHostPwrConfig(unsigned int ulBase, unsigned int ulFlags)
                       USB_EPC_PFLTSEN_HIGH | USB_EPC_EPEN_M)));
 }
 
-/**
+/*
  * Enables power fault detection.
  *
  * \param ulBase specifies the USB module base address.
@@ -2932,7 +2899,7 @@ USBHostPwrFaultEnable(unsigned int ulBase)
     HWREGH(ulBase + USB_O_EPC) |= USB_EPC_PFLTEN;
 }
 
-/**
+/*
  * Disables power fault detection.
  *
  * \param ulBase specifies the USB module base address.
@@ -2953,7 +2920,7 @@ USBHostPwrFaultDisable(unsigned int ulBase)
     HWREGH(ulBase + USB_O_EPC) &= ~USB_EPC_PFLTEN;
 }
 
-/**
+/*
  * Enables the external power pin.
  *
  * \param ulBase specifies the USB module base address.
@@ -2975,7 +2942,7 @@ USBHostPwrEnable(unsigned int ulBase)
     HWREGH(ulBase + USB_O_EPC) |= USB_EPC_EPENDE;
 }
 
-/**
+/*
  * Disables the external power pin.
  *
  * \param ulBase specifies the USB module base address.
@@ -2997,7 +2964,7 @@ USBHostPwrDisable(unsigned int ulBase)
     HWREGH(ulBase + USB_O_EPC) &= ~USB_EPC_EPENDE;
 }
 
-/**
+/*
  * Get the current frame number.
  *
  * \param ulBase specifies the USB module base address.
@@ -3016,7 +2983,7 @@ USBFrameNumberGet(unsigned int ulBase)
     return(HWREGH(ulBase + USB_O_FRAME));
 }
 
-/**
+/*
  * Starts or ends a session.
  *
  * \param ulBase specifies the USB module base address.
@@ -3045,7 +3012,7 @@ USBOTGSessionRequest(unsigned int ulBase, tBoolean bStart)
     }
 }
 
-/**
+/*
  * Returns the absolute FIFO address for a given endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -3065,7 +3032,7 @@ USBFIFOAddrGet(unsigned int ulBase, unsigned int ulEndpoint)
     return(ulBase + USB_O_FIFO0 + (ulEndpoint >> 2));
 }
 
-/**
+/*
  * Returns the current operating mode of the controller.
  *
  * \param ulBase specifies the USB module base address.
@@ -3133,7 +3100,7 @@ USBModeGet(unsigned int ulBase)
             USB_DEVCTL_VBUS_M));
 }
 
-/**
+/*
  * Sets the DMA channel to use for a given endpoint.
  *
  * \param ulBase specifies the USB module base address.
@@ -3186,7 +3153,7 @@ USBEndpointDMAChannel(unsigned int ulBase, unsigned int ulEndpoint,
     HWREG(ulBase + USB_O_DMASEL) = ulMask;
 }
 
-/**
+/*
  * Enables the USB interrupt at OTG level.
  *
  * \param None.
@@ -3206,7 +3173,7 @@ void USBEnableOtgIntr(unsigned int ulBase)
     USBEnableInt(ulBase); 
 }
 
-/**
+/*
  * Resets the USB Controller
  *
  * \param None.
@@ -3233,4 +3200,4 @@ void USBClearOtgIntr(unsigned int ulBase)
      USBClearInt(ulBase);
 }
 /* Close the Doxygen group. */
-/** @} */
+/* @} */

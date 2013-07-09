@@ -3,16 +3,16 @@
 
 #include "cpu.h"
 
-typedef volatile int atomic ;
+typedef  void  * volatile atomic ;
 
 static inline void atomicWrite(atomic *atom, int val){
     CPUirqd();
-    *atom = val;
+    *(int *)atom = val;
     CPUirqe();
 }
 
-static inline atomic atomicRead(atomic *atom){
-   return *atom;
+static inline int atomicRead(atomic *atom){
+   return (int)*atom;
 }
 
 static inline void atomicSet(atomic *atom){
@@ -25,7 +25,7 @@ static inline void atomicClear(atomic *atom){
 
 static inline void atomicAdd(atomic *atom,int val){
     CPUirqd();
-    atom += val;
+    *(int *)(atom) += val;
     CPUirqe();
 }
 
@@ -39,7 +39,7 @@ static inline void atomicDec(atomic *atom){
 }
 
 static inline unsigned int  atomicTest(atomic *atom){  
-    return !! *atom ;
+    return !! (int)*atom ;
 }
 
 

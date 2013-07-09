@@ -136,5 +136,23 @@ CPUfiqe
 	msr     cpsr_c, r0
 	bx	lr
 
-	END
-;************************** End Of File ***********************************;
+
+
+eabi_memset_32
+          pkhbt  r1, r1,r1 
+          mov  r3 ,r2,lsr #4
+          mov  r6, r1
+          mov  r7, r1
+          mov  r8 ,r1
+          mov  r9, r1
+          mov  r10, r1
+          mov  r11, r1
+          mov  r12, r1
+LOOP1
+          subs  r3,r3, #1
+          beq  LOOP1
+          stmia   R0!,{R1,r6-r12}
+          BNE LOOP1
+          
+          
+         END
