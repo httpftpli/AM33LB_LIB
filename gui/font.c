@@ -9,13 +9,12 @@
  *   
  */
 
-
-#include "font.h"
 #include "ff.h"
 #include "type.h"
 #include "pf_platform_cfg.h"
 #include "utf8.h"
 #include "mmath.h"
+#include "lib_gui.h"
 
 
 
@@ -32,8 +31,6 @@ GUI_FONT *fonts[4] = {
    [2] =&font_16,
    [3] =&font24,
 };
-
-FL_SECTION_INF *pfl_section;
 
 
 static unsigned int loadFont(const TCHAR * filepath,  GUI_FONT  *font) {
@@ -126,7 +123,7 @@ int getStringMetricWidth(const TEXTCHAR *string){
       if (0 == w) {
          break;
       }
-      width = GUI_Context.pAFont->pfGetCharDistX(w);
+      width = GUI_Context.pAFont->pfGetCharDistX(ucs2);
       if (0==width) {
          width = GUI_Context.pAFont->pfGetCharDistX('?');
       }
@@ -135,11 +132,21 @@ int getStringMetricWidth(const TEXTCHAR *string){
       if (*string == 0) {
          break;
       }
-      width = GUI_Context.pAFont->pfGetCharDistX(w++);
+      width = GUI_Context.pAFont->pfGetCharDistX(*string++);
+      if (0 == width) {
+         width = GUI_Context.pAFont->pfGetCharDistX('?');
+      }
+#elif (CHARACTER_DIS_CODEC==ASCII_CODEC)
+      STATIC_ASSERT(sizeof(TEXTCHAR) == 1);
+      if (*string == 0) {
+         break;
+      }
+      width = GUI_Context.pAFont->pfGetCharDistX(*string++);
       if (0 == width) {
          width = GUI_Context.pAFont->pfGetCharDistX('?');
       }
 #endif
+      
       widthtotle += width;
    }
    return widthtotle;

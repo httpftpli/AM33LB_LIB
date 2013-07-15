@@ -17,7 +17,7 @@ Purpose     : Implementation of system independend fonts
 ---------------------------END-OF-HEADER------------------------------
 */
 
-#include "GUI.h"
+#include "lib_gui.h"
 #include "type.h"
 #include "GUIType.h"
 #include "pf_lcd.h"
@@ -95,8 +95,7 @@ static void _GUI_SIF_DispChar(U16P c) {
     unsigned int addr = (unsigned int)GUI_Context.pAFont->p.pFontData + pCharInfo->OffData ;
   
   for (int i = 0; i < GUI_Context.pAFont->YSize; i++) {    
-      unsigned int mask = *((unsigned int *)(addr+i*nbyteperline));
-      mask = htonl(mask);
+      unsigned int mask = htonlAt((void*)(addr+i*nbyteperline));    
       for(int j=0;j<width;j++){
         GUI_COLOR color = (mask & (1<<(31-j))) ?  GUI_Context.Color: GUI_Context.BkColor;
         LCD_SetPixel(x + j, y + i, color);

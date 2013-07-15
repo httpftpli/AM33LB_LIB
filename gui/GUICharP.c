@@ -1,7 +1,6 @@
  
-#include "gui.h"
+#include "lib_gui.h"
 #include "pf_lcd.h"
-#include "font.h"
 #include "type.h"
 #include "mmath.h"
 
@@ -49,7 +48,7 @@ void GUIPROP_DispChar(U16P c) {
   const GUI_FONT_PROP   * pProp = GUIPROP_FindChar(GUI_Context.pAFont->p.pProp, c);
   if (!pProp){
      c = '?';
-     pProp = GUIPROP_FindChar(GUI_Context.pAFont->p.pProp, '?');
+     pProp = GUIPROP_FindChar(GUI_Context.pAFont->p.pProp, c);
   }
   const GUI_CHARINFO   * pCharInfo = pProp->paCharInfo+(c-pProp->First);
   unsigned short x = GUI_Context.DispPosX;
@@ -59,8 +58,7 @@ void GUIPROP_DispChar(U16P c) {
   unsigned int dis = pCharInfo->XDist;
   unsigned int nbyteperline = pCharInfo->BytesPerLine;
   for (int i = 0; i < GUI_Context.pAFont->YSize; i++) {    
-      unsigned int mask = *((unsigned int *)(addr+i*nbyteperline));
-      mask = htonl(mask);
+      unsigned int mask = htonlAt((void*)(addr+i*nbyteperline));
       for(int j=0;j<width;j++){
         GUI_COLOR color = (mask & (1<<(31-j))) ?  GUI_Context.Color: GUI_Context.BkColor;
         LCD_SetPixel(x + j, y + i, color);
