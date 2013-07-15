@@ -223,5 +223,15 @@
 #endif
 
 
+
+#ifndef ASCII_FONT16_IN_SOURCE
+#define ASCII_FONT16_IN_SOURCE     1
+#endif 
+
+#ifndef ASCII_FONT16_IN_SOURCE
+#define ASCII_FONT20_IN_SOURCE     0
+#endif 
+
+
 #endif
 

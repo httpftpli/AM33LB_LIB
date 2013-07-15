@@ -13,4 +13,9 @@
 
 #define BIT(x) (1 << x)
 
+
+static inline unsigned int htonl(unsigned int h){
+  return h<<24 | h>>24 | ((h&0x00ff0000)>>8) | ((h&0x0000ff00)<<8);
+}
+
 #endif

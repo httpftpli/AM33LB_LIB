@@ -16,6 +16,7 @@
 #include "pf_lcd.h"
 #include "gpio_v2.h"
 #include "module.h"
+#include "mem.h"
 
 
 #ifdef LCD_16BIT_565RGB
@@ -304,7 +305,24 @@ const tLCD_PANEL *LCDTftInfoGet(void){
 }
 
 
+void LCDFbClear(unsigned short color){
+  memset16(&Pix(0,0),color,800*600);
+}
 
+
+void LCDDrawMask(const void *buf, unsigned int x, unsigned int y, unsigned int width,
+                  unsigned int height, unsigned short color_f, unsigned short color_b) {
+   unsigned int nbyteperline = (width + 7) / 8;
+   for (int i = 0; i < height; i++) {
+      for (int j = 0; j < nbyteperline; j++) {
+         for (int k = 0; k < 8; k++) {
+            unsigned char mask = *((unsigned char *)buf + i * nbyteperline + j);
+            unsigned short color = (mask & (1 << (8 - k))) ? color_f : color_b;
+            LCD_SetPixel(x + 8 * j + k, y + i, color);
+         }
+      }
+   }
+}
 
 
 

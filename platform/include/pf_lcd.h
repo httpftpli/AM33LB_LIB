@@ -44,7 +44,6 @@ extern "C" {
 
 #define FRAME_BUFFER_SIZE	(FRAME_WIDTH*FRAME_HEIGHT*4 + PALETTE_SIZE + PALETTE_OFFSET)
 
-#include "gui.h"
 
 typedef struct __lcdc_panel {
 	char	name[24];	                /* Full name <vendor>_<model> */
@@ -106,6 +105,9 @@ extern void LCDFrameBufferCurSet(unsigned int num);
 extern void LCDSwapFb(void);
 extern void LCDSwapContex(void);
 extern const  tLCD_PANEL *LCDTftInfoGet(void);
+extern void LCDFbClear(unsigned short color);
+extern void LCDDrawMask(const void *buf, unsigned int x, unsigned int y, unsigned int width,
+                  unsigned int height, unsigned short color_f, unsigned short color_b);
 
 #define FrameBuffer(X)  ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
 #define FrameBuffer2D(X,Y) ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
@@ -121,7 +123,7 @@ extern const  tLCD_PANEL *LCDTftInfoGet(void);
  * @return none
 
  */
-inline void LCD_SetPixel(unsigned int x, unsigned int y, COLOR color) {
+inline void LCD_SetPixel(unsigned int x, unsigned int y, unsigned int color) {
    if ((color & 0xffff0000) == 0) {
       Pix((x), (y)) = (unsigned short)color;
    }

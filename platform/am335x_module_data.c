@@ -64,20 +64,20 @@ extern ModuleClock   epwmss2ModClock;
 
 
 
-extern void isr_Edma3CCError(unsigned int intnum);
-extern void isr_Edma3Completion(unsigned int intnum);
-extern void isr_HSMMCSD(unsigned int intnum);
-extern void isr_RTC(unsigned int intnum);
-extern void isr_DCANLine0(unsigned int intnum);
-extern void isr_DTimer2(unsigned int intnum);
-extern void isr_qep(unsigned int  intnum);
-extern void USB1HostIntHandler(unsigned int intnum);
-extern void USB0HostIntHandler(unsigned int intnum);
-extern void isr_Gpio(unsigned int intnum);
-extern void isr_lcd(unsigned int num);
-extern void isr_ecap(unsigned int num);
-extern void isr_tsc(unsigned int intnum);
-extern void isr_uart_for_keyboard(unsigned int intnum);
+extern __weak  void isr_Edma3CCError(unsigned int intnum);
+extern __weak  void isr_Edma3Completion(unsigned int intnum);
+extern __weak  void isr_HSMMCSD(unsigned int intnum);
+extern __weak  void isr_RTC(unsigned int intnum);
+extern __weak  void isr_DCANLine0(unsigned int intnum);
+extern __weak  void isr_DTimer2(unsigned int intnum);
+extern __weak  void isr_qep(unsigned int  intnum);
+extern __weak  void USB1HostIntHandler(unsigned int intnum);
+extern __weak  void USB0HostIntHandler(unsigned int intnum);
+extern __weak  void isr_Gpio(unsigned int intnum);
+extern __weak  void isr_lcd(unsigned int num);
+extern __weak  void isr_ecap(unsigned int num);
+extern __weak  void isr_tsc(unsigned int intnum);
+extern __weak  void isr_uart_for_keyboard(unsigned int intnum);
 
 
 

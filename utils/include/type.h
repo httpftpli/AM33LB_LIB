@@ -1,6 +1,7 @@
 #ifndef  __type___h__
 #define  __type___h__
 
+#include <stddef.h> 
 
 typedef unsigned char  uint8;                                           /*  无符号8位整型变量           */
 typedef signed   char  int8;                                            /*  有符号8位整型变量           */
@@ -22,6 +23,20 @@ typedef float          FP32;                                            /*  单精
 typedef double         FP64;                                            /*  双精度浮点数（64位长度）    */
 typedef signed long long int64; 
 
+typedef    signed char I8;
+typedef   unsigned char U8 ;  
+typedef    signed short  I16;
+typedef  unsigned short   U16;
+typedef    signed long  I32;
+typedef  unsigned long  U32 ;
+typedef  I16    I16P ;        
+typedef  U16   U16P;
+
+
+#ifndef UNUSED
+#define UNUSED(A)  (void) ((A))
+#endif
+
 #if defined(__IAR_SYSTEMS_ICC__)
 typedef   char TEXTCHAR;
 #define T 
@@ -32,21 +47,17 @@ typedef   char TEXTCHAR;
 #define FAIL  0
 #define SUCCESS 1
 
-
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
-
 #define __out
 #define __int
 
 typedef char BOOL;
-typedef unsigned int size_t;
 typedef unsigned int size_t16;
 typedef short wchar;
-
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE*)0)->MEMBER)
-
+typedef struct {unsigned short x0,y0,x1,y1;} RECT_U16 ;
+typedef struct {unsigned int x0,y0,x1,y1;} RECT_U32 ;
+typedef struct {int x0,y0,x1,y1;} RECT_I32 ;
+typedef struct {unsigned short x,y;} POINT_16;
+typedef struct {unsigned short x,y;} POINT_32;
 
 #endif
 

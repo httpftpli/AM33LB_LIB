@@ -18,6 +18,7 @@
 #include "string.h"
 #include "delay.h"
 #include "mmath.h"
+#include "lib_gui.h"
 
 
 #define KEYSCANCODE_0     0x0204  
@@ -175,6 +176,9 @@ unsigned int keyCode(unsigned int scancode) {
    case KEYSCANCODE_LEFT :
       key =   KEY_LEFT;
       break;
+   case KEYSCANCODE_UP :
+      key = KEY_UP;
+      break;
    case KEYSCANCODE_DOWN:
       key =   KEY_DOWN;
       break;
@@ -293,8 +297,8 @@ BOOL TouchCalibrate(BOOL  force) {
       return TRUE;
    }
    const tLCD_PANEL  *panel = LCDTftInfoGet();
-   Dis_Clear(C_Black);
-   Dis_String("calibrate touch pad", panel->width / 2 - 100, panel->height / 2 + 50, 0, C_White, C_TRANSPARENT);
+   LCDFbClear(C_Black);
+   drawStringEx("calibrate touch pad", panel->width / 2 - 100, panel->height / 2 + 50, 0, C_White, C_TRANSPARENT);
    tsCalibration.xfb[0] = 0 + CALIBRATION_POINT_OFFSET;
    tsCalibration.xfb[1] = panel->width - CALIBRATION_POINT_OFFSET;
    tsCalibration.xfb[2] = panel->width / 2;
@@ -306,7 +310,7 @@ BOOL TouchCalibrate(BOOL  force) {
    tsCalibration.yfb[2] = panel->height - CALIBRATION_POINT_OFFSET;
    tsCalibration.yfb[3] = panel->height / 2;
    for (int i = 0; i < 4; i++) {      
-      Dis_DrawMask(calIcon, tsCalibration.xfb[i] - 8, tsCalibration.yfb[i] - 8, 16, 16, C_White, C_TRANSPARENT);
+      LCDDrawMask(calIcon, tsCalibration.xfb[i] - 8, tsCalibration.yfb[i] - 8, 16, 16, C_White, C_TRANSPARENT);
       if (0 == i) {        
          delay(200);
          atomicClear(&g_touched);
@@ -317,7 +321,7 @@ BOOL TouchCalibrate(BOOL  force) {
       }
       tsCalibration.x[i] = g_tsRaw.x;
       tsCalibration.y[i] = g_tsRaw.y;
-      Dis_RectFill(tsCalibration.xfb[i] - 8, tsCalibration.yfb[i] - 8, 16, 16, C_Black);
+      drawRectFillEx(tsCalibration.xfb[i] - 8, tsCalibration.yfb[i] - 8, 16, 16, C_Black);
    }
 
    x1 = tsCalibration.x[0];
@@ -354,7 +358,7 @@ BOOL TouchCalibrate(BOOL  force) {
    ts_linear(&tsCalibration, &tempx, &tempy);
    if ((ABS(tempx - tsCalibration.xfb[3]) < 30) && (ABS(tempy - tsCalibration.yfb[3]) < 30)) {
       //Save_touchData(&Tch_ctrs);
-      Dis_String("calibrate success", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_White, C_TRANSPARENT);
+      drawStringEx("calibrate success", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_White, C_TRANSPARENT);
       delay(1000);
       atomicClear(&g_touched);
       tsCalibration.magic = CALIBRATION_SUCCESS;
@@ -362,7 +366,7 @@ BOOL TouchCalibrate(BOOL  force) {
       MMCSDP_Write(mmcsdctr,inandsecterbuf,TOUCH_CAL_PARAM_SECTOR,1);
       return TRUE;
    } else {
-      Dis_String("calibrate fail", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_White, C_TRANSPARENT);
+      drawStringEx("calibrate fail", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_White, C_TRANSPARENT);
       delay(1000);
       atomicClear(&g_touched);
       return FAIL;

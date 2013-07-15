@@ -153,7 +153,7 @@ static void CANFrameRead(unsigned int baseAdd, unsigned int msgNum,
 
 
 
-void isr_DCANLine0(unsigned intnum)
+__weak void isr_DCANLine0(unsigned intnum)
 {
     unsigned int errVal;
     unsigned int msgNum;

@@ -2,11 +2,12 @@
  *  \file   font.h
  *
  *  \brief
- *  \author  李飞亮
+ *  \author  lfl
  *  \addtogroup FONT 
  *  @{  
  */
 
+#include "lib_gui.h"
 
 
 #ifndef __FONT_H__
@@ -16,6 +17,7 @@
 
 #include "ff.h"
 #include "type.h"
+#include "lib_gui.h"
 
 #define MAX_FONT_NFONTLIB      4
 
@@ -45,7 +47,7 @@ typedef struct tagFontLibHeader {
 
 typedef struct __font{
    FL_HEADER fl_header;
-   unsigned int memaddr;
+   unsigned int memaddr; //include FL_HEADER
    FL_SECTION_INF *sectionInfoList[20];
    unsigned int available;
 } FONT;
@@ -59,7 +61,7 @@ typedef struct tagCharInfo{
    unsigned char height; /**< @brief 字符高度 */
    unsigned char width;  /**< @brief 字符宽度 */
    unsigned int  pixaddr; /**< @brief 字符点阵数据首地址 */
-}FL_CHARINFO, *PFL_CHARINFO;
+} FL_CHARINFO, *PFL_CHARINFO;
 
 
 typedef struct tagmetric{
@@ -67,12 +69,14 @@ typedef struct tagmetric{
    unsigned int height;
 }METRIC ;
 
-unsigned char  GetFontYSize();
-signed char loadFont(TCHAR * filepath, FONT  *font);
-void  initFont(TCHAR * dirpath,unsigned int addr);
-BOOL getCharInfo(unsigned short wCode,unsigned int font,FL_CHARINFO *pcharinfo);
-void getStringMetric(const TEXTCHAR *string ,unsigned int font,METRIC *metric);
 
+char GetFontYSize();
+//signed char loadFont(TCHAR * filepath, GUI_FONT  *font);
+void  initFont(unsigned int addr);
+int getStringMetricWidth(const TEXTCHAR *string);
+
+
+extern GUI_FONT *fonts[];
 
 #endif 
 //! @}

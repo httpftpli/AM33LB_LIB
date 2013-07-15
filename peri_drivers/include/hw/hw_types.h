@@ -71,7 +71,9 @@ inline void  HWREGHBITARRAY(unsigned int addr, unsigned int bit,
 #define TRUE    1
 #define FALSE   0
 
+#ifndef UNUSED
 #define UNUSED(x) (void)(x)
+#endif
 
 #define __mdisr 
 #define __mdinout
