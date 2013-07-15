@@ -310,14 +310,14 @@ void LCDFbClear(unsigned short color){
 }
 
 
-void LCDDrawMask(const void *buf, unsigned int x, unsigned int y, unsigned int width,
-                  unsigned int height, unsigned short color_f, unsigned short color_b) {
+void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, unsigned short width,
+                  unsigned short height, unsigned int color_f, unsigned int color_b) {
    unsigned int nbyteperline = (width + 7) / 8;
    for (int i = 0; i < height; i++) {
       for (int j = 0; j < nbyteperline; j++) {
          for (int k = 0; k < 8; k++) {
             unsigned char mask = *((unsigned char *)buf + i * nbyteperline + j);
-            unsigned short color = (mask & (1 << (8 - k))) ? color_f : color_b;
+            unsigned int color = (mask & (1 << (8 - k))) ? color_f : color_b;
             LCD_SetPixel(x + 8 * j + k, y + i, color);
          }
       }

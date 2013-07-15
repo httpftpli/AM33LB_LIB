@@ -106,8 +106,8 @@ extern void LCDSwapFb(void);
 extern void LCDSwapContex(void);
 extern const  tLCD_PANEL *LCDTftInfoGet(void);
 extern void LCDFbClear(unsigned short color);
-extern void LCDDrawMask(const void *buf, unsigned int x, unsigned int y, unsigned int width,
-                  unsigned int height, unsigned short color_f, unsigned short color_b);
+extern void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, unsigned short width,
+                  unsigned short height, unsigned int color_f, unsigned int color_b);
 
 #define FrameBuffer(X)  ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
 #define FrameBuffer2D(X,Y) ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]

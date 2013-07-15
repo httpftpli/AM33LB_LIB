@@ -27,7 +27,7 @@
 **********************************************************************
 */
 
-#include "GUI.h"
+#include "lib_gui.h"
 
 #ifndef GUI_CONST_STORAGE
   #define GUI_CONST_STORAGE const

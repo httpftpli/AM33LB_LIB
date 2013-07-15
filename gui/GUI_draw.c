@@ -4,7 +4,6 @@
 #include <string.h>
 #include "lib_gui.h"
 #include "pf_lcd.h"
-#include "font.h"
 #include "utf8.h"
 #include "mem.h"
 #include "debug.h"
@@ -19,8 +18,8 @@ extern  GUI_FONT GUI_Fontascii_16;
 
 GUI_CONTEXT GUI_Context = {
   .ClipRect = {0,0,800,600},
-  .BkColor = C_Blue,
-  .Color = C_White,
+  .BkColor = C_BLUE,
+  .Color = C_WHITE,
   .pAFont = &GUI_Fontascii_16,
 };
  
@@ -103,17 +102,24 @@ void drawString(const TEXTCHAR *text, unsigned int x, unsigned int y) {
    GUI_Context.DispPosX = x;
    while (1) {
 #if (CHARACTER_DIS_CODEC==UTF8_CODEC)
+      STATIC_ASSERT(sizeof(TEXTCHAR) == 1);
       signelcharlen = UTF8toUCS2(text + charoffset, &ucs2);
       charoffset += signelcharlen;
       if (0 == signelcharlen) {
          break;
       }
       DrawCharUcs2(ucs2, GUI_Context.DispPosX, y);
-#else
+#elif(CHARACTER_DIS_CODEC==UCS16_CODEC)
+      STATIC_ASSERT(sizeof(TEXTCHAR) == 2);
       if (*text == 0) {
          break;
       }
-      GUI_Context.DispPosX = x;
+      DrawCharUcs2(*text++,GUI_Context.DispPosX, y);
+#elif(CHARACTER_DIS_CODEC==ASCII_CODEC)
+      STATIC_ASSERT(sizeof(TEXTCHAR) == 1);
+      if (*text == 0) {
+         break;
+      }
       DrawCharUcs2(*text++,GUI_Context.DispPosX, y);
 #endif
    }
@@ -132,6 +138,34 @@ void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y, const GU
    GUI_Context.BkColor = color_b;
    drawString(text, x, y);
    GUI_RestoreContext(&oldc);
+}
+
+void drawStringAligen(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width,uint16 height) {
+   uint32 xtemp,ytemp;
+   unsigned int strwidth = getStringMetricWidth(text);
+   unsigned int strheight = GetFontYSize();
+   if (ALIGEN_LEFT == aligen) {
+      xtemp = x;
+   } else if (ALIGEN_MIDDLE == aligen) {
+      xtemp = x+width/2 - strwidth / 2;
+   } else {
+      xtemp = x+width - strwidth;
+   } 
+   ytemp = y+height/2 - strheight/2;
+   drawString(text, xtemp,ytemp);
+}
+
+
+void drawStringAligenEx(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width,uint16 height, const GUI_FONT *font, COLOR color_f, COLOR color_b) {
+   GUI_CONTEXT old;
+   GUI_SaveContext(&old);
+   GUI_SetFont(font);
+   GUI_SetBkColor(color_b);
+   GUI_SetColor( color_f);
+   GUI_Context.DispPosX = x;
+   GUI_Context.DispPosY = y;
+   drawStringAligen(text,aligen, x,y,width,height);
+   GUI_RestoreContext(&old);
 }
 
 /*********************************************************************

@@ -18,4 +18,12 @@ static inline unsigned int htonl(unsigned int h){
   return h<<24 | h>>24 | ((h&0x00ff0000)>>8) | ((h&0x0000ff00)<<8);
 }
 
+static inline unsigned int htonlAt(void *addr){
+  return ((unsigned int)(((unsigned char *)addr)[0])<<24|
+          (unsigned int)(((unsigned char *)addr)[1])<<16|
+          (unsigned int)(((unsigned char *)addr)[2])<<8|
+          (unsigned int)(((unsigned char *)addr)[3])<<0
+           );
+}
+
 #endif
