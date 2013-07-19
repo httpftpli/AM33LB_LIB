@@ -34,7 +34,7 @@ FRESULT f_scandir(
 
 FRESULT f_copy(const TCHAR *scrpath,const TCHAR * despath, void *workbuf,unsigned int sz_workbuf){
    FRESULT res;
-   mdAssert(sz_workbuf%512==0);
+   ASSERT(sz_workbuf%512==0);
    FIL scrfile,desfile;
    res = f_open(&scrfile,scrpath,FA_OPEN_EXISTING|FA_READ);
    if (res!=0) {

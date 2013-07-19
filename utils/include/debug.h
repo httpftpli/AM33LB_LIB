@@ -40,6 +40,7 @@
 #define mdDebug(A)   UARTPuts((A), -1)
 #define mdDebugNum(A) UARTPutNum((A))
 #endif
+
 #define ASSERT(A)   mdAssert(A)
 
 #define STATIC_ASSERT(A)  static_assert(A, #A) 

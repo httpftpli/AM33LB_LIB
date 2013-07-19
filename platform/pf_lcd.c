@@ -218,8 +218,8 @@ void LCDSwapContex(){
 }
 
 
-void LCDRasterInit(unsigned int moduleId) {
-   MODULE *module = modulelist+moduleId;
+void LCDRasterInit() {
+   MODULE *module = modulelist+MODULE_ID_LCDC;
    unsigned int baseaddr = module->baseAddr;
    lcdCtrl.baseAddr = baseaddr;       
    lcdCtrl.lcd_clk = module->moduleClk->fClk[0]->clockSpeedHz;
@@ -246,7 +246,7 @@ void LCDRasterInit(unsigned int moduleId) {
    memcpy(lcdCtrl.palette[1],palette_32b,lcdCtrl.palettesize[1]);
    memset(lcdCtrl.frameaddr[0], 0, lcdCtrl.pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
    memset(lcdCtrl.frameaddr[1], 0, lcdCtrl.pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
-   moduleEnable(moduleId);
+   moduleEnable(MODULE_ID_LCDC);
    RasterClocksEnable(baseaddr);
    RasterAutoUnderFlowEnable(baseaddr);
    RasterIntEnable(baseaddr, RASTER_END_OF_FRAME0_INT | RASTER_END_OF_FRAME1_INT );
@@ -281,7 +281,7 @@ void LCDRasterInit(unsigned int moduleId) {
 
    RasterFIFODMADelayConfig(baseaddr, 128);
    
-   moduleIntConfigure(moduleId);
+   moduleIntConfigure(MODULE_ID_LCDC);
 }
 
 

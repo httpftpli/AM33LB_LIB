@@ -98,7 +98,7 @@ extern void LCDRasterEOFIntEnable(void);
 extern void LCDRasterEOFIntDisable(void);
 extern void LCDRasterStart(void);
 extern void LCDRasterEnd(void);
-extern void LCDRasterInit(unsigned int moduleId);
+extern void LCDRasterInit();
 extern void * LCDFrameBufferAddrGet(int num);
 extern unsigned int  LCDFrameBufferCurGet(void);
 extern void LCDFrameBufferCurSet(unsigned int num);

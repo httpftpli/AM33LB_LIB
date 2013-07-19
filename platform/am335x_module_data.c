@@ -61,6 +61,8 @@ extern ModuleClock      mmcsd0ModClock;
 extern ModuleClock   epwmss0ModClock;
 extern ModuleClock   epwmss1ModClock;
 extern ModuleClock   epwmss2ModClock;
+extern ModuleClock   spi0ModClock;
+extern ModuleClock   spi1ModClock;
 
 
 
@@ -116,6 +118,8 @@ MODULE modulelist[128] = {
    [MODULE_ID_I2C0]   = {.index=0,.baseAddr = SOC_I2C_0_REGS,    .moduleClk=&i2c0ModClock},
    [MODULE_ID_I2C1]   = {.index=1,.baseAddr = SOC_I2C_1_REGS,    .moduleClk=&i2c1ModClock},
    [MODULE_ID_I2C2]   = {.index=2,.baseAddr = SOC_I2C_2_REGS,    .moduleClk=&i2c2ModClock},
+   [MODULE_ID_SPI0]   = {.index=0,.baseAddr = SOC_SPI_0_REGS,    .moduleClk=&spi0ModClock},
+   [MODULE_ID_SPI1]   = {.index=1,.baseAddr = SOC_SPI_1_REGS,    .moduleClk=&spi1ModClock},
 };
 
 
