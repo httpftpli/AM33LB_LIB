@@ -19,6 +19,7 @@
 #include "delay.h"
 #include "mmath.h"
 #include "lib_gui.h"
+#include "atomic.h"
 
 
 #define KEYSCANCODE_0     0x0204  
@@ -109,7 +110,7 @@ unsigned int keyCode(unsigned int scancode) {
       key =   KEY_2;
       break;
    case KEYSCANCODE_3 :
-      key =   KEY_2;
+      key =   KEY_3;
       break;
    case KEYSCANCODE_4  :
       key =   KEY_4;
@@ -385,6 +386,14 @@ BOOL TouchCalibrate(BOOL  force) {
       return FAIL;
    }
 }
+
+
+void simulateTouch(unsigned short x,unsigned short y){
+   g_ts.x = x;
+   g_ts.y = y;
+   atomicSet(&g_touched);
+}
+
 
 //! @}
 
