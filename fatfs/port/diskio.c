@@ -319,12 +319,13 @@ DRESULT disk_ioctl (
       case CTRL_SYNC:
             return RES_OK;
          case GET_SECTOR_SIZE:
-            *(unsigned short *)buff = 512;
+            *(unsigned short *)buff = g_USBHMSCDevice[USB_INSTANCE_FOR_USBDISK].ulBlockSize;
             return RES_OK;
          case GET_SECTOR_COUNT:
+            *(unsigned int *)buff  = g_USBHMSCDevice[USB_INSTANCE_FOR_USBDISK].ulNumBlocks;
             return RES_OK;
          case GET_BLOCK_SIZE:
-            *(unsigned int *)buff = 1;  //TODO finish BLOCK_SIZE
+            *(unsigned int *)buff = 1;
             return RES_OK;
          case CTRL_ERASE_SECTOR:
             break; 

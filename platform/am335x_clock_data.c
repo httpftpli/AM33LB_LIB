@@ -1815,6 +1815,15 @@ Clock spi0IclkClock = {
 	.activeChildCount	=	0,
 };
 
+Clock spi1IclkClock = {
+	.clkName			=	"spi1IclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_100_MHZ,
+
+	.parentClock		=	&l4lsGclkClock,
+	.activeChildCount	=	0,
+};
+
 /*	I2C1 Interface clock	*/
 Clock i2c1IclkClock = {
 	.clkName			=	"i2c1IclkClock",
@@ -2464,6 +2473,14 @@ Clock spi0FclkClock = {
 	.activeChildCount	=	0,
 };
 
+Clock spi1FclkClock = {
+    .clkName			=	"spi1FclkClock",
+	.isLeafClock		=	true,
+	.clockSpeedHz		=	CLK_CLOCK_SPEED_192_MHZ/4,
+	.parentClock		=	&spiGclkClock,
+	.activeChildCount	=	0,
+};
+
 /*	spi1	*/
 
 /***********************************************************************/
@@ -2763,6 +2780,19 @@ ModuleClock spi0ModClock = {
 		.fClk	=	{&spi0FclkClock},
 };
 
+ModuleClock spi1ModClock = {
+		.clockCtrlReg		=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_SPI1_CLKCTRL), 
+		.enableValue		=	(CM_PER_SPI1_CLKCTRL_MODULEMODE_ENABLE <<
+								CM_PER_SPI1_CLKCTRL_MODULEMODE_SHIFT),
+		.disableValue		=	(CM_PER_SPI1_CLKCTRL_MODULEMODE_DISABLED <<
+								CM_PER_SPI1_CLKCTRL_MODULEMODE_SHIFT),
+		.moduleStatusReg	=	(unsigned int *)(SOC_CM_PER_REGS + CM_PER_SPI1_CLKCTRL), 
+		.idleStatusMask		=	CM_PER_SPI1_CLKCTRL_IDLEST,
+		.idleStatusShift	=	CM_PER_SPI1_CLKCTRL_IDLEST_SHIFT,
+	
+		.iClk	=	{&spi1IclkClock},
+		.fClk	=	{&spi1FclkClock},
+};
 
 /*	UART0	*/
 ModuleClock uart0ModClock = {

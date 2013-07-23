@@ -39,7 +39,7 @@ static inline void atomicDec(atomic *atom){
 }
 
 static inline unsigned int  atomicTest(atomic *atom){  
-    return !! (int)*atom ;
+    return !! (int)(*atom) ;
 }
 
 

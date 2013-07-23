@@ -144,9 +144,9 @@ void drawStringAligen(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, u
    uint32 xtemp,ytemp;
    unsigned int strwidth = getStringMetricWidth(text);
    unsigned int strheight = GetFontYSize();
-   if (ALIGEN_LEFT == aligen) {
+   if (ALIGN_LEFT == aligen) {
       xtemp = x;
-   } else if (ALIGEN_MIDDLE == aligen) {
+   } else if (ALIGN_MIDDLE == aligen) {
       xtemp = x+width/2 - strwidth / 2;
    } else {
       xtemp = x+width - strwidth;

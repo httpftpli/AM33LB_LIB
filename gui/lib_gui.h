@@ -199,9 +199,9 @@ typedef unsigned int COLOR;
 #define C_TRANSPARENT       0xffffffff
 
 
-#define ALIGEN_LEFT     0		
-#define ALIGEN_MIDDLE	1			
-#define ALIGEN_RIGHT	2			
+#define ALIGN_LEFT     0		
+#define ALIGN_MIDDLE	1			
+#define ALIGN_RIGHT	2			
 
 
 extern GUI_FONT *fonts[4];

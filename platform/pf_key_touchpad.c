@@ -19,6 +19,7 @@
 #include "delay.h"
 #include "mmath.h"
 #include "lib_gui.h"
+#include "atomic.h"
 
 
 #define KEYSCANCODE_0     0x0204  
@@ -94,6 +95,7 @@ TS_CALIBRATION tsCalibration = {.matrix.An=-238,.matrix.Bn=-4,.matrix.Cn=874,
    .matrix.Dn=1,.matrix.En=173,.matrix.Fn=-56};
 
 void (*keyhandler)(int keycode) = NULL;
+void (*touchhandler)(void) = NULL;
 
 unsigned int keyCode(unsigned int scancode) {
    unsigned int key;
@@ -108,7 +110,7 @@ unsigned int keyCode(unsigned int scancode) {
       key =   KEY_2;
       break;
    case KEYSCANCODE_3 :
-      key =   KEY_2;
+      key =   KEY_3;
       break;
    case KEYSCANCODE_4  :
       key =   KEY_4;
@@ -246,6 +248,18 @@ void registKeyHandler(void handler(int keycode)){
   keyhandler = handler;
 }
 
+/**
+ * @brief 注册触摸屏的回调中断回调函数，用于全局快捷触摸功能，在没有键盘的时候当快捷键使用
+ * @param [in] handler 回调函数
+ * @return NONE          
+ * @date    2013/7/8
+ * @note 
+ * 注册的回调函数可用于处理全局快捷键 
+ */
+void registTouchHandler(void handler()){
+  touchhandler = handler;
+}
+
 
 
 void  ts_linear(TS_CALIBRATION *cal,  int *x,  int *y) {
@@ -372,6 +386,14 @@ BOOL TouchCalibrate(BOOL  force) {
       return FAIL;
    }
 }
+
+
+void simulateTouch(unsigned short x,unsigned short y){
+   g_ts.x = x;
+   g_ts.y = y;
+   atomicSet(&g_touched);
+}
+
 
 //! @}
 

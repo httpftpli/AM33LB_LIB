@@ -98,8 +98,10 @@ extern TS_CALIBRATION tsCalibration;
 extern BOOL isKeyTouchEvent(KEYTOUCHMSG *msg);
 extern unsigned int keyCode(unsigned int scancode);
 extern void registKeyHandler(void handler(int keycode));
+extern void registTouchHandler(void handler());
 extern BOOL TouchCalibrate(BOOL force);
 extern void ts_linear(TS_CALIBRATION *cal,  int *x,  int *y);
+extern void simulateTouch(unsigned short x,unsigned short y);
 
 #endif
 

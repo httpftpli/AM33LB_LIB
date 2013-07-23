@@ -291,7 +291,7 @@ extern void McSPIDMADisable(unsigned int baseAdd, unsigned int dmaFlags,
 extern void McSPIIntEnable(unsigned int baseAdd, unsigned int intFlags);
 extern void McSPIIntDisable(unsigned int baseAdd, unsigned int intFlags);
 extern void McSPIInitDelayConfig(unsigned int baseAdd, unsigned int initDelay);
-extern void McSPITransmitData(unsigned int baseAdd, unsigned int txData,
+extern unsigned char McSPITransmitData(unsigned int baseAdd, unsigned int txData,
                        unsigned int chNum);
 extern unsigned int McSPIReceiveData(unsigned int baseAdd,unsigned int chNum);
 extern unsigned int McSPIIntStatusGet(unsigned int baseAdd);

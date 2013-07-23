@@ -123,9 +123,9 @@
 
 typedef struct _module_ {
   unsigned int baseAddr;
-  unsigned int index;
-  unsigned int INTNum[3];
-  unsigned int INTPriority[3];
+  unsigned short index;
+  unsigned short INTNum[3];
+  unsigned short INTPriority[3];
   ISR   isr[3];
   ModuleClock *moduleClk;
 } MODULE;
