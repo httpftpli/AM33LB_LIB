@@ -253,7 +253,9 @@ void DMTimerGPOConfigure(unsigned int baseAdd, unsigned int gpoCfg)
 void DMTimerCompareSet(unsigned int baseAdd, unsigned int compareVal)
 {
     /* Write the compare value to TMAR */
+    volatile static unsigned int val;
     HWREG(baseAdd + DMTIMER_TMAR) = compareVal;
+    //while(HWREG(baseAdd + DMTIMER_TWPS)&(1<<4));
 }
 
 /**

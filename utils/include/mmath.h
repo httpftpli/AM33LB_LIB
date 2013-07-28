@@ -16,7 +16,10 @@
 
 
 static inline unsigned int htonl(unsigned int h){
-  return h<<24 | h>>24 | ((h&0x00ff0000)>>8) | ((h&0x0000ff00)<<8);
+   return h<<24 | h>>24 | ((h&0x00ff0000)>>8) | ((h&0x0000ff00)<<8);
+}
+static inline unsigned short hton(unsigned short h ){
+   return (h<<8 | h>>8);
 }
 
 static inline unsigned int htonlAt(void *addr){

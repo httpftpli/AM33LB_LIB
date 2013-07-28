@@ -10,6 +10,7 @@
 #include "hw_cm_per.h"
 #include "hw_cm_dpll.h"
 #include "hw_types.h"
+#include "dmtimer.h"
 
 /*
  *
@@ -356,3 +357,13 @@ void DMTimer7ModuleClkConfig(void)
 }
 
 
+unsigned int b;
+
+void isr_dtimer3(unsigned int num){   
+   unsigned int a;  
+   a = (HWREG(SOC_DMTIMER_3_REGS + DMTIMER_TCRR));   
+   for(int i=0;i<0x2000000;i++);
+   a = (HWREG(SOC_DMTIMER_3_REGS + DMTIMER_TCRR));
+   b = a;
+   DMTimerIntStatusClear(SOC_DMTIMER_3_REGS,DMTIMER_INT_MAT_IT_FLAG );
+}
