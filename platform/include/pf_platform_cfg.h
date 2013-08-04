@@ -167,6 +167,15 @@
 #endif
 
 
+//config FRAMEBUFFER memory 
+#ifndef FRAMEBUFFER_SIZE
+#define FRAMEBUFFER_SIZE    3*1024*1024  //must 1M bytpe algined 
+#endif
+
+#ifndef DDR_RAM_SIZE 
+#define DDR_RAM_SIZE  128*1024*1024
+#endif
+
 
 //config GPMC
 
@@ -175,12 +184,6 @@
 #ifndef CS_USE
 #define CS_USE   0x7f 
 #endif
-
-
-//config timetick
-//config witch timer used for timertick
-#define TIMER_TIMERTICK   MODULE_ID_TIMER2
-
 
 
 //config LCD backlight control gpio

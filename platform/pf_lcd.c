@@ -37,8 +37,7 @@ void LCDColorDisplay(void *pDisplayBuf, int lX, int lY, int width, int height, u
 const static  unsigned int palette_32b[PALETTE_SIZE/4] =
 { 0x4000u, 0x0000u, 0x0000u, 0x0000u, 0x0000u, 0x0000u, 0x0000u, 0x0000u };
 
-#pragma section = "LCD_FRAMEBUFFER"
-static void *framebuffer = __section_begin("LCD_FRAMEBUFFER");
+static void *framebuffer = (void *)(0x80000000+DDR_RAM_SIZE-FRAMEBUFFER_SIZE);
 
 tLCDCTRL lcdCtrl = {
    .frame_num = 2,

@@ -20,6 +20,7 @@
 #include "pf_platform_cfg.h"
 #include "interrupt.h"
 #include "module.h"
+#include "pf_dmtimer.h"
 
 #define INTNUMBER   SYS_INT_TINT2
 
@@ -53,13 +54,12 @@ static unsigned int timerFindFree(){
 }
 
 
-void isr_DTimer2(unsigned int intnum){
-   UNUSED(intnum);
-   unsigned int baseaddr = modulelist[intnum].baseAddr;
-   DMTimerIntStatusClear(baseaddr,DMTIMER_INT_OVF_IT_FLAG );
-   tick++;
-   if (NULL!=timertickhandle) {
-      timertickhandle(tick);
+static void dmtimertimetickhandler(unsigned int tc, unsigned int intFlag) {
+   if (intFlag & DMTIMER_INT_FLAG_OVF) {
+      tick++;
+      if (NULL != timertickhandle) {
+         timertickhandle(tick);
+      }
    }
 }
 
@@ -157,16 +157,27 @@ unsigned int IsTimerElapsed(unsigned int timerindex){
 
 
 
-void TimerTickConfigure(){
-   moduleEnable(TIMER_TIMERTICK);
-   unsigned int baseaddr = modulelist[TIMER_TIMERTICK].baseAddr;
+
+/**
+ * @brief 初始化周期滴答定时器
+ * @param [in] moduleId 
+ *        定时器模块号，必须是未使用的定时器
+ * @return  none  
+ * @date    2013/8/1
+ * @note 
+ * @pre
+ * @see 
+ */
+void TimerTickConfigure(unsigned int moduleId){
+   moduleEnable(moduleId);
+   unsigned int baseaddr = modulelist[moduleId].baseAddr;
    DMTimerReset(baseaddr);
    DMTimerModeConfigure(baseaddr, DMTIMER_AUTORLD_NOCMP_ENABLE);
    DMTimerIntEnable(baseaddr,  DMTIMER_INT_OVF_EN_FLAG);
    //DMTimerPreScalerClkEnable(baseaddr, 2); //CLK_M_OSC =24M 
                                            //PERCALE : 2^(2+1)=8
                                            //clkin = 24/8 = 3
-   unsigned int  inclk = modulelist[TIMER_TIMERTICK].moduleClk->fClk[0]->clockSpeedHz;
+   unsigned int  inclk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
    unsigned int cnt = 0xfffffffe - inclk/1000;  //1ms
    DMTimerReloadSet(baseaddr, cnt);
    DMTimerCounterSet(baseaddr,cnt); 
@@ -174,7 +185,8 @@ void TimerTickConfigure(){
    for (int i=0;i<sizeof(softtimer)/sizeof(softtimer[0]);i++) {
       softtimer[i].enable = 0;
    }
-   moduleIntConfigure(TIMER_TIMERTICK);
+   dmtimerRegistHandler(moduleId,dmtimertimetickhandler);
+   moduleIntConfigure(moduleId);
 }
 
 
@@ -183,6 +195,7 @@ void TimerTickRegistHandler(void (*pfnHandler)(unsigned int tick))
 {    
     timertickhandle = pfnHandler;
 }
+
 
 void TimerTickPeriodSet(unsigned int microsecond)
 {

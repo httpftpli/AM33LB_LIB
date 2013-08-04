@@ -103,6 +103,7 @@ BOOL I2CMasterWrite(unsigned baseAddr,unsigned short addr,const void *buf,unsign
    }
    I2CSetDataCount(baseAddr, szWrite);
    HWREG(baseAddr + I2C_CON) |= 0x03;
+   //__asm volatile ("DSB");
    while (1) {
       unsigned int st = I2CMasterIntRawStatus(baseAddr);
       if (st & 1 << 1) { //NACK
@@ -287,6 +288,7 @@ BOOL I2CMasterReadEx(unsigned baseAddr,unsigned short slaveAddr,const void *writ
    }
    I2CSetDataCount(baseAddr, szWrite);
    HWREG(baseAddr + I2C_CON) |= 0x01; //STAR ,NOSTOP
+   //__asm volatile ("DSB");
    while (1) {
       unsigned int st = I2CMasterIntRawStatus(baseAddr);
       if (st & 1 << 1) { //NACK

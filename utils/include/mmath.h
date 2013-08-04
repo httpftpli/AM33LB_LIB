@@ -15,6 +15,10 @@
 #define BIT(x) (1 << x)
 
 
+#define bitSet(A,B) do{(A)|=(1UL<<(B));} while(0)
+#define bitClr(A,B) do{(A)&=~(1UL<<(B));} while(0)
+
+
 static inline unsigned int htonl(unsigned int h){
    return h<<24 | h>>24 | ((h&0x00ff0000)>>8) | ((h&0x0000ff00)<<8);
 }

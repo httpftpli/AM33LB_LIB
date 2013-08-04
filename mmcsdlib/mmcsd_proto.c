@@ -31,8 +31,8 @@ extern unsigned int hsMmcSdCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c);
 
 
 #define DATA_RESPONSE_WIDTH       (SOC_CACHELINE_SIZE)
-
-/* Cache size aligned data buffer (minimum of 64 bytes) for command response */
+/*
+// Cache size aligned data buffer (minimum of 64 bytes) for command response 
 #ifdef __TMS470__
 #pragma DATA_ALIGN(dataBuffer, SOC_CACHELINE_SIZE);
 static unsigned char dataBuffer[DATA_RESPONSE_WIDTH];
@@ -48,7 +48,7 @@ __attribute__((aligned(SOC_CACHELINE_SIZE)));
 #else
 #error "Unsupported compiler\n\r"
 #endif
-
+*/
 
 static  unsigned int __mmc_card_version(mmcsdCardInfo *card) {
    return (card->raw_csd[3] >> 26 & 0xf);  //bit 122-125
@@ -228,6 +228,10 @@ static unsigned int  emmccardinit(mmcsdCtrlInfo *ctrl) {
    cmd.arg = 0;
    cmd.blksize = 512;
    cmd.nblks = 1;
+   
+   /* clean the data cache. */
+   CacheDataCleanBuff((unsigned int)(card->raw_excsd), cmd.blksize * cmd.nblks);//add by lfl
+   
    status = hsMmcSdCmdSend(ctrl, &cmd);
    if (status == 0) {
       return 0;
@@ -710,6 +714,7 @@ unsigned int MMCSDP_TranSpeedSet(mmcsdCtrlInfo *ctrl) {
    unsigned int speed;
    unsigned int cmdStatus = 0;
    mmcsdCmd cmd;
+   unsigned char dataBuffer[64];
 
    ctrl->xferSetup(ctrl, 1, dataBuffer, 64, 1);
 
@@ -718,8 +723,11 @@ unsigned int MMCSDP_TranSpeedSet(mmcsdCtrlInfo *ctrl) {
    cmd.flags = MMCSD_CMDFLAG_DATA_READ;
    cmd.nblks = 1;
    cmd.blksize = 64;
-   cmd.data = (unsigned char *)dataBuffer;
-
+   //cmd.data = (unsigned char *)dataBuffer;   
+   
+   /* clean the data cache. */
+   CacheDataCleanBuff((unsigned int)(dataBuffer), cmd.blksize * cmd.nblks);//add by lfl
+   
    cmdStatus = hsMmcSdCmdSend(ctrl, &cmd);
 
    if (cmdStatus == 0) {
@@ -1000,7 +1008,10 @@ unsigned int MMCSDP_Read(mmcsdCtrlInfo *ctrl, void *ptr, unsigned int block,
    } else {
       cmd.idx = SD_CMD(17);
    }
-
+    /* clean the data cache. */
+   if (!((unsigned int)ptr&(SOC_CACHELINE_SIZE-1))) {
+      CacheDataCleanBuff((unsigned int)ptr, (512 * nblks));//added by lfl 
+   }
    status = hsMmcSdCmdSend(ctrl, &cmd);
    if (status == 0) {
       return 0;

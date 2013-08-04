@@ -1,369 +1,156 @@
 /**
- * \file   dmtimer.c
+ *  \file   pf_dmtimer.c
  *
- * \brief  This file consists of functions which will configure the DMTIMER.
+ *  \brief
+ *  \author  lfl 
+ *  \addtogroup TIMER
+ *  \# include "pf_dmtimer.h"
+ *  @{
+ *   
  */
 
 
 
 #include "soc_AM335x.h"
-#include "hw_cm_per.h"
-#include "hw_cm_dpll.h"
 #include "hw_types.h"
 #include "dmtimer.h"
+#include "pf_dmtimer.h"
+#include "module.h"
+#include "mmath.h"
 
-/*
- *
- * Note: No pin-muxing is required for DMTimer instances 0,1,2,3. 
- *       Hence they can be used directly. Hence no pin-muxing function
- *       is used for these instances.
+
+
+static DMTIMERHANDLER dmtimerhandler[7];
+
+
+void isr_dmtimer(unsigned int num){ 
+   unsigned int addr = modulelist[num].baseAddr;
+   unsigned int index = modulelist[num].index;
+   unsigned int val = DMTimerIntStatusGet(addr);
+   DMTimerIntStatusClear(addr,val );
+   unsigned int tc = DMTimerCounterGet(addr);
+   if (dmtimerhandler[index]) {
+      dmtimerhandler[index](tc,val);
+   }
+}
+
+
+/**
+ * @brief 
+ *        注册dmtimer中断回调函数，类型是DMTIMERHANDLER
+ *        DMTIMERHANDLER
+ *        的第一个参数是当前定时器的值，第二个参数是中断标记如下值的位组合:
+ *        \n\r
+ *        - DMTIMER_INT_FLAG_CAP -- 捕获中断
+ *        - DMTIMER_INT_FLAG_OVF -- 溢出中断
+ *        - DMTIMER_INT_FLAG_MATCH -- 匹配中断
+ * @param [in] moduleId  
+ * @param [in] handler 
+ * @return   NONE        
+ * @date    2013/8/1
+ * @note 
+ * @pre 
+ * @see DMTIMERHANDLER
  */
+void dmtimerRegistHandler(unsigned int moduleId, DMTIMERHANDLER handler){
+   unsigned int index = modulelist[moduleId].index;
+   dmtimerhandler[index] = handler; 
+}
 
-/*
- * \brief This function will enable clocks for the DMTIMER3 instance.
- *
- * \return None.
+
+/**
+ * @brief 初始化定时器作为匹配使用
+ * @param [in] moduleId 定时器模块ID 
+ * @param [in] TCval 
+ *        定时器TC初始值，当定时器为设置为reload模式时，reload
+ *        后的值也是该值
+ * @param [in] matchVal  定时器配置值
+ * @param [in] flag
+ * - DMTIMER_FLAG_LOADMODE_ONESHORT  -- 
+ *   ONESHORT模式，定时器溢出后自动停止,如果没有设定此标记就是AUTORELOAD模式,AUTORELOAD模式，当定时器溢出后自动载入初始值继续开始
+ *   \n\r
+ * - DMTIMER_FLAG_INTENABLE_OVERFLOW -- 使能溢出中断      
+ * - DMTIMER_FLAG_INTENABLE_MATCH  -- 使能匹配中断 
+ * - DMTIMER_FLAG_OUTPUTTRIG_NO -- 引脚不输出
+ * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW -- 
+ *   当溢出时引脚输出
+ * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW_AND_MATCH  -- 
+ *   当溢出或者匹配时是引脚输出 \n\r
+ * - DMTIMER_FLAG_OUTPUTPHASE_POSITIVEPULSE --  
+ *   引脚输出正脉冲 \n\r
+ * - DMTIMER_FLAG_OUTPUTPHASE_NEGATIVEPULSE -- 
+ *   引脚输出负脉冲 \n\r
+ * - DMTIMER_FLAG_OUTPUTPHASE_TOGGLE -- 引脚高低切换 \n\r
+ * @return   none        
+ * @date    2013/7/28
+ * @note
+ * @code
+ * @endcode
+ * @pre 
+ * 如果定时器要硬件产生引脚输出，必须先配置IO 
+ * MUX 
+ * @see dmtimerInitForOverFlow
+ *  
  */
-void DMTimer3ModuleClkConfig(void)
-{
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) =
-                             CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
+void dmtimerInitForMatch(unsigned int moduleId, unsigned int TCval ,unsigned int matchVal, unsigned int flag) {
+   moduleEnable(moduleId);
+   unsigned int baseaddr = modulelist[moduleId].baseAddr;
+   DMTimerReset(baseaddr);
+   DMTimerModeConfigure(baseaddr, DMTIMER_AUTORLD_CMP_ENABLE);
 
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-     CM_PER_L3S_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
+   /* Clear the AR and CE field of TCLR */
+   unsigned int val = HWREG(baseaddr + DMTIMER_TCLR);
+   if(!(flag & DMTIMER_FLAG_LOADMODE_ONESHORT)){
+      bitSet(val,1);
+   }
+   bitSet(val,6);
+   //if (flag & 0x DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW ) {
+   //}
+   //todo trig
 
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) =
-                             CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
+   HWREG(baseaddr + DMTIMER_TCLR) = val;
 
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-     CM_PER_L3_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) =
-                             CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) &
-                               CM_PER_L3_INSTR_CLKCTRL_MODULEMODE) !=
-                                   CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) =
-                             CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) &
-        CM_PER_L3_CLKCTRL_MODULEMODE) != CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) =
-                             CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-                              CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL) !=
-                                CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) =
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) &
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL) !=
-                               CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKCTRL) =
-                             CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKCTRL) &
-      CM_PER_L4LS_CLKCTRL_MODULEMODE) != CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE);
-
-    /* Select the clock source for the Timer2 instance. */
-    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER3_CLK) &=
-          ~(CM_DPLL_CLKSEL_TIMER3_CLK_CLKSEL);
-
-    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER3_CLK) |=
-          CM_DPLL_CLKSEL_TIMER3_CLK_CLKSEL_CLK_M_OSC;
-
-    while((HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER3_CLK) &
-           CM_DPLL_CLKSEL_TIMER3_CLK_CLKSEL) !=
-           CM_DPLL_CLKSEL_TIMER3_CLK_CLKSEL_CLK_M_OSC);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_TIMER3_CLKCTRL) |=
-                             CM_PER_TIMER3_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_TIMER3_CLKCTRL) &
-    CM_PER_TIMER3_CLKCTRL_MODULEMODE) != CM_PER_TIMER3_CLKCTRL_MODULEMODE_ENABLE);
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_TIMER3_CLKCTRL) & 
-       CM_PER_TIMER3_CLKCTRL_IDLEST) != CM_PER_TIMER3_CLKCTRL_IDLEST_FUNC);
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-            CM_PER_L3S_CLKSTCTRL_CLKACTIVITY_L3S_GCLK));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-            CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-           (CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L3_GCLK |
-            CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L4_GCLK)));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) &
-           (CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_L4LS_GCLK |
-            CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER3_GCLK)));
-
-}
-
-void DMTimer2ModuleClkConfig(void)
-{
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) =
-                             CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-     CM_PER_L3S_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) =
-                             CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-     CM_PER_L3_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) =
-                             CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) &
-                               CM_PER_L3_INSTR_CLKCTRL_MODULEMODE) !=
-                                   CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) =
-                             CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) &
-        CM_PER_L3_CLKCTRL_MODULEMODE) != CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) =
-                             CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-                              CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL) !=
-                                CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) =
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) &
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL) !=
-                               CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKCTRL) =
-                             CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKCTRL) &
-      CM_PER_L4LS_CLKCTRL_MODULEMODE) != CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE);
-
-    /* Select the clock source for the Timer2 instance. */
-    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER2_CLK) &=
-          ~(CM_DPLL_CLKSEL_TIMER2_CLK_CLKSEL);
-
-    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER2_CLK) |=
-          CM_DPLL_CLKSEL_TIMER2_CLK_CLKSEL_CLK_M_OSC;
-
-    while((HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER2_CLK) &
-           CM_DPLL_CLKSEL_TIMER2_CLK_CLKSEL) !=
-           CM_DPLL_CLKSEL_TIMER2_CLK_CLKSEL_CLK_M_OSC);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_TIMER2_CLKCTRL) |=
-                             CM_PER_TIMER2_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_TIMER2_CLKCTRL) &
-    CM_PER_TIMER2_CLKCTRL_MODULEMODE) != CM_PER_TIMER2_CLKCTRL_MODULEMODE_ENABLE);
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_TIMER2_CLKCTRL) & 
-       CM_PER_TIMER2_CLKCTRL_IDLEST) != CM_PER_TIMER2_CLKCTRL_IDLEST_FUNC);
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-            CM_PER_L3S_CLKSTCTRL_CLKACTIVITY_L3S_GCLK));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-            CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-           (CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L3_GCLK |
-            CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L4_GCLK)));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) &
-           (CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_L4LS_GCLK |
-            CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER2_GCLK)));
-
+   DMTimerIntEnable(baseaddr, (flag&0x00000070)>>4);
+   DMTimerCompareSet(baseaddr, matchVal);
+   DMTimerIntStatusClear(baseaddr, DMTIMER_INT_TCAR_IT_FLAG | DMTIMER_INT_OVF_IT_FLAG | DMTIMER_INT_MAT_IT_FLAG);
+   DMTimerReloadSet(baseaddr, TCval);
+   DMTimerCounterSet(baseaddr, TCval);
+   moduleIntConfigure(moduleId);
+   DMTimerEnable(baseaddr);
 }
 
 
-void DMTimer4ModuleClkConfig(void)
-{
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) =
-                             CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-     CM_PER_L3S_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) =
-                             CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-     CM_PER_L3_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) =
-                             CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) &
-                               CM_PER_L3_INSTR_CLKCTRL_MODULEMODE) !=
-                                   CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) =
-                             CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) &
-        CM_PER_L3_CLKCTRL_MODULEMODE) != CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) =
-                             CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-                              CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL) !=
-                                CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) =
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) &
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL) !=
-                               CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKCTRL) =
-                             CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKCTRL) &
-      CM_PER_L4LS_CLKCTRL_MODULEMODE) != CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE);
-
-    /* Select the clock source for the Timer2 instance. */
-    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER4_CLK) &=
-          ~(CM_DPLL_CLKSEL_TIMER4_CLK_CLKSEL);
-
-    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER4_CLK) |=
-          CM_DPLL_CLKSEL_TIMER4_CLK_CLKSEL_CLK_M_OSC;
-
-    while((HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER4_CLK) &
-           CM_DPLL_CLKSEL_TIMER4_CLK_CLKSEL) !=
-           CM_DPLL_CLKSEL_TIMER4_CLK_CLKSEL_CLK_M_OSC);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_TIMER4_CLKCTRL) |=
-                             CM_PER_TIMER4_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_TIMER4_CLKCTRL) &
-    CM_PER_TIMER4_CLKCTRL_MODULEMODE) != CM_PER_TIMER4_CLKCTRL_MODULEMODE_ENABLE);
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_TIMER4_CLKCTRL) & 
-     CM_PER_TIMER4_CLKCTRL_IDLEST) != CM_PER_TIMER4_CLKCTRL_IDLEST_FUNC);
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-            CM_PER_L3S_CLKSTCTRL_CLKACTIVITY_L3S_GCLK));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-            CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-           (CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L3_GCLK |
-            CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L4_GCLK)));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) &
-           (CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_L4LS_GCLK |
-            CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER4_GCLK)));
-
-}
-
-void DMTimer7ModuleClkConfig(void)
-{
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) =
-                             CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-     CM_PER_L3S_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) =
-                             CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-     CM_PER_L3_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) =
-                             CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) &
-                               CM_PER_L3_INSTR_CLKCTRL_MODULEMODE) !=
-                                   CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) =
-                             CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) &
-        CM_PER_L3_CLKCTRL_MODULEMODE) != CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) =
-                             CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-                              CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL) !=
-                                CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) =
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) &
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL) !=
-                               CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKCTRL) =
-                             CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKCTRL) &
-      CM_PER_L4LS_CLKCTRL_MODULEMODE) != CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE);
-
-    /* Select the clock source for the Timer7 instance. */
-    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER7_CLK) &=
-          ~(CM_DPLL_CLKSEL_TIMER7_CLK_CLKSEL);
-
-    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER7_CLK) |=
-          CM_DPLL_CLKSEL_TIMER7_CLK_CLKSEL_CLK_M_OSC;
-
-    while((HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_TIMER7_CLK) &
-           CM_DPLL_CLKSEL_TIMER7_CLK_CLKSEL) !=
-           CM_DPLL_CLKSEL_TIMER7_CLK_CLKSEL_CLK_M_OSC);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_TIMER7_CLKCTRL) |=
-                             CM_PER_TIMER7_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_TIMER7_CLKCTRL) &
-    CM_PER_TIMER7_CLKCTRL_MODULEMODE) != CM_PER_TIMER7_CLKCTRL_MODULEMODE_ENABLE);
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_TIMER7_CLKCTRL) & 
-     CM_PER_TIMER7_CLKCTRL_IDLEST) != CM_PER_TIMER7_CLKCTRL_IDLEST_FUNC);
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-            CM_PER_L3S_CLKSTCTRL_CLKACTIVITY_L3S_GCLK));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-            CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-           (CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L3_GCLK |
-            CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L4_GCLK)));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) &
-           (CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_L4LS_GCLK |
-            CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_TIMER7_GCLK)));
+/**
+ * @brief 初始化定时器作为溢出使用
+ * @param [in] moduleId 定时器模块ID 
+ * @param [in] TCval 
+ *        定时器TC初始值，当定时器为设置为reload模式时，reload
+ *        后的值也是该值
+ * @param [in] flag
+ * - DMTIMER_FLAG_LOADMODE_ONESHORT  -- 
+ *   ONESHORT模式，定时器溢出后自动停止,如果没有设定此标记就是AUTORELOAD模式,AUTORELOAD模式，当定时器溢出后自动载入初始值继续开始
+ *   \n\r
+ * - DMTIMER_FLAG_INTENABLE_OVERFLOW -- 使能溢出中断 
+ * - DMTIMER_FLAG_OUTPUTTRIG_NO -- 引脚不输出
+ * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW -- 
+ *   当溢出时引脚输出
+ * - DMTIMER_FLAG_OUTPUTPHASE_POSITIVEPULSE --  
+ *   引脚输出正脉冲 \n\r
+ * - DMTIMER_FLAG_OUTPUTPHASE_NEGATIVEPULSE -- 
+ *   引脚输出负脉冲 \n\r
+ * - DMTIMER_FLAG_OUTPUTPHASE_TOGGLE -- 引脚高低切换 \n\r
+ * @return   none        
+ * @date    2013/7/28
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see  dmtimerInitForMatch
+ */
+void dmtimerInitForOverFlow(unsigned int moduleId, unsigned int TCval ,unsigned int flag) {
+   dmtimerInitForMatch(moduleId, TCval, 0 ,flag &(~(DMTIMER_FLAG_INTENABLE_MATCH&DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW_AND_MATCH)));
 }
 
 
-unsigned int b;
 
-void isr_dtimer3(unsigned int num){   
-   unsigned int a;  
-   a = (HWREG(SOC_DMTIMER_3_REGS + DMTIMER_TCRR));   
-   for(int i=0;i<0x2000000;i++);
-   a = (HWREG(SOC_DMTIMER_3_REGS + DMTIMER_TCRR));
-   b = a;
-   DMTimerIntStatusClear(SOC_DMTIMER_3_REGS,DMTIMER_INT_MAT_IT_FLAG );
-}
+//! @}

@@ -3,7 +3,6 @@
 #include <wchar.h>
 #include "debug.h"
 
-
 /**
  * @brief memset 的16位版本 
  *  
@@ -20,9 +19,28 @@
  * @pre
  * @see 
  */
-void  memset16(void *s,unsigned short val, size_t16 n){
-    wmemset((wchar_t *) s, val, n);
-}
+
+extern void memset_eabi_16(void *s,unsigned short val,unsigned int size);
+
+void  memset16(void *s, unsigned short val, size_t16 n) {
+   ASSERT(((unsigned int)s&0x01)==0);
+   unsigned int s_temp = (unsigned int)s;
+   if((unsigned int)s % 4){   
+       *((unsigned short *)s) = val;
+       s_temp += 2;
+       n -= 1;
+   }
+   unsigned int n_16 = n / 16;  
+   if(n_16){
+      memset_eabi_16((void*)s_temp, val, n_16*16);
+      s_temp  +=  n_16*16*2 ;
+   }
+   unsigned int nmode = n % 16;
+   for (int i = 0; i < nmode; i++) {
+      ((unsigned short *)s_temp)[i] = val;
+   }
+};
+
 
 /**
  * @brief 判断字符串是不是以指定的字符串结尾
