@@ -6,17 +6,10 @@
 
 
 
-extern void isr_DTimer2(unsigned int intnum);
+
 extern void USB1HostIntHandler(unsigned int intnum);
 extern void USB0HostIntHandler(unsigned int intnum);
 
-
-
-/*static void DMTimerIntConfigure(void) {
-   IntRegister(SYS_INT_TINT2, isr_DTimer2);
-   IntPrioritySet(SYS_INT_TINT2, INT_PRIORITY_TIMER2, AINTC_HOSTINT_ROUTE_IRQ);
-   IntSystemEnable(SYS_INT_TINT2);
-}*/
 
 
 

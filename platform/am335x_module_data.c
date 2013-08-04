@@ -71,7 +71,6 @@ extern __weak  void isr_Edma3Completion(unsigned int intnum);
 extern __weak  void isr_HSMMCSD(unsigned int intnum);
 extern __weak  void isr_RTC(unsigned int intnum);
 extern __weak  void isr_DCANLine0(unsigned int intnum);
-extern __weak  void isr_DTimer2(unsigned int intnum);
 extern __weak  void isr_qep(unsigned int  intnum);
 extern __weak  void USB1HostIntHandler(unsigned int intnum);
 extern __weak  void USB0HostIntHandler(unsigned int intnum);
@@ -81,7 +80,7 @@ extern __weak  void isr_ecap(unsigned int num);
 extern __weak  void isr_tsc(unsigned int intnum);
 extern __weak  void isr_uart_for_keyboard(unsigned int intnum);
 extern __weak  void isr_mcspi(unsigned int intnum);
-extern __weak void isr_dtimer3(unsigned int intnum);
+extern __weak  void isr_dmtimer(unsigned int num);
 
 
 
@@ -110,12 +109,12 @@ MODULE modulelist[128] = {
    [MODULE_ID_UART5] =  {.index=1,.baseAddr = SOC_UART_5_REGS,.INTNum={SYS_INT_UART5INT,0,0},.INTPriority={INT_PRIORITY_UART5,0,0},.isr={0,0,0},.moduleClk=&uart5ModClock},
    [MODULE_ID_TIMER0] = {.index=0,.baseAddr = SOC_DMTIMER_0_REGS,.INTNum={SYS_INT_TINT0,0,0},.INTPriority={INT_PRIORITY_TIMER0,0,0},.isr={0,0,0},.moduleClk=&timer0ModClock},
    [MODULE_ID_TIMER1] = {.index=1,.baseAddr = SOC_DMTIMER_1_REGS,.INTNum={SYS_INT_TINT1_1MS,0,0},.INTPriority={INT_PRIORITY_TIMER1,0,0},.isr={0,0,0},.moduleClk=&timer1ModClock},
-   [MODULE_ID_TIMER2] = {.index=2,.baseAddr = SOC_DMTIMER_2_REGS,.INTNum={SYS_INT_TINT2,0,0},.INTPriority={INT_PRIORITY_TIMER2,0,0},.isr={isr_DTimer2,0,0},.moduleClk=&timer2ModClock},
-   [MODULE_ID_TIMER3] = {.index=3,.baseAddr = SOC_DMTIMER_3_REGS,.INTNum={SYS_INT_TINT3,0,0},.INTPriority={INT_PRIORITY_TIMER3,0,0},.isr={isr_dtimer3,0,0},.moduleClk=&timer3ModClock},
-   [MODULE_ID_TIMER4] = {.index=4,.baseAddr = SOC_DMTIMER_4_REGS,.INTNum={SYS_INT_TINT4,0,0},.INTPriority={INT_PRIORITY_TIMER4,0,0},.isr={0,0,0},.moduleClk=&timer4ModClock},
-   [MODULE_ID_TIMER5] = {.index=5,.baseAddr = SOC_DMTIMER_5_REGS,.INTNum={SYS_INT_TINT5,0,0},.INTPriority={INT_PRIORITY_TIMER5,0,0},.isr={0,0,0},.moduleClk=&timer5ModClock},
-   [MODULE_ID_TIMER6] = {.index=6,.baseAddr = SOC_DMTIMER_6_REGS,.INTNum={SYS_INT_TINT6,0,0},.INTPriority={INT_PRIORITY_TIMER6,0,0},.isr={0,0,0},.moduleClk=&timer6ModClock},
-   [MODULE_ID_TIMER7] = {.index=7,.baseAddr = SOC_DMTIMER_7_REGS,.INTNum={SYS_INT_TINT7,0,0},.INTPriority={INT_PRIORITY_TIMER7,0,0},.isr={0,0,0},.moduleClk=&timer7ModClock},
+   [MODULE_ID_TIMER2] = {.index=2,.baseAddr = SOC_DMTIMER_2_REGS,.INTNum={SYS_INT_TINT2,0,0},.INTPriority={INT_PRIORITY_TIMER2,0,0},.isr={isr_dmtimer,0,0},.moduleClk=&timer2ModClock},
+   [MODULE_ID_TIMER3] = {.index=3,.baseAddr = SOC_DMTIMER_3_REGS,.INTNum={SYS_INT_TINT3,0,0},.INTPriority={INT_PRIORITY_TIMER3,0,0},.isr={isr_dmtimer,0,0},.moduleClk=&timer3ModClock},
+   [MODULE_ID_TIMER4] = {.index=4,.baseAddr = SOC_DMTIMER_4_REGS,.INTNum={SYS_INT_TINT4,0,0},.INTPriority={INT_PRIORITY_TIMER4,0,0},.isr={isr_dmtimer,0,0},.moduleClk=&timer4ModClock},
+   [MODULE_ID_TIMER5] = {.index=5,.baseAddr = SOC_DMTIMER_5_REGS,.INTNum={SYS_INT_TINT5,0,0},.INTPriority={INT_PRIORITY_TIMER5,0,0},.isr={isr_dmtimer,0,0},.moduleClk=&timer5ModClock},
+   [MODULE_ID_TIMER6] = {.index=6,.baseAddr = SOC_DMTIMER_6_REGS,.INTNum={SYS_INT_TINT6,0,0},.INTPriority={INT_PRIORITY_TIMER6,0,0},.isr={isr_dmtimer,0,0},.moduleClk=&timer6ModClock},
+   [MODULE_ID_TIMER7] = {.index=7,.baseAddr = SOC_DMTIMER_7_REGS,.INTNum={SYS_INT_TINT7,0,0},.INTPriority={INT_PRIORITY_TIMER7,0,0},.isr={isr_dmtimer,0,0},.moduleClk=&timer7ModClock},
    [MODULE_ID_GPMC]   = {.index=0,.baseAddr = SOC_GPMC_0_REGS,   .moduleClk=&gpmcModClock},
    [MODULE_ID_I2C0]   = {.index=0,.baseAddr = SOC_I2C_0_REGS,    .moduleClk=&i2c0ModClock},
    [MODULE_ID_I2C1]   = {.index=1,.baseAddr = SOC_I2C_1_REGS,    .moduleClk=&i2c1ModClock},

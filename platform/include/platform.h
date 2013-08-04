@@ -97,10 +97,6 @@ void RTCRead(unsigned char *year, unsigned char *month,
              unsigned char *minute, unsigned char *second);
 extern void EVMMACAddrGet(unsigned int addrIdx, unsigned char *macAddr);
 extern void WatchdogTimer1ModuleClkConfig(void);
-extern void DMTimer2ModuleClkConfig(void);
-extern void DMTimer3ModuleClkConfig(void);
-extern void DMTimer4ModuleClkConfig(void);
-extern void DMTimer7ModuleClkConfig(void);
 extern void EVMPortMIIModeSelect(void);
 extern void RTCModuleClkConfig(void);
 extern void GPMCInitForNOR();

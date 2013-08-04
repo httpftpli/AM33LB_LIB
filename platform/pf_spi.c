@@ -16,7 +16,7 @@
 #include "module.h"
 #include "pf_spi.h"
 
-SPI_TRANSFER g_spitransfer;
+SPI_TRANSFER g_spitransfer= {.finish = 1};
 
 
 void isr_mcspi(unsigned int intnum) {
@@ -43,7 +43,7 @@ void isr_mcspi(unsigned int intnum) {
             g_spitransfer.state = STATE_OUTPUT_BUF;
             goto OUTPUTBUF;
          } else {
-            g_spitransfer.state = STATE_INPUT;
+            g_spitransfer.state = STATE_INPUT;         
             goto INPUTBUF;
          }
       } 
@@ -62,7 +62,17 @@ OUTPUTBUF:
       if (MCSPI_INT_EOWKE & intCode) {
          g_spitransfer.bufpointer = 0;
          if (1 == g_spitransfer.needWrCheck) {
-            g_spitransfer.state = STATE_CHECK;
+            McSPIChannelDisable(addr, 0);
+            McSPICSDeAssert(addr,0);
+            g_spitransfer.inWrCheck = 1;
+            g_spitransfer.dir = 1;
+            g_spitransfer.bufpointer = 0;
+            g_spitransfer.txprivate = 0;
+            g_spitransfer.rxprivate = 0;
+            g_spitransfer.state = STATE_OUTPUT_PREFIX;
+            McSPIWordCountSet(addr,g_spitransfer.checkprefixWrbufLen + g_spitransfer.len +1);
+            McSPICSAssert(addr,0);
+            McSPIChannelEnable(addr, 0);  // restart spi to check pre write data
          } else {
             g_spitransfer.state = STATE_OK;
             g_spitransfer.finish = 1;
@@ -79,34 +89,60 @@ OUTPUTBUF:
 INPUTBUF:
    case STATE_INPUT:
       if (MCSPI_INT_TX_EMPTY(0) == (intCode & MCSPI_INT_TX_EMPTY(0))) {
-         while (McSPITransmitData(addr, 0, 0));
+         for (int i = g_spitransfer.txprivate; i <= g_spitransfer.len; i++) {//send len  = output len + 1
+            if (McSPITransmitData(addr, 0, 0)) {
+               g_spitransfer.txprivate++;
+            } else {
+               break;
+            }
+         }       
       }
       if (MCSPI_INT_RX_FULL(0) == (intCode & MCSPI_INT_RX_FULL(0))) {
          while (!(MCSPI_CH_RXFFE & McSPIChannelStatusGet(addr, 0))) {
             if (g_spitransfer.inWrCheck == 0) {
-               ((char *)(g_spitransfer.buf))[g_spitransfer.bufpointer++] = (char)McSPIReceiveData(addr, 0);
+              if(g_spitransfer.rxprivate++ < g_spitransfer.prefixWrbufLen){
+                   McSPIReceiveData(addr, 0);
+              }else{
+                   if(g_spitransfer.bufpointer == g_spitransfer.len) break;
+                   ((char *)(g_spitransfer.buf))[g_spitransfer.bufpointer++] = (char)McSPIReceiveData(addr, 0);
+              }
             } else {
-               if ((char)McSPIReceiveData(addr, 0) != ((char *)(g_spitransfer.buf))[g_spitransfer.bufpointer++]) {
-                  g_spitransfer.state = STATE_CHECKERROR;
-                  g_spitransfer.finish = 1;
-                  McSPIChannelDisable(addr, 0);
-                  McSPICSDeAssert(addr,0);
-                  return;
+              if(g_spitransfer.rxprivate++ < g_spitransfer.prefixWrbufLen){
+                   McSPIReceiveData(addr, 0);
+              }else{              
+                  if(g_spitransfer.bufpointer == g_spitransfer.len) break;                
+                  if((char)McSPIReceiveData(addr, 0) != ((char *)(g_spitransfer.buf))[g_spitransfer.bufpointer++]) {
+                      g_spitransfer.state = STATE_CHECKERROR;
+                      g_spitransfer.finish = 1;
+                      McSPIChannelDisable(addr, 0);
+                      McSPICSDeAssert(addr,0);
+                      return;
+                  }
                }
             }
          }
       }
       if (MCSPI_INT_EOWKE & intCode) {
-         while (!(MCSPI_CH_RXFFE & McSPIChannelStatusGet(addr, 0))) {
+          while (!(MCSPI_CH_RXFFE & McSPIChannelStatusGet(addr, 0))) {
             if (g_spitransfer.inWrCheck == 0) {
-               ((char *)(g_spitransfer.buf))[g_spitransfer.bufpointer++] =  McSPIReceiveData(addr, 0);
+              if(g_spitransfer.rxprivate++ < g_spitransfer.prefixWrbufLen){
+                   McSPIReceiveData(addr, 0);
+              }else{
+                   if(g_spitransfer.bufpointer == g_spitransfer.len) break;
+                   ((char *)(g_spitransfer.buf))[g_spitransfer.bufpointer++] = (char)McSPIReceiveData(addr, 0);
+              }
             } else {
-               if ((char)McSPIReceiveData(addr, 0) != ((char *)(g_spitransfer.buf))[g_spitransfer.bufpointer++]) {
-                  g_spitransfer.state = STATE_CHECKERROR;
-                  g_spitransfer.finish = 1;
-                  McSPIChannelDisable(addr, 0);
-                  McSPICSDeAssert(addr,0);
-                  return;
+              if(g_spitransfer.rxprivate++ < g_spitransfer.prefixWrbufLen){
+                   McSPIReceiveData(addr, 0);
+              }else{
+                  if(g_spitransfer.bufpointer == g_spitransfer.len) break;
+                  if((char)McSPIReceiveData(addr, 0) != ((char *)(g_spitransfer.buf))[g_spitransfer.bufpointer++]) {
+                      g_spitransfer.state = STATE_CHECKERROR;
+                      g_spitransfer.finish = 1;
+                      McSPIChannelDisable(addr, 0);
+                      McSPICSDeAssert(addr,0);
+                      return;
+                  }
                }
             }
          }
@@ -116,12 +152,6 @@ INPUTBUF:
          McSPICSDeAssert(addr,0);
       }
       break;
-   case STATE_CHECK:
-      g_spitransfer.inWrCheck = 1;
-      g_spitransfer.dir = 1;
-      g_spitransfer.bufpointer = 0;
-      g_spitransfer.state = STATE_OUTPUT_PREFIX;
-      break;
    default:
       break;
    }
@@ -130,7 +160,7 @@ INPUTBUF:
 
 BOOL SPIRead(unsigned int moduleId,void *wrBuf, unsigned int wrBufLen, void *buf, unsigned int len) {
    ASSERT(wrBufLen <= 16);
-   if (g_spitransfer.finish != 0) {
+   if (g_spitransfer.finish == 0) {
       return FALSE;
    }
    unsigned int addr = modulelist[moduleId].baseAddr;
@@ -139,11 +169,14 @@ BOOL SPIRead(unsigned int moduleId,void *wrBuf, unsigned int wrBufLen, void *buf
    g_spitransfer.buf = buf;
    g_spitransfer.len = len;
    g_spitransfer.bufpointer = 0;
+   g_spitransfer.txprivate = 0;
+   g_spitransfer.rxprivate = 0;
    g_spitransfer.dir = 1;
    g_spitransfer.needWrCheck = 0;
    g_spitransfer.inWrCheck = 0;
    g_spitransfer.finish = 0;
    g_spitransfer.state = STATE_OUTPUT_PREFIX;
+   McSPIWordCountSet(addr,wrBufLen + len +1);
    McSPICSAssert(addr,0);
    McSPIChannelEnable(addr, 0);
    return TRUE;
@@ -152,7 +185,9 @@ BOOL SPIRead(unsigned int moduleId,void *wrBuf, unsigned int wrBufLen, void *buf
 
 BOOL SPIWrite(unsigned int moduleId,void *wrbuf0, unsigned int lenOfBuf0, void *wrbuf1,unsigned int lenOfBuf1, BOOL needCheck, void *checkPrefixWrbuf, unsigned int checkPrefixWrbufLen) {
    ASSERT(lenOfBuf0 <= 16);
-   if (g_spitransfer.finish != 0) {
+   if (g_spitransfer.finish == 0) {
+      return FALSE;
+   }else if(g_spitransfer.state == STATE_CHECKERROR){
       return FALSE;
    }
    unsigned int addr = modulelist[moduleId].baseAddr;
@@ -161,6 +196,8 @@ BOOL SPIWrite(unsigned int moduleId,void *wrbuf0, unsigned int lenOfBuf0, void *
    g_spitransfer.buf = wrbuf1;
    g_spitransfer.len = lenOfBuf1;
    g_spitransfer.bufpointer = 0;
+   g_spitransfer.txprivate = 0;
+   g_spitransfer.rxprivate = 0;
    g_spitransfer.dir = 0;
    g_spitransfer.needWrCheck = needCheck;
    g_spitransfer.checkPrefixWrbuf = checkPrefixWrbuf;
@@ -168,7 +205,7 @@ BOOL SPIWrite(unsigned int moduleId,void *wrbuf0, unsigned int lenOfBuf0, void *
    g_spitransfer.inWrCheck = 0;
    g_spitransfer.finish = 0;
    g_spitransfer.state = STATE_OUTPUT_PREFIX;
-   McSPIWordCountSet(addr,g_spitransfer.prefixWrbufLen + g_spitransfer.len);
+   McSPIWordCountSet(addr,lenOfBuf0 + lenOfBuf1);
    McSPICSAssert(addr,0);
    McSPIChannelEnable(addr, 0);   
    return TRUE;
@@ -204,7 +241,7 @@ void SPIMasterInit(unsigned int moduleId, unsigned char csChanel, unsigned int s
    McSPITxFIFOConfig(addr, MCSPI_TX_FIFO_ENABLE, csChanel);
    /* Enable the receiver FIFO of McSPI peripheral.*/
    McSPIRxFIFOConfig(addr, MCSPI_RX_FIFO_ENABLE, csChanel);
-   McSPIFIFOTrigLvlSet(addr,24,8,MCSPI_TX_RX_MODE);
+   McSPIFIFOTrigLvlSet(addr,24,1,MCSPI_TX_RX_MODE);
    McSPIIntEnable(addr,MCSPI_INT_TX_EMPTY(0)| MCSPI_INT_RX_FULL(0)| MCSPI_INT_EOWKE );
    moduleIntConfigure(moduleId);
 }
