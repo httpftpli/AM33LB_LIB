@@ -27,17 +27,17 @@ void  memset16(void *s, unsigned short val, size_t16 n) {
    unsigned int s_temp = (unsigned int)s;
    if((unsigned int)s % 4){   
        *((unsigned short *)s) = val;
-       s_temp =  (unsigned int)s + 2;
+       s_temp += 2;
        n -= 1;
    }
    unsigned int n_16 = n / 16;  
    if(n_16){
       memset_eabi_16((void*)s_temp, val, n_16*16);
-      s_temp  +=  n_16*16 ;
+      s_temp  +=  n_16*16*2 ;
    }
    unsigned int nmode = n % 16;
    for (int i = 0; i < nmode; i++) {
-      ((unsigned short *)s_temp)[i] = n;
+      ((unsigned short *)s_temp)[i] = val;
    }
 };
 
