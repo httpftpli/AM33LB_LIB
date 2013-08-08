@@ -14,7 +14,7 @@ typedef struct{
 
 extern volatile G_MMCSD g_Mmcsd[3];
 
-extern void HSMMCSDModuleClkConfig(void);
+//extern void HSMMCSDModuleClkConfig(void);
 
 
 #endif

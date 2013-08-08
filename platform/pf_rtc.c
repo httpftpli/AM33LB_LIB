@@ -25,6 +25,7 @@
 #include "misc.h"
 #include "pf_rx8025.h"
 #include "pf_timertick.h"
+#include "module.h"
 
 
 void isr_RTC(unsigned int intnum) {
@@ -258,7 +259,8 @@ static void RTCModuleClkConfig(void)
 
 
 static void RTCAM335XInit(unsigned int calendar,unsigned int time){
-    RTCModuleClkConfig();   
+    //RTCModuleClkConfig();   
+    moduleEnable(MODULE_ID_RTC);
     RTCWriteProtectDisable(SOC_RTC_0_REGS);
     RTC32KClkSourceSelect(SOC_RTC_0_REGS, RTC_INTERNAL_CLK_SRC_SELECT);
     RTC32KClkClockControl(SOC_RTC_0_REGS, RTC_32KCLK_ENABLE);

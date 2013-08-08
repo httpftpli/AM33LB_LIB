@@ -388,6 +388,20 @@ BOOL TouchCalibrate(BOOL  force) {
 }
 
 
+
+
+/**
+ * @brief 软件触发触摸
+ * @param [in] unsigned short x  校准以后的x坐标 
+ * @param [in] unsigned short y  校准以后的y坐标 
+ * @return none 
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 void simulateTouch(unsigned short x,unsigned short y){
    g_ts.x = x;
    g_ts.y = y;

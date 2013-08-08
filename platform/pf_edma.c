@@ -645,6 +645,7 @@ void EDMAModuleClkConfig(void)
            CM_PER_TPTC2_CLKCTRL_STBYST_SHIFT) !=
            (HWREG(SOC_CM_PER_REGS + CM_PER_TPTC2_CLKCTRL) &
             CM_PER_TPTC2_CLKCTRL_STBYST));
+    
 }
 
 

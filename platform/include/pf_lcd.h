@@ -92,7 +92,7 @@ typedef struct _S_LcdCtrl
 extern tLCDCTRL lcdCtrl;
 extern void LCDBackLightON(void);
 extern void LCDBackLightOFF(void);
-extern void LCDModuleClkConfig(void);
+//extern void LCDModuleClkConfig(void);
 extern unsigned int LCDVersionGet(void);
 extern void LCDRasterEOFIntEnable(void);
 extern void LCDRasterEOFIntDisable(void);

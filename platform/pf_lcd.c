@@ -1,3 +1,14 @@
+/**
+ *  \file   pf_lcd.c
+ *
+ *  \brief
+ *  \author  lfl 
+ *  \addtogroup LCD
+ *  \# include "pf_lcd.h"
+ *  @{ 
+ *   
+ */
+
 
 
 #include <string.h>
@@ -23,7 +34,7 @@
 #undef LCD_24BIT_888RGB
 #endif
 
-void LCDModuleClkConfig(void);
+//void LCDModuleClkConfig(void);
 void LCDRasterEOFIntEnable(void);
 void LCDRasterEOFIntDisable(void);
 void * LCDFrameBufferAddrGet(int num);
@@ -60,7 +71,7 @@ unsigned int LCDVersionGet(void)
     return 2;
 }
 
-void LCDModuleClkConfig(void)
+/*void LCDModuleClkConfig(void)
 {
 	HWREG(SOC_PRCM_REGS + CM_PER_L3S_CLKSTCTRL) |=CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
 	while((HWREG(SOC_PRCM_REGS + CM_PER_L3S_CLKSTCTRL) & CM_PER_L3S_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
@@ -101,7 +112,7 @@ void LCDModuleClkConfig(void)
     while((HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKCTRL) & 
       CM_PER_L4LS_CLKCTRL_MODULEMODE) != CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE);
 
-    /* lcd pixel clock is derived from peripheral pll */    
+    // lcd pixel clock is derived from peripheral pll   
     HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_LCDC_PIXEL_CLK) = 
                              CM_DPLL_CLKSEL_LCDC_PIXEL_CLK_CLKSEL_SEL3;
 
@@ -127,7 +138,7 @@ void LCDModuleClkConfig(void)
     while(!(HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKSTCTRL) & 
            (CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_L4LS_GCLK | 
             CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_LCDC_GCLK)));
-}
+}*/
 
 
 
@@ -173,6 +184,16 @@ void isr_lcd(unsigned int num) {
 
 
 
+/**
+ * @brief 开启LCD背光 
+ * @return   none        
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 void LCDBackLightON(void) {
   unsigned int addr = modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr;
    if (GPIO_DIR_INPUT == GPIODirModeGet(addr,GPIO_LCDBACKLIGHT_PIN)){
@@ -182,6 +203,16 @@ void LCDBackLightON(void) {
 }
 
 
+/**
+ * @brief 关闭LCD背光 
+ * @return   none        
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 void LCDBackLightOFF(void)
 {
    if (GPIO_DIR_INPUT == GPIODirModeGet(modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr,
@@ -191,7 +222,16 @@ void LCDBackLightOFF(void)
    GPIOPinWrite(modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr, GPIO_LCDBACKLIGHT_PIN,1);
 }
 
-
+/**
+ * @brief LCD开始显示
+ * @return   none        
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 void LCDRasterStart(void) {
    /* configuring the base ceiling */
    RasterDMAFBConfig(SOC_LCDC_0_REGS, (uint32)lcdCtrl.palette[0], (uint32)lcdCtrl.frameaddr[0] + lcdCtrl.framesize[0] - 1, 0);
@@ -200,23 +240,65 @@ void LCDRasterStart(void) {
    RasterEnable(SOC_LCDC_0_REGS);
 }
 
+/**
+ * @brief LCD停止显示
+ * @return   none        
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 void LCDRasterEnd(void){
    RasterDisable(SOC_LCDC_0_REGS);
 }
 
 
+
+/**
+ * @brief 切换LCD显示的显存
+ * @return   none        
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 void LCDSwapFb(void) {
    if (lcdCtrl.activeframe == 0) lcdCtrl.activeframe = 1;
    else lcdCtrl.activeframe = 0;
 }
   
-  
+
+/**
+ * @brief 切换LCD读写的显存
+ * @return   none        
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */ 
 void LCDSwapContex(){
    if (lcdCtrl.contexFrame == 0) lcdCtrl.contexFrame = 1;
    else lcdCtrl.contexFrame = 0;
 }
 
 
+
+/**
+ * @brief LCD模块初始化
+ * @return   none        
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 void LCDRasterInit() {
    MODULE *module = modulelist+MODULE_ID_LCDC;
    unsigned int baseaddr = module->baseAddr;
@@ -284,6 +366,7 @@ void LCDRasterInit() {
 }
 
 
+
 void * LCDFrameBufferAddrGet(int num)
 {
    
@@ -293,20 +376,57 @@ void * LCDFrameBufferAddrGet(int num)
   return lcdCtrl.frameaddr[num];
 }
 
+
+
+/**
+ * @brief 查询当前显示的显存索引号 
+ * @return  索引号  0或者1       
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 unsigned int  LCDFrameBufferCurGet(void)
 {
   return lcdCtrl.activeframe;
 }
 
 
+/**
+ * @brief 查询TFT面板参数 
+ * @return  const tLCD_PANEL *       
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 const tLCD_PANEL *LCDTftInfoGet(void){
   return lcdCtrl.panel;
 }
 
 
+
+
+/**
+ * @brief 填充整体屏幕
+ * @param [in] color 颜色 ，16色 
+ * @return           
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 void LCDFbClear(unsigned short color){
   memset16(&Pix(0,0),color,800*600);
 }
+
+
 
 
 void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, unsigned short width,
@@ -325,5 +445,5 @@ void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, unsigned s
 
 
 
-
+//! @}
 

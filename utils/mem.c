@@ -3,11 +3,14 @@
 #include <wchar.h>
 #include "debug.h"
 
+
+extern void memset_eabi_16(void *s,unsigned short val,unsigned int size);
+
 /**
  * @brief memset 的16位版本 
  *  
  *  和 \b wcsmemset
- *  函数功能一样，但是某些库的wcsmemset函数没有针对ARM处理器
+ *  函数功能一样，并对ARM内核进行了优化
  * @param [in] s
  * @param [in]  val          
  * @param [in]  n 个数，以16位为单位 
@@ -19,8 +22,6 @@
  * @pre
  * @see 
  */
-
-extern void memset_eabi_16(void *s,unsigned short val,unsigned int size);
 
 void  memset16(void *s, unsigned short val, size_t16 n) {
    ASSERT(((unsigned int)s&0x01)==0);

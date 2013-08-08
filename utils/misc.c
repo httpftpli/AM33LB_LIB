@@ -1,3 +1,15 @@
+/**
+ *  \file   misc.c
+ *
+ *  \brief  
+ *  \author  lfl 
+ *  \addtogroup misc
+ *  \# include "misc.h"
+ *  @{
+ *   
+ */
+
+
 
 /**
  * @brief 2位BCD转HEX 
@@ -48,3 +60,5 @@ unsigned short bcd2hex_4(unsigned short s) {
           | (((s & (0x0f << 4)) >> 4) * 10) | (s & 0x0f);
 }
 
+
+//! @}

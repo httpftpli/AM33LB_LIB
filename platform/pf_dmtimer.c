@@ -36,14 +36,14 @@ void isr_dmtimer(unsigned int num){
 
 
 /**
- * @brief 
- *        注册dmtimer中断回调函数，类型是DMTIMERHANDLER
- *        DMTIMERHANDLER
- *        的第一个参数是当前定时器的值，第二个参数是中断标记如下值的位组合:
- *        \n\r
- *        - DMTIMER_INT_FLAG_CAP -- 捕获中断
- *        - DMTIMER_INT_FLAG_OVF -- 溢出中断
- *        - DMTIMER_INT_FLAG_MATCH -- 匹配中断
+ * @briefb 
+ *         注册dmtimer中断回调函数，类型是DMTIMERHANDLER
+ *  
+ * DMTIMERHANDLER的第一个参数是当前定时器的值，第二个参数是中断标记如下值的位组合:
+ * \n\r
+ * - DMTIMER_INT_FLAG_CAP -- 捕获中断
+ * - DMTIMER_INT_FLAG_OVF -- 溢出中断
+ * - DMTIMER_INT_FLAG_MATCH -- 匹配中断
  * @param [in] moduleId  
  * @param [in] handler 
  * @return   NONE        

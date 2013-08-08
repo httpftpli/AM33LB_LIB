@@ -61,7 +61,8 @@ void isr_HSMMCSD(unsigned int intnum) {
  * \return  None.
  *
  */
-void HSMMCSDModuleClkConfig(void)
+
+/*void HSMMCSDModuleClkConfig(void)
 {
     HWREG(SOC_PRCM_REGS + CM_PER_MMC0_CLKCTRL) |= 
                              CM_PER_MMC0_CLKCTRL_MODULEMODE_ENABLE;
@@ -75,5 +76,5 @@ void HSMMCSDModuleClkConfig(void)
     while((HWREG(SOC_PRCM_REGS + CM_PER_MMC1_CLKCTRL) & 
       CM_PER_MMC1_CLKCTRL_MODULEMODE) != CM_PER_MMC1_CLKCTRL_MODULEMODE_ENABLE);
 
-}
+}*/
 

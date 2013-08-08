@@ -86,7 +86,7 @@ typedef struct {
 
 extern void GPIO1ModuleClkConfig(void);
 extern void GPIO1Pin23PinMuxSetup(void);
-extern void GPIO0ModuleClkConfig(void);
+//extern void GPIO0ModuleClkConfig(void);
 extern void UART0ModuleClkConfig(void);
 extern void UART1ModuleClkConfig(void);
 extern void CPSWPinMuxSetup(void);
@@ -98,8 +98,7 @@ void RTCRead(unsigned char *year, unsigned char *month,
 extern void EVMMACAddrGet(unsigned int addrIdx, unsigned char *macAddr);
 extern void WatchdogTimer1ModuleClkConfig(void);
 extern void EVMPortMIIModeSelect(void);
-extern void RTCModuleClkConfig(void);
-extern void GPMCInitForNOR();
+
 extern void USBModuleClkConfig(void); 
 extern void GpioPinMuxSetup(unsigned int offsetAddr,
                             unsigned int padConfValue);
@@ -115,7 +114,7 @@ extern void CANRegistRcvedHandler(void (*handler)(unsigned int index,CAN_FRAME *
 extern void PWMSSInit(void);
 
 extern void GPIOInit(unsigned int moduleId, int debounceTimer,unsigned int debounceEnableBitmap) ;
-extern void GPIO0ModuleClkConfig(void);
+//extern void GPIO0ModuleClkConfig(void);
 extern void GPIO1ModuleClkConfig(void);
 
 #ifdef __cplusplus

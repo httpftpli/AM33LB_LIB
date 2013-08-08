@@ -158,6 +158,23 @@ INPUTBUF:
 }
 
 
+/**
+ * @brief  SPI 读
+ * @param [in] moduleId SPI模块号
+ * @param [in] wrBuf 
+ *        写入的缓冲区指针，此缓冲区用于读的时候预写入，比如SPI接口的FALSH指定读取地址
+ *    
+ * @param [in] wrBufLen 写缓冲区长度
+ * @param [in] buf  读缓冲区指针
+ * @param [in] len  指定的读数据长度 
+ * @return  BOOL         
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 BOOL SPIRead(unsigned int moduleId,void *wrBuf, unsigned int wrBufLen, void *buf, unsigned int len) {
    ASSERT(wrBufLen <= 16);
    if (g_spitransfer.finish == 0) {
@@ -183,6 +200,26 @@ BOOL SPIRead(unsigned int moduleId,void *wrBuf, unsigned int wrBufLen, void *buf
 }
 
 
+/**
+ * @brief SPI写
+ * @param [in] moduleId SPI模块号
+ * @param [in] wrbuf0  写缓冲区指针0          
+ * @param [in] lenOfBuf0 写缓冲区指针0长度
+ * @param [in] wrbuf1  写缓冲区指针1 
+ * @param [in] lenOfBuf1 写缓冲区指针1长度
+ * @param [in] needCheck 是否校验
+ * @param [in] checkPrefixWrbuf 校验命令缓冲区
+ * @param [in] checkPrefixWrbufLen 校验命令缓冲区长度
+ * @return  BOOL         
+ * @date    2013/8/8
+ * @note 
+ *  wrbuf0用于写入写命令，比如写spi接口的FLASH时，指定写命令和地址，checkPrefixWrbuf用于指定校验的命令，比如写spi接口的FLASH时，指定校验的读命令和地址。
+ *  当needCheck为FALSE是，checkPrefixWrbuf应为checkPrefixWrbuf，checkPrefixWrbufLen应为0
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 BOOL SPIWrite(unsigned int moduleId,void *wrbuf0, unsigned int lenOfBuf0, void *wrbuf1,unsigned int lenOfBuf1, BOOL needCheck, void *checkPrefixWrbuf, unsigned int checkPrefixWrbufLen) {
    ASSERT(lenOfBuf0 <= 16);
    if (g_spitransfer.finish == 0) {
@@ -211,6 +248,25 @@ BOOL SPIWrite(unsigned int moduleId,void *wrbuf0, unsigned int lenOfBuf0, void *
    return TRUE;
 }
 
+
+
+/**
+ * @brief SPI主机初始化
+ * @param [in] moduleId SPI模块号
+ * @param [in] csChanel 哪个CS        
+ * @param [in] spiClk SPI clk频率 
+ * @param [in]  cpha SPI相位
+ * @param [in]  cpol SPI时钟极性
+ * @param [in] wordLen字长
+ * @return           
+ * @date    2013/8/8
+ * @note 
+ * cpha cpol 参数和SPI总线规范的定义一致
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 void SPIMasterInit(unsigned int moduleId, unsigned char csChanel, unsigned int spiClk, unsigned char cpha, unsigned char cpol, unsigned char wordLen) {
    ASSERT(cpha < 2);
    ASSERT(cpol < 2);

@@ -1,3 +1,17 @@
+
+/**
+ *  \file   pf_norflash.c
+ *
+ *  \brief  
+ *  \author  lfl 
+ *  \addtogroup GPMC
+ *  \# include "pf_gpmc.h"
+ *  \# include "platform_cfg.h"
+ *  @{
+ *   
+ */
+
+
 #include "gpmc.h"
 #include "pf_platform_cfg.h" 
 #include "hw_types.h"
@@ -34,6 +48,22 @@ static void GPMCEnableCS(unsigned int baseAddr,unsigned char cs,BOOL enable){
 }
 
 
+
+
+/**
+ * @brief  初始化GPMC接口为NOR接口 
+ * @return none          
+ * @date    2013/8/8
+ * @note 
+ * 该函数有多个配置参数， 见详: 
+ * - CS_USE 
+ * - CS_BASEADDR 
+ * - CS_ADDRLINE_BIT 
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
 void GPMCInitForNOR(){
   MODULE *module = modulelist+MODULE_ID_GPMC;
   unsigned int baseAddr = module->baseAddr;
@@ -71,3 +101,5 @@ void GPMCInitForNOR(){
   }
 }
 
+
+//! @}

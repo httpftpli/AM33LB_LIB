@@ -10,6 +10,8 @@
 #ifndef _HW_TYPES_H_
 #define _HW_TYPES_H_
 
+#include <stddef.h>
+
 //*****************************************************************************
 //
 // Define a boolean type, and values for true and false.
@@ -25,9 +27,10 @@ typedef unsigned char tBoolean;
 #define false 0
 #endif
 
-#ifndef NULL
-#define NULL ((void*) 0)
-#endif
+
+#define TRUE    1
+#define FALSE   0
+
 //*****************************************************************************
 //
 // Macros for hardware access, both direct and via the bit-band region.
@@ -67,9 +70,6 @@ inline void  HWREGHBITARRAY(unsigned int addr, unsigned int bit,
    HWREGH(addr) = reg;
 }
 
-
-#define TRUE    1
-#define FALSE   0
 
 #ifndef UNUSED
 #define UNUSED(x) (void)(x)
