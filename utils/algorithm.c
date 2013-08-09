@@ -528,7 +528,7 @@ void MD5Update(MD5_CTX *context,unsigned char *input,unsigned int inputlen)
 
 
 /**
- * @brief MD5结束,生成128位散列值
+ * @brief MD5结束,生成32位散列值
  * @param [in] MD5_CTX *context 
  * @param [in] unsigned char digest[16] 
  *        生成的128位MD5散列值
