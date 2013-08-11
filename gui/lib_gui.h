@@ -216,7 +216,8 @@ extern unsigned int g_fontFlag;
 
 extern int getStringMetricWidth(const TEXTCHAR *string);
 extern unsigned int  initFont(unsigned int addr);
-extern char  GetFontYSize();
+extern char  getCurFontYSize();
+extern char getFontYSize(GUI_FONT *font);
 
 extern void drawHLine(uint16 x, uint16 y, uint16 lineLen);
 extern void drawHLineEx(uint16 x, uint16 y, uint16 lineLen, COLOR color) ;

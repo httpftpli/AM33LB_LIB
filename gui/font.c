@@ -97,7 +97,7 @@ unsigned int  initFont(unsigned int addr) {
 }
 
 /**
- * @brief 获取字体高度 
+ * @brief 获取当前字体高度 
  * @return 字体高度          
  * @date    2013/5/8
  * @note
@@ -107,9 +107,27 @@ unsigned int  initFont(unsigned int addr) {
  * @see 
  *  
  */
-char  GetFontYSize() { 
+char  getCurFontYSize() { 
    return GUI_Context.pAFont->YSize;
 }
+
+/**
+ * @brief 获取字体高度 
+ * @param  font 字体结构体指针
+ * @return 字体高度          
+ * @date    2013/5/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ *  
+ */
+char getFontYSize(GUI_FONT *font){
+   return font->YSize;
+}
+
+
 
 /**
  * @brief 获取字符串点阵信息
