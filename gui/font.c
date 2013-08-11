@@ -19,17 +19,17 @@
 
 
 extern GUI_FONT GUI_Fontascii_16,GUI_Fontascii_20;
-GUI_FONT font_16,font20;
-   
+GUI_FONT font_16,font_20;
+
 GUI_FONT *fonts[4] = {
 #if (ASCII_FONT16_IN_SOURCE==1)
    [0] = &GUI_Fontascii_16,
+   [2] = &GUI_Fontascii_16,
 #endif
 #if (ASCII_FONT20_IN_SOURCE==1)
    [1] =&GUI_Fontascii_20,
+   [3] =&GUI_Fontascii_20,
 #endif
-   [2] =&font_16,
-   [3] =&font20,
 };
 
 
@@ -58,10 +58,9 @@ static unsigned int loadFont(const TCHAR * filepath,  GUI_FONT  *font) {
 
 /**
  * @brief 初始化字体
- * @param [in] dirpath 
- *        字体文件路径(编码和文件系统的编码一致)
- * @param [in] addr  字体载入地址
- * @return 字体高度          
+ * @param [in] addr  存放字库的内存基地址 
+ * @return 
+ *         位编码类型，从低到高分别表示fonts的一种字体，如果位为1表示相应字体加载成功
  * @date    2013/5/8
  * @note
  * @code
@@ -70,17 +69,31 @@ static unsigned int loadFont(const TCHAR * filepath,  GUI_FONT  *font) {
  * @see 
  *  
  */
-void  initFont(unsigned int addr) {
+
+unsigned int g_fontFlag = 0x03; 
+
+
+unsigned int  initFont(unsigned int addr) {
+   unsigned int ret = 0x03;
    const TCHAR *fontname[2];
    fontname[0] = _TEXT("0:/1_16.FNT");
    fontname[1] = _TEXT("0:/1_20.FNT");
-   for(int i= 0;i<NARRAY(fontname);i++){
-     fonts[2+i]->p.pFontData = (void *) addr;
-     unsigned int filesize = loadFont(fontname[i], fonts[2+i]);
-     if(filesize!=-1L){
-         addr += filesize+8;
-     }
+   font_16.p.pFontData = (void *) addr;
+   unsigned int filesize = loadFont(fontname[0], &font_16);
+   if(filesize!=-1L){
+       addr += filesize+8; 
+       fonts[2] = &font_16;
+       ret |= 0x04;
    }
+   font_20.p.pFontData = (void *) addr;
+   filesize = loadFont(fontname[1], &font_20);
+   if(filesize!=-1L){
+       addr += filesize+8;
+       fonts[3] = &font_20; 
+       ret |= 0x08;
+   }
+   g_fontFlag = ret; 
+   return ret;
 }
 
 /**

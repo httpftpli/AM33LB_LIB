@@ -212,9 +212,10 @@ extern GUI_FONT *fonts[4];
 #define FONT_20 fonts[3]
 
 extern GUI_CONTEXT GUI_Context;
+extern unsigned int g_fontFlag;
 
 extern int getStringMetricWidth(const TEXTCHAR *string);
-extern void  initFont(unsigned int addr);
+extern unsigned int  initFont(unsigned int addr);
 extern char  GetFontYSize();
 
 extern void drawHLine(uint16 x, uint16 y, uint16 lineLen);
