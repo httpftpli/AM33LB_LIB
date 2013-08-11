@@ -206,10 +206,10 @@ typedef unsigned int COLOR;
 
 extern GUI_FONT *fonts[4];
 
-#define FONT_ASCII_16 (fonts)
-#define FONT_ASCII_20 (fonts+1)
-#define FONT_16 (fonts+2)
-#define FONT_20 (fonts+3)
+#define FONT_ASCII_16 fonts[0]
+#define FONT_ASCII_20 fonts[1]
+#define FONT_16 fonts[2]
+#define FONT_20 fonts[3]
 
 extern GUI_CONTEXT GUI_Context;
 
