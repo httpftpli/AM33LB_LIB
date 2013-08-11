@@ -37,6 +37,8 @@
 #include "mmcsd_proto.h"
 #include "algorithm.h"
 #include "mem.h"
+#include "mmath.h"
+
 
 extern void PWMSSInit(void);
 
