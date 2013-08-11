@@ -244,44 +244,8 @@ extern void    GUI_RestoreContext(const GUI_CONTEXT* pContext);
 **********************************************************************
 */
 
-void  GUI_DispCEOL (void);
-void  GUI_DispChar  (U16 c);
-void  GUI_DispChars (U16 c, int Cnt);
-void  GUI_DispCharAt(U16 c, I16P x, I16P y);
-void  GUI_DispString         (const char   *s);
-void  GUI_DispStringAt       (const char   *s, int x, int y);
-void  GUI_DispStringAtCEOL   (const char   *s, int x, int y);
-void  GUI_DispStringHCenterAt(const char   *s, int x, int y);
-void  GUI__DispStringInRect  (const char   *s, GUI_RECT* pRect, int TextAlign, int MaxNumChars);
-void  GUI_DispStringInRect   (const char   *s, GUI_RECT* pRect, int Flags);
-void  GUI_DispStringInRectMax(const char   *s, GUI_RECT* pRect, int TextAlign, int MaxLen); /* Not to be doc. */
-void  GUI_DispStringLen      (const char   *s, int Len);
-void  GUI_GetTextExtend(GUI_RECT* pRect, const char   * s, int Len);
-int   GUI_GetYAdjust(void);
-int   GUI_GetDispPosX(void);
-int   GUI_GetDispPosY(void);
-const GUI_FONT   * GUI_GetFont(void);
-int   GUI_GetCharDistX(U16 c);
-int   GUI_GetStringDistX(const char   *s);
-int   GUI_GetFontDistY(void);
-int   GUI_GetFontSizeY(void);
-void  GUI_GetFontInfo   (const GUI_FONT   * pFont, GUI_FONTINFO* pfi);
-void  GUI_GetOrg(int * px, int * py);
-int   GUI_GetYSizeOfFont(const GUI_FONT   * pFont);
-int   GUI_GetYDistOfFont(const GUI_FONT   * pFont);
-int   GUI_GetTextAlign(void);
-int   GUI_GetTextMode(void);
-char  GUI_IsInFont(const GUI_FONT   * pFont, U16 c);
-int   GUI_SetTextAlign(int Align);
-int   GUI_SetTextMode(int Mode);
-char  GUI_SetTextStyle(char Style);
-int   GUI_SetLBorder(int x);
-void  GUI_SetOrg(int x, int y);
+
 const GUI_FONT   * GUI_SetFont(const GUI_FONT   * pNewFont);
-char  GUI_GotoXY(int x, int y);
-char  GUI_GotoX(int x);
-char  GUI_GotoY(int y);
-void  GUI_DispNextLine(void);
 
 /*********************************************************************
 *
