@@ -5,6 +5,11 @@
  *  \author  lfl 
  *  \addtogroup TIMER
  *  \# include "pf_dmtimer.h"
+ *  
+ *  定时器动流程，调用 dmtimerInitForMatch 或
+ *  dmtimerInitForOverFlow 或 dmtimerInitForTimer
+ *  初始化定时器 , 然后调用dmtimerStart
+ *  启动定时器，根据初始化是的参数FLAG决定定时器工作在单词定时模式(oneshort)还是连续定时模式(reload)。
  *  @{
  *   
  */
@@ -40,10 +45,10 @@ void isr_dmtimer(unsigned int num){
  *         注册dmtimer中断回调函数，类型是DMTIMERHANDLER
  *  
  * DMTIMERHANDLER的第一个参数是当前定时器的值，第二个参数是中断标记如下值的位组合:
- * \n\r
- * - DMTIMER_INT_FLAG_CAP -- 捕获中断
- * - DMTIMER_INT_FLAG_OVF -- 溢出中断
- * - DMTIMER_INT_FLAG_MATCH -- 匹配中断
+ * 
+ * - DMTIMER_INT_FLAG_CAP -- 捕获中断 
+ * - DMTIMER_INT_FLAG_OVF -- 溢出中断 
+ * - DMTIMER_INT_FLAG_MATCH -- 匹配中断 
  * @param [in] moduleId  
  * @param [in] handler 
  * @return   NONE        
@@ -57,6 +62,25 @@ void dmtimerRegistHandler(unsigned int moduleId, DMTIMERHANDLER handler){
    dmtimerhandler[index] = handler; 
 }
 
+
+
+/**
+ * @brief 定时开始
+ * @param [in] moduleId 定时器模块ID 
+ * @return   none        
+ * @date    2013/8/11
+ * @note
+ * @code
+ * @endcode
+ * @pre 
+ * 调用 dmtimerInitForMatch 或 dmtimerInitForOverFlow 或 
+ * dmtimerInitForTimer 初始化定时器 
+ * @see 
+ */
+void dmtimerStart(unsigned int moduleId){
+   DMTimerEnable(modulelist[moduleId].baseAddr);
+}
+ 
 
 /**
  * @brief 初始化定时器作为匹配使用
@@ -116,7 +140,7 @@ void dmtimerInitForMatch(unsigned int moduleId, unsigned int TCval ,unsigned int
    DMTimerReloadSet(baseaddr, TCval);
    DMTimerCounterSet(baseaddr, TCval);
    moduleIntConfigure(moduleId);
-   DMTimerEnable(baseaddr);
+   //DMTimerEnable(baseaddr);
 }
 
 
@@ -150,6 +174,80 @@ void dmtimerInitForMatch(unsigned int moduleId, unsigned int TCval ,unsigned int
 void dmtimerInitForOverFlow(unsigned int moduleId, unsigned int TCval ,unsigned int flag) {
    dmtimerInitForMatch(moduleId, TCval, 0 ,flag &(~(DMTIMER_FLAG_INTENABLE_MATCH&DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW_AND_MATCH)));
 }
+
+
+/**
+ * @brief 初始化定时器作为溢出使用
+ * @param [in] moduleId 定时器模块ID 
+ * @param [in] timeUs 定时时间(单位us) 
+ * @param [in] flag
+ * - DMTIMER_FLAG_LOADMODE_ONESHORT  -- 
+ *   ONESHORT模式，定时器溢出后自动停止,如果没有设定此标记就是AUTORELOAD模式,AUTORELOAD模式，当定时器溢出后自动载入初始值继续开始
+ *   \n\r
+ * - DMTIMER_FLAG_INTENABLE_OVERFLOW -- 使能溢出中断 
+ * - DMTIMER_FLAG_OUTPUTTRIG_NO -- 引脚不输出
+ * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW -- 
+ *   当溢出时引脚输出
+ * - DMTIMER_FLAG_OUTPUTPHASE_POSITIVEPULSE --  
+ *   引脚输出正脉冲 \n\r
+ * - DMTIMER_FLAG_OUTPUTPHASE_NEGATIVEPULSE -- 
+ *   引脚输出负脉冲 \n\r
+ * - DMTIMER_FLAG_OUTPUTPHASE_TOGGLE -- 引脚高低切换 \n\r
+ * @return   none        
+ * @date    2013/7/28
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see  dmtimerInitForMatch  dmtimerInitForOverFlow
+ */
+void dmtimerInitForTimer(unsigned int moduleId,unsigned int timeUs,unsigned int flag){
+   unsigned int clk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
+   unsigned int tc = 0xffffffff-clk/1000000*timeUs;
+   dmtimerInitForOverFlow(moduleId, tc, flag);
+}
+
+
+/**
+ * @brief 设置定时器定时时间
+ * @param [in] moduleId 定时器模块ID
+ * @param [in] timerUs  定时时间(单位us) 
+ * @return none          
+ * @date    2013/8/11
+ * @note
+ * @code
+ * @endcode
+ * @pre 
+ *  dmtimerInitForTimer
+ * @see 
+ */
+void dmtimerSetTime(unsigned int moduleId,unsigned int timerUs){
+   unsigned int addr = modulelist[moduleId].baseAddr;
+   unsigned int clk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
+   unsigned int tc = 0xffffffff-clk/1000000*timerUs;
+   DMTimerCounterSet(addr,tc);
+}
+
+
+
+/**
+ * @brief 设置定时器TC值
+ * @param [in] moduleId 定时器模块ID 
+ * @param [in] tc  定时器32位TC值 
+ * @return           
+ * @date    2013/8/11
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
+void dmtimerSetTc(unsigned int moduleId,unsigned int tc){
+   unsigned int addr = modulelist[moduleId].baseAddr;
+   DMTimerCounterSet(addr,tc);
+}
+
+
 
 
 

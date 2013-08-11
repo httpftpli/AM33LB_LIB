@@ -29,5 +29,9 @@ typedef void (*DMTIMERHANDLER)(unsigned int tc,unsigned int intflag);
 extern void dmtimerInitForMatch(unsigned int moduleId, unsigned int TCval, unsigned int matchVal, unsigned int flag);
 extern void dmtimerInitForOverFlow(unsigned int moduleId, unsigned int TCval , unsigned int flag);
 extern void dmtimerRegistHandler(unsigned int moduleId, DMTIMERHANDLER handler);
+extern void dmtimerInitForTimer(unsigned int moduleId,unsigned int timeUs,unsigned int flag);
+extern void dmtimerSetTime(unsigned int moduleId,unsigned int timerUs);
+extern void dmtimerSetTc(unsigned int moduleId,unsigned int tc);
+extern void dmtimerStart(unsigned int moduleId);
   
 #endif

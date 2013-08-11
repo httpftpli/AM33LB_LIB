@@ -1,3 +1,17 @@
+/**
+ *  \file   mem.c
+ *
+ *  \brief
+ *  \author  lfl 
+ *  \addtogroup MEM 
+ *  \# include "mem.h"
+ *  
+ *  内存操作有关的函数
+ *  
+ *   @{
+ *   
+ */
+
 
 #include "type.h"
 #include <wchar.h>
@@ -9,7 +23,7 @@ extern void memset_eabi_16(void *s,unsigned short val,unsigned int size);
 /**
  * @brief memset 的16位版本 
  *  
- *  和 \b wcsmemset
+ *  和函数库 \b wcsmemset
  *  函数功能一样，并对ARM内核进行了优化
  * @param [in] s
  * @param [in]  val          
@@ -22,7 +36,6 @@ extern void memset_eabi_16(void *s,unsigned short val,unsigned int size);
  * @pre
  * @see 
  */
-
 void  memset16(void *s, unsigned short val, size_t16 n) {
    ASSERT(((unsigned int)s&0x01)==0);
    unsigned int s_temp = (unsigned int)s;
@@ -93,6 +106,8 @@ BOOL wcsendwith(const wchar_t *s,const wchar_t *endwith){
    while (temp != endwith); 
    return TRUE;
 }
+
+//! @}
 
 
 

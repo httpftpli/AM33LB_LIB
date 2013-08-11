@@ -4,8 +4,7 @@
  *  \brief
  *  \author  李飞亮  
  *  \addtogroup RTC
- *  
- *  
+ *  \# include "pf_rtc.h"
  *  RTC分内置RTC和外置RTC,上点复位时从外置RTC读取时钟，并初始化内置RTC,运
  *  行时只从内置RTC读取 
  *  
@@ -337,6 +336,40 @@ void RTCRead(unsigned char *year, unsigned char *month,
    *second = (time & SECOND_MASK) >> SECOND_SHIFT;
 }
 
+/**
+ * @brief 设置RTC ，并写入外置RTC 
+ * @param [out] year
+ * @param [out] month           
+ * @param [out] day
+ * @param [out] hour
+ * @param [out] minute
+ * @param [out] second
+ * @return BOOL 
+ * - FALSE -- 
+ *   外部RTC写入失败，内部RTCXI设置成功\n\r
+ * - TRUE --成功 
+ * @date    2013/5/7
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
+BOOL RTCSet(unsigned char year, unsigned char month,
+             unsigned char  day, unsigned char hour,
+             unsigned char minute, unsigned char second){
+    unsigned int time = hour<<HOUR_SHIFT |minute<<MINUTE_SHIFT | second<<SECOND_SHIFT;
+    RTCTimeSet(SOC_RTC_0_REGS,time);
+    unsigned int can = day<<DAY_SHIFT|month<<MONTH_SHIFT|year<<YEAR_SHIFT;
+    RTCCalendarSet(SOC_RTC_0_REGS,can);
+    RTCRun(SOC_RTC_0_REGS);
+    BOOL ret;
+    ret = Rx8025SetCalendar(year,month,day);
+    if (FALSE == ret ) {
+       return ret;
+    }
+    return Rx8025SetTime(hour, minute, second); 
+}
 
 
 //! @}

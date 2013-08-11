@@ -91,10 +91,6 @@ extern void UART0ModuleClkConfig(void);
 extern void UART1ModuleClkConfig(void);
 extern void CPSWPinMuxSetup(void);
 extern void CPSWClkEnable(void);
-extern BOOL RTCInit(void);
-void RTCRead(unsigned char *year, unsigned char *month,
-             unsigned char  *day, unsigned char *hour,
-             unsigned char *minute, unsigned char *second);
 extern void EVMMACAddrGet(unsigned int addrIdx, unsigned char *macAddr);
 extern void WatchdogTimer1ModuleClkConfig(void);
 extern void EVMPortMIIModeSelect(void);

@@ -1009,7 +1009,7 @@ unsigned int MMCSDP_Read(mmcsdCtrlInfo *ctrl, void *ptr, unsigned int block,
       cmd.idx = SD_CMD(17);
    }
     /* clean the data cache. */
-   if (!((unsigned int)ptr&(SOC_CACHELINE_SIZE-1))) {
+   if ((unsigned int)ptr&(SOC_CACHELINE_SIZE-1)) {
       CacheDataCleanBuff((unsigned int)ptr, (512 * nblks));//added by lfl 
    }
    status = hsMmcSdCmdSend(ctrl, &cmd);

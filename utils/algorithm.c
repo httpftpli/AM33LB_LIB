@@ -4,6 +4,7 @@
  *  \brief
  *  \author  lfl  
  *  \addtogroup Algorithm
+ *  \# include "misc.h"
  *  各种通用算法，MD5散列，排序，队列等
  *   @{
  *   
