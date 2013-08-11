@@ -14,10 +14,10 @@
 #include "soc_AM335x.h"
 #include "hw_types.h"
 #include "interrupt.h"
-#include "platform.h"
 #include "hw_cm_per.h"
 #include "hw_control_AM335x.h"
 #include "module.h"
+#include "pf_can.h"
 
 #define DCAN_ERROR_OCCURED       (0x8000u)
 /* Total No. of message objects available in the DCAN message RAM */
@@ -30,20 +30,6 @@
 #define DCAN_MSGOBF_RX_NUMBER   DCAN_NUM_OF_MSG_OBJS/2
 #define DCAN_MSGOBF_TX_BEGIN    DCAN_MSGOBF_RX_BEGIN+DCAN_MSGOBF_RX_NUMBER
 #define DCAN_MSGOBF_TX_NUMBER   DCAN_NUM_OF_MSG_OBJS/2
-
-
-
-
-typedef struct {
-   unsigned char RxErrCnt;
-   unsigned char TxErrCnt;
-   unsigned short LastErrCode;
-   unsigned short fgErrWarn:1;
-   unsigned short fgErrPassive: 1;
-   unsigned short fgBusOff:1;
-   unsigned short fgSendFinish:1;
-   unsigned short fgDataRcved:1;
-}G_CAN;
 
 
 
@@ -328,84 +314,6 @@ void DCANInit(unsigned int moduleId,unsigned int mode,unsigned int bitRate){
    DCANNormalModeSet(baseAdd);
    moduleIntConfigure(moduleId);
 }
-
-
-void DCANModuleClkConfig(void)
-{
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) =
-                             CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-     CM_PER_L3S_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3S_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) =
-                             CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-     CM_PER_L3_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) =
-                             CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_INSTR_CLKCTRL) &
-                               CM_PER_L3_INSTR_CLKCTRL_MODULEMODE) !=
-                                   CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) =
-                             CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKCTRL) &
-        CM_PER_L3_CLKCTRL_MODULEMODE) != CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) =
-                             CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-                              CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL) !=
-                                CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) =
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) &
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL) !=
-                               CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKCTRL) =
-                             CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKCTRL) &
-      CM_PER_L4LS_CLKCTRL_MODULEMODE) != CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_DCAN1_CLKCTRL) = 
-                                  CM_PER_DCAN1_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_DCAN1_CLKCTRL) & 
-                         CM_PER_DCAN1_CLKCTRL_MODULEMODE) != 
-                         CM_PER_DCAN1_CLKCTRL_MODULEMODE_ENABLE);
-
-    HWREG(SOC_CM_PER_REGS + CM_PER_DCAN0_CLKCTRL) = 
-                                  CM_PER_DCAN0_CLKCTRL_MODULEMODE_ENABLE;
-
-    while((HWREG(SOC_CM_PER_REGS + CM_PER_DCAN0_CLKCTRL) & 
-                         CM_PER_DCAN0_CLKCTRL_MODULEMODE) != 
-                         CM_PER_DCAN0_CLKCTRL_MODULEMODE_ENABLE);
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L3S_CLKSTCTRL) &
-            CM_PER_L3S_CLKSTCTRL_CLKACTIVITY_L3S_GCLK));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L3_CLKSTCTRL) &
-            CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK));
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
-           (CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L3_GCLK |
-            CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L4_GCLK))); 
-
-    while(!(HWREG(SOC_CM_PER_REGS + CM_PER_L4LS_CLKSTCTRL) &
-           (CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_L4LS_GCLK |
-            CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_CAN_CLK)));
-}
-
 
 
 

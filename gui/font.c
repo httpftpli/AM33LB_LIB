@@ -19,7 +19,7 @@
 
 
 extern GUI_FONT GUI_Fontascii_16,GUI_Fontascii_20;
-GUI_FONT font_16,font24;
+GUI_FONT font_16,font20;
    
 GUI_FONT *fonts[4] = {
 #if (ASCII_FONT16_IN_SOURCE==1)
@@ -29,7 +29,7 @@ GUI_FONT *fonts[4] = {
    [1] =&GUI_Fontascii_20,
 #endif
    [2] =&font_16,
-   [3] =&font24,
+   [3] =&font20,
 };
 
 

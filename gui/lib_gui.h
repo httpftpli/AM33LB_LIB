@@ -206,29 +206,34 @@ typedef unsigned int COLOR;
 
 extern GUI_FONT *fonts[4];
 
+#define FONT_ASCII_16 (fonts)
+#define FONT_ASCII_20 (fonts+1)
+#define FONT_16 (fonts+2)
+#define FONT_20 (fonts+3)
+
 extern GUI_CONTEXT GUI_Context;
 
-int getStringMetricWidth(const TEXTCHAR *string);
-void  initFont(unsigned int addr);
-char  GetFontYSize();
+extern int getStringMetricWidth(const TEXTCHAR *string);
+extern void  initFont(unsigned int addr);
+extern char  GetFontYSize();
 
-void drawHLine(uint16 x, uint16 y, uint16 lineLen);
-void drawHLineEx(uint16 x, uint16 y, uint16 lineLen, COLOR color) ;
-void drawVLine(uint16 x, uint16 y, uint16 lineLen);
-void drawVLineEx(uint16 x, uint16 y, uint16 lineLen,COLOR color);
-void drawRect(uint16 x, uint16 y, uint16 width, uint16 heigh);
-void drawRectEx(uint16 x, uint16 y, uint16 width, uint16 heigh, COLOR color);
-void drawRectFill(uint32 x, uint32 y, uint32 width, uint32 height) ;
-void drawRectFillEx(uint32 x, uint32 y, uint32 width, uint32 height, COLOR color) ;
-void  DrawCharUcs2(unsigned short character, unsigned int x, unsigned int y);
-void  DrawCharUcs2Ex(unsigned short character, unsigned int x, unsigned int y, GUI_FONT *font, COLOR color_f, COLOR color_b);
-void drawString(const TEXTCHAR *text, unsigned int x, unsigned int y);
-void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y,const GUI_FONT *font, COLOR color_f,COLOR color_b);
-void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y, const GUI_FONT *font, COLOR color_f,COLOR color_b);
-void drawStringAligenEx(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width,uint16 height, const GUI_FONT *font, COLOR color_f, COLOR color_b);
+extern void drawHLine(uint16 x, uint16 y, uint16 lineLen);
+extern void drawHLineEx(uint16 x, uint16 y, uint16 lineLen, COLOR color) ;
+extern void drawVLine(uint16 x, uint16 y, uint16 lineLen);
+extern void drawVLineEx(uint16 x, uint16 y, uint16 lineLen,COLOR color);
+extern void drawRect(uint16 x, uint16 y, uint16 width, uint16 heigh);
+extern void drawRectEx(uint16 x, uint16 y, uint16 width, uint16 heigh, COLOR color);
+extern void drawRectFill(uint32 x, uint32 y, uint32 width, uint32 height) ;
+extern void drawRectFillEx(uint32 x, uint32 y, uint32 width, uint32 height, COLOR color) ;
+extern void  DrawCharUcs2(unsigned short character, unsigned int x, unsigned int y);
+extern void  DrawCharUcs2Ex(unsigned short character, unsigned int x, unsigned int y, GUI_FONT *font, COLOR color_f, COLOR color_b);
+extern void drawString(const TEXTCHAR *text, unsigned int x, unsigned int y);
+extern void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y,const GUI_FONT *font, COLOR color_f,COLOR color_b);
+extern void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y, const GUI_FONT *font, COLOR color_f,COLOR color_b);
+extern void drawStringAligenEx(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width,uint16 height, const GUI_FONT *font, COLOR color_f, COLOR color_b);
 
-void    GUI_SaveContext(const GUI_CONTEXT* pContext);
-void    GUI_RestoreContext(const GUI_CONTEXT* pContext);
+extern void    GUI_SaveContext(const GUI_CONTEXT* pContext);
+extern void    GUI_RestoreContext(const GUI_CONTEXT* pContext);
 
 /*********************************************************************
 *

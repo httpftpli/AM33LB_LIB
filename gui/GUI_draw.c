@@ -53,6 +53,7 @@ void drawRect(uint16 x, uint16 y, uint16 width, uint16 heigh) {
    drawVLine(x + width - 1, y, heigh);
 }
 
+
 void drawRectEx(uint16 x, uint16 y, uint16 width, uint16 heigh, COLOR color) {
    drawHLine(x, y, width);
    drawHLine(x, y + heigh - 1, width);
