@@ -21,6 +21,7 @@
 #include "interrupt.h"
 #include "module.h"
 #include "pf_dmtimer.h"
+#include "pf_beep.h"
 
 #define INTNUMBER   SYS_INT_TINT2
 
@@ -60,7 +61,7 @@ static void dmtimertimetickhandler(unsigned int tc, unsigned int intFlag) {
       tick++;
       //for beep
       if ((beepdeuation != 0) && (--beepdeuation == 0)) {
-         beepOff();
+         BEEP_OFF();
       }
       if (NULL != timertickhandle) {
          timertickhandle(tick);

@@ -235,6 +235,10 @@
 #define ASCII_FONT20_IN_SOURCE     1
 #endif 
 
+#ifndef BEEP_OFF
+#define BEEP_OFF() beepOff()
+#endif 
+
 
 #endif
 
