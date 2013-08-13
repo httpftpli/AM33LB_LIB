@@ -26,6 +26,7 @@
 #include "pf_timertick.h"
 #include "pf_tsc.h"
 #include "pf_usbmsc.h"
+#include "pf_beep.h"
 #include "tft.h"
 #include "uartStdio.h"
 #include "delay.h"
@@ -38,6 +39,7 @@
 #include "algorithm.h"
 #include "mem.h"
 #include "mmath.h"
+
 
 
 extern void PWMSSInit(void);

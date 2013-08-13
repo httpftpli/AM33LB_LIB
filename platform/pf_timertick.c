@@ -45,7 +45,7 @@ unsigned int softtimerenable;
 
 
 static unsigned int timerFindFree(){
-   for (int i=0;i<i<sizeof(softtimer)/sizeof(softtimer[0]);i++) {
+   for (int i=0;i<sizeof(softtimer)/sizeof(softtimer[0]);i++) {
       if (softtimer[i].enable==0) {
          return i;
       }
@@ -53,10 +53,15 @@ static unsigned int timerFindFree(){
    return -1;
 }
 
+extern volatile unsigned int  beepdeuation;
 
 static void dmtimertimetickhandler(unsigned int tc, unsigned int intFlag) {
    if (intFlag & DMTIMER_INT_FLAG_OVF) {
       tick++;
+      //for beep
+      if ((beepdeuation != 0) && (--beepdeuation == 0)) {
+         beepOff();
+      }
       if (NULL != timertickhandle) {
          timertickhandle(tick);
       }

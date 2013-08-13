@@ -22,11 +22,12 @@
 #include "pf_dmtimer.h"
 #include "module.h"
 #include "mmath.h"
+#include "pf_beep.h"
+#include "pf_platform_cfg.h"
 
 
 
 static DMTIMERHANDLER dmtimerhandler[7];
-
 
 void isr_dmtimer(unsigned int num){ 
    unsigned int addr = modulelist[num].baseAddr;
@@ -61,6 +62,8 @@ void dmtimerRegistHandler(unsigned int moduleId, DMTIMERHANDLER handler){
    unsigned int index = modulelist[moduleId].index;
    dmtimerhandler[index] = handler; 
 }
+
+
 
 
 

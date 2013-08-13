@@ -205,13 +205,13 @@
 #define GPIO_BEEP_MODULE   MODULE_ID_GPIO2
 #endif
 #ifndef GPIO_BEEP_PIN
-#define GPIO_BEEP_PIN    20
+#define GPIO_BEEP_PIN       20
 #endif
 #ifndef LCD_BEEP_ON
-#define LCD_BEEP_ON           1  
+#define LCD_BEEP_ON           0  
 #endif
 #ifndef LCD_BEEP_OFF
-#define LCD_BEEP_OFF          0
+#define LCD_BEEP_OFF          1
 #endif
 
 
