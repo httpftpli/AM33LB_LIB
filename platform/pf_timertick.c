@@ -54,7 +54,7 @@ static unsigned int timerFindFree(){
    return -1;
 }
 
-extern volatile unsigned int  beepdeuation;
+extern volatile unsigned int beepdeuation;
 
 static void dmtimertimetickhandler(unsigned int tc, unsigned int intFlag) {
    if (intFlag & DMTIMER_INT_FLAG_OVF) {

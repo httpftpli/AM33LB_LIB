@@ -370,7 +370,7 @@ BOOL TouchCalibrate(BOOL  force) {
    int tempx = tsCalibration.x[3];
    int tempy = tsCalibration.x[3];
    ts_linear(&tsCalibration, &tempx, &tempy);
-   if ((ABS(tempx - tsCalibration.xfb[3]) < 30) && (ABS(tempy - tsCalibration.yfb[3]) < 30)) {
+   if ((ABS(tempx - tsCalibration.xfb[3]) < 8) && (ABS(tempy - tsCalibration.yfb[3]) < 5)) {
       //Save_touchData(&Tch_ctrs);
       drawStringEx("calibrate success", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_WHITE, C_TRANSPARENT);
       delay(1000);
