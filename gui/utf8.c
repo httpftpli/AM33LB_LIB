@@ -1,5 +1,6 @@
 
 #include "debug.h"
+#include "type.h"
 
 
 
@@ -47,7 +48,7 @@ unsigned char  UTF8toUCS2(const char * utf8_code, unsigned short* ucs2_code){
 
 
 
-unsigned int strLen_UTF8(const unsigned char *utf8_string) {
+unsigned int strLen_UTF8(const char *utf8_string) {
    unsigned int len = 0;
    while (1) {
       if (0x00 == *utf8_string) {
@@ -66,6 +67,19 @@ unsigned int strLen_UTF8(const unsigned char *utf8_string) {
       len++;
    }
    return len;
+}
+
+
+const  char * strForward_UTF8(const  char *utf8_string,unsigned int forward ){
+   unsigned short dummy;
+   unsigned int w = 0;
+   for (int i=0;i<forward;i++) {
+      w += UTF8toUCS2(utf8_string+w,&dummy);      
+      if (0==dummy) {
+         return NULL;
+      }
+   }
+   return utf8_string+w;
 }
     
   

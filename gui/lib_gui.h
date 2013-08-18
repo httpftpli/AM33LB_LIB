@@ -215,9 +215,11 @@ extern GUI_CONTEXT GUI_Context;
 extern unsigned int g_fontFlag;
 
 extern int getStringMetricWidth(const TEXTCHAR *string);
+extern int getStringMetricWidthEx(const TEXTCHAR *string,unsigned int len);
 extern unsigned int  initFont(unsigned int addr);
 extern char  getCurFontYSize();
 extern char getFontYSize(GUI_FONT *font);
+
 
 extern void drawHLine(uint16 x, uint16 y, uint16 lineLen);
 extern void drawHLineEx(uint16 x, uint16 y, uint16 lineLen, COLOR color) ;
@@ -227,11 +229,12 @@ extern void drawRect(uint16 x, uint16 y, uint16 width, uint16 heigh);
 extern void drawRectEx(uint16 x, uint16 y, uint16 width, uint16 heigh, COLOR color);
 extern void drawRectFill(uint32 x, uint32 y, uint32 width, uint32 height) ;
 extern void drawRectFillEx(uint32 x, uint32 y, uint32 width, uint32 height, COLOR color) ;
-extern void  DrawCharUcs2(unsigned short character, unsigned int x, unsigned int y);
-extern void  DrawCharUcs2Ex(unsigned short character, unsigned int x, unsigned int y, GUI_FONT *font, COLOR color_f, COLOR color_b);
+extern void DrawCharUcs2(unsigned short character, unsigned int x, unsigned int y);
+extern void DrawCharUcs2Ex(unsigned short character, unsigned int x, unsigned int y, GUI_FONT *font, COLOR color_f, COLOR color_b);
 extern void drawString(const TEXTCHAR *text, unsigned int x, unsigned int y);
-extern void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y,const GUI_FONT *font, COLOR color_f,COLOR color_b);
+extern void drawStringLen(const TEXTCHAR *text, unsigned int x, unsigned int y,unsigned int len);
 extern void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y, const GUI_FONT *font, COLOR color_f,COLOR color_b);
+extern void drawStringAligen(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width, uint16 height);
 extern void drawStringAligenEx(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width,uint16 height, const GUI_FONT *font, COLOR color_f, COLOR color_b);
 
 extern void    GUI_SaveContext(const GUI_CONTEXT* pContext);

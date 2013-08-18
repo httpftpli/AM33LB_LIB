@@ -130,6 +130,45 @@ void drawString(const TEXTCHAR *text, unsigned int x, unsigned int y) {
 }
 
 
+
+void drawStringLen(const TEXTCHAR *text, unsigned int x, unsigned int y,unsigned int len) {
+   unsigned short ucs2;
+#if defined(__IAR_SYSTEMS_ICC__)
+   unsigned char charoffset = 0;
+   unsigned char signelcharlen = 0;
+   GUI_Context.DispPosX = x;
+   while (1) {
+#if (CHARACTER_DIS_CODEC==UTF8_CODEC)
+      STATIC_ASSERT(sizeof(TEXTCHAR) == 1);
+      signelcharlen = UTF8toUCS2(text + charoffset, &ucs2);
+      charoffset += signelcharlen;
+      if ((0 == signelcharlen)||(0==len)) {
+         break;
+      }
+      len--;
+      DrawCharUcs2(ucs2, GUI_Context.DispPosX, y);
+#elif(CHARACTER_DIS_CODEC==UCS16_CODEC)
+      STATIC_ASSERT(sizeof(TEXTCHAR) == 2);      
+      if ((*text == 0)||(0==len)) {
+         break;
+      }
+      len--;
+      DrawCharUcs2(*text++,GUI_Context.DispPosX, y);
+#elif(CHARACTER_DIS_CODEC==ASCII_CODEC)
+      STATIC_ASSERT(sizeof(TEXTCHAR) == 1);
+      if ((*text == 0)||(0==len)) {
+         break;
+      }
+      len--;
+      DrawCharUcs2(*text++,GUI_Context.DispPosX, y);
+#endif
+   }
+#else
+#error "Unsupported Compiler. \r\n"
+#endif
+}
+
+
 void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y, const GUI_FONT *font, COLOR color_f,COLOR color_b){
    GUI_CONTEXT oldc;
    GUI_SaveContext(&oldc);
@@ -141,20 +180,45 @@ void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y, const GU
    GUI_RestoreContext(&oldc);
 }
 
-void drawStringAligen(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width,uint16 height) {
-   uint32 xtemp,ytemp;
-   unsigned int strwidth = getStringMetricWidth(text);
+void drawStringAligen(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width, uint16 height) {
+   unsigned int widthtemp;
+   unsigned short len[10];
+   const  char * strptr[10];
+   unsigned int strlen = strLen_UTF8(text);
    unsigned int strheight = getCurFontYSize();
-   if (ALIGN_LEFT == aligen) {
-      xtemp = x;
-   } else if (ALIGN_MIDDLE == aligen) {
-      xtemp = x+width/2 - strwidth / 2;
-   } else {
-      xtemp = x+width - strwidth;
+   unsigned int line =  height / strheight;
+   const char *ptr = text;
+   unsigned int lineindex = 0;
+   for (int i=0,j=0; i < strlen; i++,j++) {
+      widthtemp = getStringMetricWidthEx(ptr, j+1);
+      if(i==(strlen-1)) j++;
+      if ((widthtemp > width)||(i==(strlen-1))) {
+         strptr[lineindex] = ptr;
+         len[lineindex] = j;
+         ptr = strForward_UTF8(ptr, j);
+         j = 0;
+         if (++lineindex == line) {
+            break;
+         }
+      }
    } 
-   ytemp = y+height/2 - strheight/2;
-   drawString(text, xtemp,ytemp);
+   unsigned xtemp,ytemp = y+(height-strheight*lineindex)/2;
+   for (int i = 0; i < lineindex; i++) {
+      unsigned int strwidth = getStringMetricWidthEx(strptr[i],len[i]);
+      if (ALIGN_LEFT == aligen) {
+         xtemp = x;
+      } else if (ALIGN_MIDDLE == aligen) {
+         xtemp = x + width / 2 - strwidth / 2;
+      } else {
+         xtemp = x + width - strwidth;
+      }
+      drawStringLen(strptr[i], xtemp,ytemp,len[i]);
+      ytemp += strheight;
+   }
 }
+
+    
+         
 
 
 void drawStringAligenEx(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width,uint16 height, const GUI_FONT *font, COLOR color_f, COLOR color_b) {
