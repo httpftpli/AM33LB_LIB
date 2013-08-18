@@ -128,6 +128,50 @@ char getFontYSize(GUI_FONT *font){
 }
 
 
+int getStringMetricWidthEx(const TEXTCHAR *string,unsigned int len){
+   const TEXTCHAR *index = string;
+   unsigned int widthtotle = 0,width, w = 0,w1 = 0;
+   unsigned short ucs2;
+   while (1) {
+#if (CHARACTER_DIS_CODEC==UTF8_CODEC)
+      w = UTF8toUCS2(index + w1, &ucs2);
+      w1 += w;
+      if ((0 == w)||(len==0)) {
+         break;
+      }
+      len--;
+      width = GUI_Context.pAFont->pfGetCharDistX(ucs2);
+      if (0==width) {
+         width = GUI_Context.pAFont->pfGetCharDistX('?');
+      }
+#elif (CHARACTER_DIS_CODEC==UCS16_CODEC)
+      STATIC_ASSERT(sizeof(TEXTCHAR) == 2);
+      if ((*string == 0)||(len==0)) {
+         break;
+      }
+      len--;
+      width = GUI_Context.pAFont->pfGetCharDistX(*string++);
+      if (0 == width) {
+         width = GUI_Context.pAFont->pfGetCharDistX('?');
+      }
+#elif (CHARACTER_DIS_CODEC==ASCII_CODEC)
+      STATIC_ASSERT(sizeof(TEXTCHAR) == 1);
+      if ((*string == 0)||(len==0))  {
+         break;
+      }
+      len--;
+      width = GUI_Context.pAFont->pfGetCharDistX(*string++);
+      if (0 == width) {
+         width = GUI_Context.pAFont->pfGetCharDistX('?');
+      }
+#endif
+      
+      widthtotle += width;
+   }
+   return widthtotle;
+}
+
+
 
 /**
  * @brief 获取字符串点阵信息
@@ -144,42 +188,11 @@ char getFontYSize(GUI_FONT *font){
  *    \b CHARACTER_DIS_CODEC
  */
 int getStringMetricWidth(const TEXTCHAR *string){
-   const TEXTCHAR *index = string;
-   unsigned int widthtotle = 0,width, w = 0,w1 = 0;
-   unsigned short ucs2;
-   while (1) {
-#if (CHARACTER_DIS_CODEC==UTF8_CODEC)
-      w = UTF8toUCS2(index + w1, &ucs2);
-      w1 += w;
-      if (0 == w) {
-         break;
-      }
-      width = GUI_Context.pAFont->pfGetCharDistX(ucs2);
-      if (0==width) {
-         width = GUI_Context.pAFont->pfGetCharDistX('?');
-      }
-#elif (CHARACTER_DIS_CODEC==UCS16_CODEC)
-      STATIC_ASSERT(sizeof(TEXTCHAR) == 2);
-      if (*string == 0) {
-         break;
-      }
-      width = GUI_Context.pAFont->pfGetCharDistX(*string++);
-      if (0 == width) {
-         width = GUI_Context.pAFont->pfGetCharDistX('?');
-      }
-#elif (CHARACTER_DIS_CODEC==ASCII_CODEC)
-      STATIC_ASSERT(sizeof(TEXTCHAR) == 1);
-      if (*string == 0) {
-         break;
-      }
-      width = GUI_Context.pAFont->pfGetCharDistX(*string++);
-      if (0 == width) {
-         width = GUI_Context.pAFont->pfGetCharDistX('?');
-      }
-#endif
-      
-      widthtotle += width;
-   }
-   return widthtotle;
+   return getStringMetricWidthEx(string,strLen_UTF8(string));
 }
+
+
 //! @}
+//! 
+
+

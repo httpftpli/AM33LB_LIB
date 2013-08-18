@@ -15,7 +15,7 @@ extern "C" {
 #define FOR_TEST
 
 #define LCD_XSize				800
-#define LCD_YSize				480
+#define LCD_YSize				600
 
 //for display
 //#define	LCD_24BIT_888RGB
@@ -35,8 +35,6 @@ extern "C" {
 #define	FRAME_WIDTH		1024
 #define	FRAME_HEIGHT		720
 
-#define	LCD_WIDTH		800
-#define	LCD_HEIGHT		480
 
 #define PALETTE_SIZE 	32
 #define PALETTE_OFFSET 	4
