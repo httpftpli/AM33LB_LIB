@@ -216,6 +216,7 @@ extern unsigned int g_fontFlag;
 
 extern int getStringMetricWidth(const TEXTCHAR *string);
 extern int getStringMetricWidthEx(const TEXTCHAR *string,unsigned int len);
+extern int getStringMetricWidthEx_ucs2(const wchar *wcs,unsigned int len);
 extern unsigned int  initFont(unsigned int addr);
 extern char  getCurFontYSize();
 extern char getFontYSize(GUI_FONT *font);
@@ -231,12 +232,16 @@ extern void drawRectFill(uint32 x, uint32 y, uint32 width, uint32 height) ;
 extern void drawRectFillEx(uint32 x, uint32 y, uint32 width, uint32 height, COLOR color) ;
 extern void DrawCharUcs2(unsigned short character, unsigned int x, unsigned int y);
 extern void DrawCharUcs2Ex(unsigned short character, unsigned int x, unsigned int y, GUI_FONT *font, COLOR color_f, COLOR color_b);
+extern void drawString_ascii(const char *string,unsigned x ,unsigned int y);
+extern void drawString_utf8(const char *utf8string,unsigned x ,unsigned int y);
+extern void drawString_ucs2(const wchar *wcs,unsigned int x,unsigned int y);
 extern void drawString(const TEXTCHAR *text, unsigned int x, unsigned int y);
 extern void drawStringLen(const TEXTCHAR *text, unsigned int x, unsigned int y,unsigned int len);
 extern void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y, const GUI_FONT *font, COLOR color_f,COLOR color_b);
-extern void drawStringAligen(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width, uint16 height);
-extern void drawStringAligenEx(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width,uint16 height, const GUI_FONT *font, COLOR color_f, COLOR color_b);
-
+extern void drawStringAlign(const TEXTCHAR *text, uint32 align, uint16 x, uint16 y, uint16 width, uint16 height);
+extern void drawStringAlign_ucs2(const wchar *wcs,unsigned int align,unsigned short x,unsigned short y,unsigned short width,unsigned short height);
+extern void drawStringAlignEx(const TEXTCHAR *text, uint32 align, uint16 x, uint16 y, uint16 width,uint16 height, const GUI_FONT *font, COLOR color_f, COLOR color_b);
+extern void drawStringAlignEx_ucs2(const wchar *wcs, uint32 align, uint16 x, uint16 y, uint16 width,uint16 height, const GUI_FONT *font, COLOR color_f, COLOR color_b);
 extern void    GUI_SaveContext(const GUI_CONTEXT* pContext);
 extern void    GUI_RestoreContext(const GUI_CONTEXT* pContext);
 

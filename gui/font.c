@@ -128,6 +128,22 @@ char getFontYSize(GUI_FONT *font){
 }
 
 
+int getStringMetricWidthEx_ucs2(const wchar *wcs,unsigned int len){
+   unsigned int width,widthtotle = 0;
+   while (1) {
+      if ((*wcs == 0)||(len==0)) {
+         break;
+      }
+      len--;
+      width = GUI_Context.pAFont->pfGetCharDistX(*wcs++);
+      if (0 == width) {
+         width = GUI_Context.pAFont->pfGetCharDistX('?');
+      }      
+      widthtotle += width;
+   }
+   return widthtotle;
+}
+
 int getStringMetricWidthEx(const TEXTCHAR *string,unsigned int len){
    const TEXTCHAR *index = string;
    unsigned int widthtotle = 0,width, w = 0,w1 = 0;

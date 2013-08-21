@@ -280,7 +280,7 @@ void SPIMasterInit(unsigned int moduleId, unsigned char csChanel, unsigned int s
    McSPIMasterModeEnable(addr);
    /* Perform the necessary configuration for master mode.*/
    McSPIMasterModeConfig(addr, MCSPI_SINGLE_CH,
-                         MCSPI_TX_RX_MODE, MCSPI_DATA_LINE_COMM_MODE_6,
+                         MCSPI_TX_RX_MODE, MCSPI_DATA_LINE_COMM_MODE_1,
                          csChanel);
    /* Configure the McSPI bus clock depending on clock mode. */
    McSPIClkConfig(addr, inclk, spiClk, csChanel,

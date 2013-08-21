@@ -11,6 +11,10 @@ extern BOOL spiFmromInit(void *mirrorBuf,unsigned int szBuf);
 extern BOOL spiFmromWrite(unsigned short addr,void *buf,unsigned int szbuf);
 extern BOOL spiFmromRead(unsigned short addr,void *buf,unsigned int szbuf);
 extern BOOL spiFmromWren(void);
+extern BOOL spiFlashRead(unsigned short addr,void *buf,unsigned int szbuf);
+extern BOOL spiFlashWren(void);
+extern BOOL spiFlashWrite(unsigned short addr,void *buf,unsigned int szbuf);
+
  
 #endif /* _PF_EEPROM_H_ */ 
 
