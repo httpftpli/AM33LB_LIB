@@ -238,6 +238,7 @@ extern void drawString_ucs2(const wchar *wcs,unsigned int x,unsigned int y);
 extern void drawString(const TEXTCHAR *text, unsigned int x, unsigned int y);
 extern void drawStringLen(const TEXTCHAR *text, unsigned int x, unsigned int y,unsigned int len);
 extern void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y, const GUI_FONT *font, COLOR color_f,COLOR color_b);
+extern void drawStringEx_ucs2(const wchar *wcs, unsigned int x, unsigned int y, const GUI_FONT *font, COLOR color_f,COLOR color_b);
 extern void drawStringAlign(const TEXTCHAR *text, uint32 align, uint16 x, uint16 y, uint16 width, uint16 height);
 extern void drawStringAlign_ucs2(const wchar *wcs,unsigned int align,unsigned short x,unsigned short y,unsigned short width,unsigned short height);
 extern void drawStringAlignEx(const TEXTCHAR *text, uint32 align, uint16 x, uint16 y, uint16 width,uint16 height, const GUI_FONT *font, COLOR color_f, COLOR color_b);

@@ -189,6 +189,7 @@ void drawStringEx_ucs2(const wchar *wcs, unsigned int x, unsigned int y, const G
    GUI_Context.DispPosY = y;
    GUI_Context.Color = color_f;
    GUI_Context.BkColor = color_b;
+   GUI_Context.pAFont = font;
    drawString_ucs2(wcs, x, y);
    GUI_RestoreContext(&oldc);
 }
@@ -200,6 +201,7 @@ void drawStringEx(const TEXTCHAR *text, unsigned int x, unsigned int y, const GU
    GUI_Context.DispPosY = y;
    GUI_Context.Color = color_f;
    GUI_Context.BkColor = color_b;
+   GUI_Context.pAFont = font;
    drawString(text, x, y);
    GUI_RestoreContext(&oldc);
 }
@@ -301,6 +303,7 @@ void drawStringAlignEx(const TEXTCHAR *text, uint32 align, uint16 x, uint16 y, u
    GUI_SetColor( color_f);
    GUI_Context.DispPosX = x;
    GUI_Context.DispPosY = y;
+   GUI_Context.pAFont = font;
    drawStringAlign(text,align, x,y,width,height);
    GUI_RestoreContext(&old);
 }
@@ -313,6 +316,7 @@ void drawStringAlignEx_ucs2(const wchar *wcs, uint32 align, uint16 x, uint16 y, 
    GUI_SetColor( color_f);
    GUI_Context.DispPosX = x;
    GUI_Context.DispPosY = y;
+   GUI_Context.pAFont = font;
    drawStringAlign_ucs2(wcs,align, x,y,width,height);
    GUI_RestoreContext(&old);
 }
