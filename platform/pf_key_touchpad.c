@@ -312,7 +312,7 @@ BOOL TouchCalibrate(BOOL  force) {
    }
    const tLCD_PANEL  *panel = LCDTftInfoGet();
    LCDFbClear(C_BLACK);
-   drawStringEx("calibrate touch pad", panel->width / 2 - 100, panel->height / 2 + 50, 0, C_WHITE, C_TRANSPARENT);
+   drawStringEx("calibrate touch pad", panel->width / 2 - 100, panel->height / 2 + 50, FONT_ASCII_16, C_WHITE, C_TRANSPARENT);
    tsCalibration.xfb[0] = 0 + CALIBRATION_POINT_OFFSET;
    tsCalibration.xfb[1] = panel->width - CALIBRATION_POINT_OFFSET;
    tsCalibration.xfb[2] = panel->width / 2;
@@ -372,7 +372,7 @@ BOOL TouchCalibrate(BOOL  force) {
    ts_linear(&tsCalibration, &tempx, &tempy);
    if ((ABS(tempx - tsCalibration.xfb[3]) < 8) && (ABS(tempy - tsCalibration.yfb[3]) < 5)) {
       //Save_touchData(&Tch_ctrs);
-      drawStringEx("calibrate success", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_WHITE, C_TRANSPARENT);
+      drawStringEx("calibrate success", panel->width / 2 - 100, panel->height / 2 + 75, FONT_ASCII_16,C_WHITE, C_TRANSPARENT);
       delay(1000);
       atomicClear(&g_touched);
       tsCalibration.magic = CALIBRATION_SUCCESS;
@@ -380,7 +380,7 @@ BOOL TouchCalibrate(BOOL  force) {
       MMCSDP_Write(mmcsdctr,inandsecterbuf,TOUCH_CAL_PARAM_SECTOR,1);
       return TRUE;
    } else {
-      drawStringEx("calibrate fail", panel->width / 2 - 100, panel->height / 2 + 75, 0,C_WHITE, C_TRANSPARENT);
+      drawStringEx("calibrate fail", panel->width / 2 - 100, panel->height / 2 + 75, FONT_ASCII_16,C_WHITE, C_TRANSPARENT);
       delay(1000);
       atomicClear(&g_touched);
       return FAIL;

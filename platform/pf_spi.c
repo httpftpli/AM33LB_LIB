@@ -16,7 +16,7 @@
 #include "module.h"
 #include "pf_spi.h"
 
-SPI_TRANSFER g_spitransfer= {.finish = 1};
+volatile SPI_TRANSFER g_spitransfer= {.finish = 1};
 
 
 void isr_mcspi(unsigned int intnum) {
