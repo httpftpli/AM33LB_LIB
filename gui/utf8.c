@@ -64,7 +64,7 @@ unsigned int strLen_UTF8(const char *utf8_string) {
                  0x80 == (*(utf8_string + 2) & 0xc0)) {
          utf8_string += 3;
       }
-      len++;
+      len++;   
    }
    return len;
 }

@@ -128,8 +128,9 @@ static inline unsigned long long __sd_card_size_v2(void *raw_csd) {
 
 static unsigned int  emmccardinit(mmcsdCtrlInfo *ctrl) {
    mmcsdCardInfo *card = ctrl->card;
+   card->ocr = 0;
    card->inited = 0;
-   unsigned int count = 1000;
+   unsigned int count = 2000;
    if (card->rca == 0) {
       card->rca = 1;
    }
@@ -147,21 +148,26 @@ static unsigned int  emmccardinit(mmcsdCtrlInfo *ctrl) {
    if (status == 0) {
       return 0;
    }
-
-   card->ocr = cmd.rsp[0];
-   if ((card->ocr && (0x3UL << 29)) >> 29 == 00) {
-      card->accmode = MMCSD_ACCMODE_BYTE;
-   } else {
-      card->accmode = MMCSD_ACCMODE_SECTOR;
-   }
-   cmd.arg = card->ocr;
+   
    while (count--) {
-      hsMmcSdCmdSend(ctrl, &cmd);
+      cmd.arg |= cmd.rsp[0] | 0x2<<29;
+      status = hsMmcSdCmdSend(ctrl, &cmd);
+      if(0 == status)
+         return 0;
       if (cmd.rsp[0] & (1UL << 31)) {  //waite for MMC CARD  power on
          break;
       }
    }
-   if(0==count)
+   card->ocr = cmd.rsp[0];
+   if ((card->ocr && (0x3UL << 29))== 0) {
+      card->accmode = MMCSD_ACCMODE_BYTE;
+   } else {
+      card->accmode = MMCSD_ACCMODE_SECTOR;
+   }   
+   //add m1 finish ////////
+   
+   
+   if(-1==count)
      return 0;
 
    /* Send CMD2, to get the card identification register */

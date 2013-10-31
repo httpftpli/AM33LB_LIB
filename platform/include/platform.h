@@ -43,6 +43,7 @@
 
 
 extern void PWMSSInit(void);
+extern mmcsdCtrlInfo mmcsdctr[2];
 
 
 

@@ -259,20 +259,31 @@ void drawStringAlign(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, ui
    unsigned int line =  height / strheight;
    const TEXTCHAR *ptr = text;
    unsigned int lineindex = 0;
-   for (int i=0,j=0; i < str_len; i++,j++) {
-      widthtemp = getStringMetricWidthEx(ptr, j+1);
-      if(i==(str_len-1)) j++;
-      if ((widthtemp > width)||(i==(str_len-1))) {
+   unsigned int lineflag = 0;
+   unsigned int itemp = 0;
+   for (int i=0,j=1; i < str_len; i++,j++) {
+      widthtemp = getStringMetricWidthEx(ptr, j);
+      if(widthtemp > width){
+         if(i-itemp <= 1) break;
+         itemp = i ; 
+         lineflag = 1;
+         j--;i--;
+      }else if(i==(str_len-1)){
+         lineflag = 1;
+      }
+      if(1==lineflag){
+         lineflag = 0;
          strptr[lineindex] = ptr;
          len[lineindex] = j;
 #if (CHARACTER_DIS_CODEC==UTF8_CODEC)
          ptr = strForward_UTF8(ptr, j);
 #elif(CHARACTER_DIS_CODEC==ASCII_CODEC)
-         ptr++;
+         ptr+= j;
 #elif(CHARACTER_DIS_CODEC==UCS16_CODEC)
-         ptr++;
+         STATIC_ASSERT(sizeof(*ptr)==2);
+         ptr+= j;
 #endif
-         j = 0;
+         j = 1;
          if (++lineindex == line) {
             break;
          }
