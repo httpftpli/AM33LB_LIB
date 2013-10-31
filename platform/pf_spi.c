@@ -90,7 +90,7 @@ INPUTBUF:
    case STATE_INPUT:
       if (MCSPI_INT_TX_EMPTY(0) == (intCode & MCSPI_INT_TX_EMPTY(0))) {
          for (int i = g_spitransfer.txprivate; i <= g_spitransfer.len; i++) {//send len  = output len + 1
-            if (McSPITransmitData(addr, 0, 0)) {
+            if (McSPITransmitData(addr, ((unsigned char *)g_spitransfer.buf)[i], 0)) {
                g_spitransfer.txprivate++;
             } else {
                break;
@@ -267,7 +267,7 @@ BOOL SPIWrite(unsigned int moduleId,void *wrbuf0, unsigned int lenOfBuf0, void *
  * @pre
  * @see 
  */
-void SPIMasterInit(unsigned int moduleId, unsigned char csChanel, unsigned int spiClk, unsigned char cpha, unsigned char cpol, unsigned char wordLen) {
+void SPIMasterInit(unsigned int moduleId, unsigned char csChanel, unsigned int spiClk, unsigned char cpha, unsigned char cpol, unsigned char csPolar,unsigned char wordLen) {
    ASSERT(cpha < 2);
    ASSERT(cpol < 2);
    ASSERT((wordLen >= 4) && (wordLen <= 32));
@@ -289,8 +289,8 @@ void SPIMasterInit(unsigned int moduleId, unsigned char csChanel, unsigned int s
    /* Configure the word length.*/
    McSPIWordLengthSet(addr, MCSPI_WORD_LENGTH(wordLen), csChanel);
 
-   /* Set polarity of SPIEN to low.*/
-   McSPICSPolarityConfig(addr, MCSPI_CS_POL_LOW, csChanel);
+   /* Set polarity of SPIEN */
+   McSPICSPolarityConfig(addr, (csPolar==0)?MCSPI_CS_POL_LOW:MCSPI_CS_POL_HIGH, csChanel);
    //McSPITurboModeEnable(addr,0);
 
    /* Enable the transmitter FIFO of McSPI peripheral.*/
