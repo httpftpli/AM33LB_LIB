@@ -56,6 +56,16 @@ void  memset16(void *s, unsigned short val, size_t16 n) {
 };
 
 
+BOOL memis(void *mem,unsigned char dat,unsigned int memlen){
+   unsigned char * buf = mem;
+   for (int i= 0;i<memlen;i++) {
+      if(buf[i]!=dat)
+         return FALSE;
+   }
+   return TRUE;
+}
+
+
 /**
  * @brief 判断字符串是不是以指定的字符串结尾
  * @param [in] s 要判断的字符串

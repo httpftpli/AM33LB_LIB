@@ -122,6 +122,24 @@ unsigned char  spiFmromRdStatReg(void){
 }
 
 
+BOOL  spiFmromRdId(unsigned char *manId,unsigned char *densitycode,unsigned char *deviceId){
+   if(g_spitransfer.finish==0)
+     return FALSE;
+   prebuf[1][0] = FM25XX_OPCODE_RDID;
+   unsigned char dat[9];
+   memset(dat,0,sizeof dat);
+   if(!SPIRead(FMROM_SPI_MODULE,prebuf+1,1,&dat,9)==FALSE){
+      return FALSE;
+   }
+   if (!memis(dat,0x7f,6)) {
+      return FALSE;
+   }
+   *manId = dat[6];
+   *densitycode = dat[7];
+   *deviceId =  dat[8];
+   return TRUE;
+}
+
 
 
 
