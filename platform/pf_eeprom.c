@@ -147,7 +147,10 @@ BOOL  spiFmromRdId(unsigned char *manId,unsigned char *densitycode,unsigned char
       return FALSE;
    }
    while (!isSpiTransferFinish(MODULE_ID_SPI1)); 
-   if (!memis(dat,0x7f,6)) {
+   if (SPIGetState(MODULE_ID_SPI1)!= STATE_OK) {
+      return FALSE;
+   }
+   if (!memis(dat, 0x7f, 6)) {
       return FALSE;
    }
    *manId = dat[6];
@@ -157,6 +160,7 @@ BOOL  spiFmromRdId(unsigned char *manId,unsigned char *densitycode,unsigned char
 }
 
 
+ 
 
 
 /*BOOL spiFlashWren(void){

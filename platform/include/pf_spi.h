@@ -26,7 +26,7 @@ typedef struct __spitrasfer {
    unsigned int  checkprefixWrbufLen;
    BOOL(*check)(int date);
    SPI_TRANSFER_STATE state;
-   volatile unsigned short finish;
+   BOOL finish;
 } SPI_TRANSFER;
 
 

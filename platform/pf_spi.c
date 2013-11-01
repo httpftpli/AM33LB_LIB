@@ -116,6 +116,7 @@ INPUTBUF:
                       g_spitransfer.finish = 1;
                       McSPIChannelDisable(addr, 0);
                       McSPICSDeAssert(addr,0);
+                      McSPIWordCountSet(addr,0);
                       return;
                   }
                }
@@ -155,6 +156,16 @@ INPUTBUF:
    default:
       break;
    }
+}
+
+
+SPI_TRANSFER_STATE SPIGetState(unsigned int moduleId){
+   UNUSED(moduleId);
+   return g_spitransfer.state;
+}
+BOOL isSpiTransferFinish(unsigned int moduleId){
+   UNUSED(moduleId);
+   return g_spitransfer.finish;
 }
 
 

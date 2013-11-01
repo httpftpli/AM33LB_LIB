@@ -675,10 +675,14 @@ void McSPIFIFOTrigLvlSet(unsigned int baseAdd, unsigned char afl,
 void McSPIWordCountSet(unsigned int baseAdd, unsigned short wCnt)
 {
     /* Clear the WCNT field of MCSPI_XFERLEVEL register. */
-    HWREG(baseAdd + MCSPI_XFERLEVEL) &= ~MCSPI_XFERLEVEL_WCNT;
-
+    while((HWREG(baseAdd + MCSPI_XFERLEVEL) & MCSPI_XFERLEVEL_WCNT)!=0){
+       HWREG(baseAdd + MCSPI_XFERLEVEL) &= ~MCSPI_XFERLEVEL_WCNT;
+    }
     /* Set the WCNT field with the user sent value. */
-    HWREG(baseAdd + MCSPI_XFERLEVEL) |= (wCnt << MCSPI_XFERLEVEL_WCNT_SHIFT);
+    while((HWREG(baseAdd + MCSPI_XFERLEVEL) & MCSPI_XFERLEVEL_WCNT)!=
+          wCnt << MCSPI_XFERLEVEL_WCNT_SHIFT){
+       HWREG(baseAdd + MCSPI_XFERLEVEL) |= (wCnt << MCSPI_XFERLEVEL_WCNT_SHIFT);
+    }
 }
 
 /**
