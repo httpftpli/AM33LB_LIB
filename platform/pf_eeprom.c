@@ -7,6 +7,7 @@
 #include "string.h"
 #include "debug.h"
 #include "pf_gpio.h"
+#include "mem.h"
 
 
 #define EEPROM_HSI2C_BASEADDR   SOC_I2C_0_REGS
@@ -54,13 +55,15 @@ static unsigned char prebuf[2][5],checkprebuf[2][4];
 BOOL spiFmromInit(void *mirrorBuf,unsigned int szBuf){
    fmRomMirrorBuf = (char *)mirrorBuf;
    szFmRomMirrorBuf = szBuf;
-   prebuf[1][0] = FM25XX_OPCODE_READ;
-   prebuf[1][1] = 0;
-   prebuf[1][2] = 0;
+   unsigned int index = modulelist[FMROM_SPI_MODULE].index;
+   ASSERT((index==0)||(index==1));
+   prebuf[index][0] = FM25XX_OPCODE_READ;
+   prebuf[index][1] = 0;
+   prebuf[index][2] = 0;
    GPIOInit(FMROM_WP_GPIO_MODULE,0,0);
    GPIOPinWrite(FMROM_WP_GPIO,FMROM_WP_PIN,0);
    GPIODirModeSet(FMROM_WP_GPIO,FMROM_WP_PIN,GPIO_DIR_OUTPUT);
-   return SPIRead(FMROM_SPI_MODULE,prebuf+1,3,mirrorBuf,szBuf);
+   return SPIRead(FMROM_SPI_MODULE,prebuf+index,3,mirrorBuf,szBuf);
 }
 
 BOOL spiFmromWrite(unsigned short addr,void *buf,unsigned int szbuf){
@@ -69,13 +72,15 @@ BOOL spiFmromWrite(unsigned short addr,void *buf,unsigned int szbuf){
    if(g_spitransfer.finish==0)
      return FALSE;
    memcpy(addr+fmRomMirrorBuf,buf,szbuf);
-   prebuf[1][0] = FM25XX_OPCODE_WRITE;
-   prebuf[1][1] = addr >> 8;
-   prebuf[1][2] = (char)addr;
-   checkprebuf[1][0] = FM25XX_OPCODE_READ;
-   checkprebuf[1][1] = addr >> 8;
-   checkprebuf[1][2] = (char)addr;
-   return SPIWrite(FMROM_SPI_MODULE,prebuf+1,3,fmRomMirrorBuf+addr,szbuf,1,checkprebuf+1,3);
+   unsigned int index = modulelist[FMROM_SPI_MODULE].index;
+   ASSERT((index==0)||(index==1));
+   prebuf[index][0] = FM25XX_OPCODE_WRITE;
+   prebuf[index][1] = addr >> 8;
+   prebuf[index][2] = (char)addr;
+   checkprebuf[index][0] = FM25XX_OPCODE_READ;
+   checkprebuf[index][1] = addr >> 8;
+   checkprebuf[index][2] = (char)addr;
+   return SPIWrite(FMROM_SPI_MODULE,prebuf+index,3,fmRomMirrorBuf+addr,szbuf,1,checkprebuf+1,3);
 }
 
 BOOL spiFmromRead(unsigned short addr,void *buf,unsigned int szbuf){
@@ -84,18 +89,22 @@ BOOL spiFmromRead(unsigned short addr,void *buf,unsigned int szbuf){
    if(g_spitransfer.finish==0)
      return FALSE;
    memcpy(buf,addr+fmRomMirrorBuf,szbuf);
-   prebuf[1][0] = FM25XX_OPCODE_READ;
-   prebuf[1][1] = addr >> 8;
-   prebuf[1][2] = (char)addr;
-   return SPIRead(FMROM_SPI_MODULE,prebuf+1,3,addr+fmRomMirrorBuf,szbuf);
+   unsigned int index = modulelist[FMROM_SPI_MODULE].index;
+   ASSERT((index==0)||(index==1));
+   prebuf[index][0] = FM25XX_OPCODE_READ;
+   prebuf[index][1] = addr >> 8;
+   prebuf[index][2] = (char)addr;
+   return SPIRead(FMROM_SPI_MODULE,prebuf+index,3,addr+fmRomMirrorBuf,szbuf);
 }
 
 BOOL spiFmromWrEnable(void){
    if(g_spitransfer.finish==0)
      return FALSE;
    //GPIOPinWrite(FMROM_WP_GPIO,FMROM_WP_PIN,1);
-   prebuf[1][0] = FM25XX_OPCODE_WREN;
-   BOOL re =  SPIWrite(FMROM_SPI_MODULE,prebuf+1,1,NULL,0,0,NULL,0);
+   unsigned int index = modulelist[FMROM_SPI_MODULE].index;
+   ASSERT((index==0)||(index==1));
+   prebuf[index][0] = FM25XX_OPCODE_WREN;
+   BOOL re =  SPIWrite(FMROM_SPI_MODULE,prebuf+index,1,NULL,0,0,NULL,0);
    //GPIOPinWrite(FMROM_WP_GPIO,FMROM_WP_PIN,0);
    return re;
 }
@@ -104,8 +113,10 @@ BOOL spiFmromWrDisable(void){
    if(g_spitransfer.finish==0)
      return FALSE;
    //GPIOPinWrite(FMROM_WP_GPIO,FMROM_WP_PIN,1);
-   prebuf[1][0] = FM25XX_OPCODE_WRDI;
-   BOOL re =  SPIWrite(FMROM_SPI_MODULE,prebuf+1,1,NULL,0,0,NULL,0);
+   unsigned int index = modulelist[FMROM_SPI_MODULE].index;
+   ASSERT((index==0)||(index==1));
+   prebuf[index][0] = FM25XX_OPCODE_WRDI;
+   BOOL re =  SPIWrite(FMROM_SPI_MODULE,prebuf+index,1,NULL,0,0,NULL,0);
    //GPIOPinWrite(FMROM_WP_GPIO,FMROM_WP_PIN,0);
    return re;
 }
@@ -113,9 +124,11 @@ BOOL spiFmromWrDisable(void){
 unsigned char  spiFmromRdStatReg(void){
    if(g_spitransfer.finish==0)
      return FALSE;
-   prebuf[1][0] = FM25XX_OPCODE_RDSR;
+   unsigned int index = modulelist[FMROM_SPI_MODULE].index;
+   ASSERT((index==0)||(index==1));
+   prebuf[index][0] = FM25XX_OPCODE_RDSR;
    unsigned char dat;
-   if(SPIRead(FMROM_SPI_MODULE,prebuf+1,1,&dat,1)==FALSE){
+   if(SPIRead(FMROM_SPI_MODULE,prebuf+index,1,&dat,1)==FALSE){
       return -1;
    }
    return dat;
@@ -125,12 +138,15 @@ unsigned char  spiFmromRdStatReg(void){
 BOOL  spiFmromRdId(unsigned char *manId,unsigned char *densitycode,unsigned char *deviceId){
    if(g_spitransfer.finish==0)
      return FALSE;
-   prebuf[1][0] = FM25XX_OPCODE_RDID;
+   unsigned int index = modulelist[FMROM_SPI_MODULE].index;
+   ASSERT((index==0)||(index==1));
+   prebuf[index][0] = FM25XX_OPCODE_RDID;
    unsigned char dat[9];
    memset(dat,0,sizeof dat);
-   if(!SPIRead(FMROM_SPI_MODULE,prebuf+1,1,&dat,9)==FALSE){
+   if(!SPIRead(FMROM_SPI_MODULE,prebuf+index,1,&dat,9)){
       return FALSE;
    }
+   while (!isSpiTransferFinish(MODULE_ID_SPI1)); 
    if (!memis(dat,0x7f,6)) {
       return FALSE;
    }
