@@ -23,7 +23,6 @@ extern void TimerTickStop(void);
 extern unsigned int TimerTickGet(void);
 extern unsigned int TimerTickTimeGet(void);
 extern void Sysdelay(unsigned int mSec);
-extern void delay(unsigned int milliSec);
 extern int StartTimer(unsigned int mSec);
 extern unsigned int IsTimerElapsed(unsigned int timerindex);
 extern void  StopTimer(unsigned int timerindex);

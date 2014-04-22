@@ -5,6 +5,10 @@
 #include "module.h"
 #include "platform_cfg.h" 
 
+#ifndef TIMER_TIMERTICK 
+#define TIMER_TIMERTICK   MODULE_ID_TIMER2
+#endif 
+
 //set witch usb instance use for udist : 0 or 1
 #ifndef USB_INSTANCE_FOR_USBDISK
 #define USB_INSTANCE_FOR_USBDISK   0

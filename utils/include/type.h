@@ -3,6 +3,14 @@
 
 #include <stddef.h> 
 
+typedef char  int8_t;
+typedef short int16_t;
+typedef int   int32_t;
+
+typedef unsigned char  uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int   uint32_t;
+
 typedef unsigned char  uint8;                                           /*  无符号8位整型变量           */
 typedef signed   char  int8;                                            /*  有符号8位整型变量           */
 typedef unsigned short uint16;                                          /*  无符号16位整型变量          */

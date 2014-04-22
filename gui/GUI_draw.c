@@ -14,6 +14,9 @@
 #endif
 
 
+
+
+
 extern  GUI_FONT GUI_Fontascii_16;
 
 GUI_CONTEXT GUI_Context = {
@@ -22,6 +25,7 @@ GUI_CONTEXT GUI_Context = {
   .Color = C_WHITE,
   .pAFont = &GUI_Fontascii_16,
 };
+
  
 void drawHLine(uint16 x, uint16 y, uint16 lineLen) {
    memset16(&Pix(x, y), GUI_Context.Color, lineLen);

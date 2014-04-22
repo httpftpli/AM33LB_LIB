@@ -22,6 +22,7 @@
 #include "module.h"
 #include "pf_dmtimer.h"
 #include "pf_beep.h"
+#include "debug.h"
 
 #define INTNUMBER   SYS_INT_TINT2
 
@@ -174,6 +175,8 @@ unsigned int IsTimerElapsed(unsigned int timerindex){
  * @pre
  * @see 
  */
+static  unsigned int timerFreq;
+static  unsigned int cnt;
 void TimerTickConfigure(unsigned int moduleId){
    moduleEnable(moduleId);
    unsigned int baseaddr = modulelist[moduleId].baseAddr;
@@ -184,7 +187,8 @@ void TimerTickConfigure(unsigned int moduleId){
                                            //PERCALE : 2^(2+1)=8
                                            //clkin = 24/8 = 3
    unsigned int  inclk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
-   unsigned int cnt = 0xfffffffe - inclk/1000;  //1ms
+   timerFreq = inclk;
+   cnt = 0xfffffffe - inclk/1000;  //1ms
    DMTimerReloadSet(baseaddr, cnt);
    DMTimerCounterSet(baseaddr,cnt); 
 
@@ -205,11 +209,17 @@ void TimerTickRegistHandler(void (*pfnHandler)(unsigned int tick))
 
 void TimerTickPeriodSet(unsigned int microsecond)
 {
+
    unsigned int cnt = 0xffffffe - microsecond*3;
+   unsigned int  inclk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
+   timerFreq = inclk;
+   mdAssert(inclk/1000*microsecond <= 0xfffffffe);
+   cnt = 0xfffffffe - inclk/1000*microsecond;  
    unsigned int baseaddr = modulelist[TIMER_TIMERTICK].baseAddr; 
    DMTimerReloadSet(baseaddr, cnt);
    DMTimerTriggerSet(baseaddr);
 }
+
 
 void TimerTickStart(void)
 {	
@@ -248,6 +258,19 @@ void Sysdelay(unsigned int mSec)
 void delay(unsigned int milliSec)
 {
     Sysdelay(milliSec);
+}
+
+void delayus(unsigned int uSec) {
+   if (0 == uSec) {
+      return;
+   }
+   ASSERT(uSec <= 1000);
+   unsigned int timernow = TimerTickTimeGet();
+   unsigned int timerend = timernow + timerFreq / 1000000 * uSec;
+   if (timerend < timernow) { //if overflow
+      timerend +=  cnt;
+   }
+   while (TimerTickTimeGet() != timerend);
 }
 
 //! @}
