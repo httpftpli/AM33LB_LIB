@@ -136,7 +136,7 @@ CPUfiqe
 	bic     r0, r0, #0x40
 	msr     cpsr_c, r0
 	bx	lr
-
+     
 
 memset_eabi_16
           push {r5-r11,lr}
@@ -154,3 +154,13 @@ memset_eabi_16
           pop {r5-r11,pc}
           
          END
+         
+         ; Initialize NEON and VFP ;add by lfl
+ ;        MRC     p15, #0, r3, c1, c0, #2        ; Read CPACR
+ ;        ORR     r3, r3, #0x00F00000            ; Enable access to CP10 and CP11
+;         MCR     p15, #0, r3, c1, c0, #2        ; Write CPACR
+
+; Enable NEON and VFP ;add by lfl
+ ;       MOV r0, #0x40000000
+ ;       VMSR FPEXC, r0
+  ;      VMRS R1, FPSID

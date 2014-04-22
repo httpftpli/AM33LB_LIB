@@ -204,9 +204,16 @@ int getStringMetricWidthEx(const TEXTCHAR *string,unsigned int len){
  *    \b CHARACTER_DIS_CODEC
  */
 int getStringMetricWidth(const TEXTCHAR *string){
-   return getStringMetricWidthEx(string,strLen_UTF8(string));
+   unsigned int str_len;
+#if (CHARACTER_DIS_CODEC==UTF8_CODEC)
+   str_len = strLen_UTF8(string);
+#elif(CHARACTER_DIS_CODEC==ASCII_CODEC)
+   str_len = strlen(string);
+#elif(CHARACTER_DIS_CODEC==UCS16_CODEC)
+   str_len = wcslen(string);
+#endif
+   return getStringMetricWidthEx(string,str_len);
 }
-
 
 //! @}
 //! 

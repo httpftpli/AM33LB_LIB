@@ -206,13 +206,7 @@ DRESULT disk_read(
 
 DWORD get_fattime(void) {
    unsigned char y, M, d, h, m, s;
-   RTCRead(&y, &M, &d, &h, &m, &s);
-   y = bcd2hex_2(y);
-   M = bcd2hex_2(M);
-   d = bcd2hex_2(d);
-   h = bcd2hex_2(h);
-   m = bcd2hex_2(m); 
-   s = bcd2hex_2(s);
+   RTCReadHex(&y, &M, &d, &h, &m, &s);
    return (y+2000-1980)<<25 | M<<21 | d<<16 | h<<11 | m<<5 | s;
 }
 

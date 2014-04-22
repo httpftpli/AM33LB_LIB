@@ -41,8 +41,8 @@ static  const tLCD_PANEL lcd_panels[] = {
 		.vsw = 10,
 		.pxl_clk = 33300000,
 		.invert_pxl_clk = 0,
-		},
-    [2] = {
+        },
+        [2] = {
 		.name = "LSA40AT9001",
 		.width = 800,
 		.height = 600,
@@ -52,9 +52,22 @@ static  const tLCD_PANEL lcd_panels[] = {
 		.vfp = 12,
 		.vbp = 13, //23-10
 		.vsw = 10,
-		.pxl_clk = 40000000,
+		.pxl_clk = 30000000,
 		.invert_pxl_clk = 0,
-		}
+		},
+     [3]={
+        .name = "WK70037",
+		.width = 800,
+		.height = 480,
+		.hfp = 3,
+		.hbp = 46,
+		.hsw = 1,
+		.vfp = 3,
+		.vbp = 22,
+		.vsw = 1,
+		.pxl_clk = 30000000,
+		.invert_pxl_clk = 0,
+		},
 };
 
 #ifdef __cplusplus

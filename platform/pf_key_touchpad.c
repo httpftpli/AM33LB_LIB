@@ -21,7 +21,7 @@
 #include "lib_gui.h"
 #include "atomic.h"
 
-
+#if 0   //protcal hengji  tuji
 #define KEYSCANCODE_0     0x0204  
 #define KEYSCANCODE_1     0x0100
 #define KEYSCANCODE_2     0x0101
@@ -59,6 +59,48 @@
 #define KEYSCANCODE_MEM   0x0401
 #define KEYSCANCODE_CE    0x0106
 #define KEYSCANCODE_POP   0x0205
+
+#else //protcal waji yujie
+
+#define KEYSCANCODE_0		20  
+#define KEYSCANCODE_1		8
+#define KEYSCANCODE_2		9
+#define KEYSCANCODE_3		10
+#define KEYSCANCODE_4		11
+#define KEYSCANCODE_5		12
+#define KEYSCANCODE_6		16
+#define KEYSCANCODE_7		17
+#define KEYSCANCODE_8		18
+#define KEYSCANCODE_9		19
+#define KEYSCANCODE_DOT	50
+#define KEYSCANCODE_ZF		51  
+#define KEYSCANCODE_A		24
+#define KEYSCANCODE_B		26
+#define KEYSCANCODE_C		52
+#define KEYSCANCODE_D		53
+#define KEYSCANCODE_E		54
+#define KEYSCANCODE_F		55
+#define KEYSCANCODE_F1		0
+#define KEYSCANCODE_F2		1
+#define KEYSCANCODE_F3		2
+#define KEYSCANCODE_F4		3
+#define KEYSCANCODE_F5		4
+#define KEYSCANCODE_F6		5
+#define KEYSCANCODE_RIGHT	29
+#define KEYSCANCODE_LEFT	27
+#define KEYSCANCODE_UP		25
+#define KEYSCANCODE_DOWN	21
+#define KEYSCANCODE_QUK	28
+#define KEYSCANCODE_ESC	32
+#define KEYSCANCODE_ENTER	33
+#define KEYSCANCODE_PU		35
+#define KEYSCANCODE_PD		36
+#define KEYSCANCODE_USB	56
+#define KEYSCANCODE_MEM	30
+#define KEYSCANCODE_CE		14
+#define KEYSCANCODE_POP	31
+
+#endif
 
 
 #define CALIBRATION_POINT_OFFSET  20
@@ -227,12 +269,21 @@ BOOL TouchCalibrate(BOOL force);
 
 
 
+#if 0 //protcal hengji tuji
 BOOL isKeyTouchEvent(KEYTOUCHMSG *msg){
    if (0x55 == msg->magic) {
       return TRUE;
    }
    return FALSE;
 }
+#else  //protcal new waji yujie
+BOOL isKeyTouchEvent(KEYTOUCHMSG *msg){
+   if ((0xbb==msg->type)&&(1 == msg->magic)&&(0xd==msg->end)) {
+      return TRUE;
+   }
+   return FALSE;
+}
+#endif
 
 
 
@@ -312,7 +363,7 @@ BOOL TouchCalibrate(BOOL  force) {
    }
    const tLCD_PANEL  *panel = LCDTftInfoGet();
    LCDFbClear(C_BLACK);
-   drawStringEx("calibrate touch pad", panel->width / 2 - 100, panel->height / 2 + 50, FONT_ASCII_16, C_WHITE, C_TRANSPARENT);
+   drawStringEx(T("calibrate touch pad"), panel->width / 2 - 100, panel->height / 2 + 50, FONT_ASCII_16, C_WHITE, C_TRANSPARENT);
    tsCalibration.xfb[0] = 0 + CALIBRATION_POINT_OFFSET;
    tsCalibration.xfb[1] = panel->width - CALIBRATION_POINT_OFFSET;
    tsCalibration.xfb[2] = panel->width / 2;
@@ -372,7 +423,7 @@ BOOL TouchCalibrate(BOOL  force) {
    ts_linear(&tsCalibration, &tempx, &tempy);
    if ((ABS(tempx - tsCalibration.xfb[3]) < 16) && (ABS(tempy - tsCalibration.yfb[3]) < 10)) {
       //Save_touchData(&Tch_ctrs);
-      drawStringEx("calibrate success", panel->width / 2 - 100, panel->height / 2 + 75, FONT_ASCII_16,C_WHITE, C_TRANSPARENT);
+      drawStringEx(T("calibrate success"), panel->width / 2 - 100, panel->height / 2 + 75, FONT_ASCII_16,C_WHITE, C_TRANSPARENT);
       delay(1000);
       atomicClear(&g_touched);
       tsCalibration.magic = CALIBRATION_SUCCESS;
@@ -380,7 +431,7 @@ BOOL TouchCalibrate(BOOL  force) {
       MMCSDP_Write(mmcsdctr,inandsecterbuf,TOUCH_CAL_PARAM_SECTOR,1);
       return TRUE;
    } else {
-      drawStringEx("calibrate fail", panel->width / 2 - 100, panel->height / 2 + 75, FONT_ASCII_16,C_WHITE, C_TRANSPARENT);
+      drawStringEx(T("calibrate fail"), panel->width / 2 - 100, panel->height / 2 + 75, FONT_ASCII_16,C_WHITE, C_TRANSPARENT);
       delay(1000);
       atomicClear(&g_touched);
       return FAIL;

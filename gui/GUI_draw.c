@@ -247,7 +247,7 @@ void drawStringAlign_ucs2(const wchar *wcs,unsigned int align,unsigned short x,u
 void drawStringAlign(const TEXTCHAR *text, uint32 aligen, uint16 x, uint16 y, uint16 width, uint16 height) {
    unsigned int widthtemp;
    unsigned short len[10];
-   const  char * strptr[10];
+   const  TEXTCHAR * strptr[10];
 #if (CHARACTER_DIS_CODEC==UTF8_CODEC)
    unsigned int str_len = strLen_UTF8(text);
 #elif(CHARACTER_DIS_CODEC==ASCII_CODEC)

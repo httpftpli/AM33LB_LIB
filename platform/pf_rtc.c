@@ -108,7 +108,7 @@ BOOL RTCInit(void){
  * @pre
  * @see 
  */
-void RTCRead(unsigned char *year, unsigned char *month,
+void RTCReadBcd(unsigned char *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
              unsigned char *minute, unsigned char *second) {
    unsigned int time = RTCTimeGet(SOC_RTC_0_REGS); //FIRST READ TIME;
@@ -119,6 +119,18 @@ void RTCRead(unsigned char *year, unsigned char *month,
    *hour = (time & HOUR_MASK) >> HOUR_SHIFT;
    *minute = (time & MINUTE_MASK) >> MINUTE_SHIFT;
    *second = (time & SECOND_MASK) >> SECOND_SHIFT;
+}
+
+void RTCReadHex(unsigned char *year, unsigned char *month,
+             unsigned char  *day, unsigned char *hour,
+             unsigned char *minute, unsigned char *second) {
+   RTCReadBcd(year,month,day,hour,minute,second);
+   *year = bcd2hex_2(*year);
+   *month = bcd2hex_2(*month);
+   *day = bcd2hex_2(*day);
+   *hour = bcd2hex_2(*hour);
+   *minute = bcd2hex_2(*minute);
+   *second = bcd2hex_2(*second);
 }
 
 /**
@@ -140,7 +152,7 @@ void RTCRead(unsigned char *year, unsigned char *month,
  * @pre
  * @see 
  */
-BOOL RTCSet(unsigned char year, unsigned char month,
+BOOL RTCSetBcd(unsigned char year, unsigned char month,
              unsigned char  day, unsigned char hour,
              unsigned char minute, unsigned char second){
     unsigned int time = hour<<HOUR_SHIFT |minute<<MINUTE_SHIFT | second<<SECOND_SHIFT;
@@ -154,6 +166,24 @@ BOOL RTCSet(unsigned char year, unsigned char month,
        return ret;
     }
     return Rx8025SetTime(hour, minute, second); 
+}
+
+BOOL RTCSetHex(unsigned char year, unsigned char month,
+             unsigned char  day, unsigned char hour,
+             unsigned char minute, unsigned char second){
+    mdAssert(year<100);
+    mdAssert(month<13);
+    mdAssert(day<32);
+    mdAssert(hour<25);
+    mdAssert(minute<61);
+    mdAssert(second<61);
+    year = hex2bcd_byte(year);
+    month = hex2bcd_byte(month);
+    day = hex2bcd_byte(day);
+    hour = hex2bcd_byte(hour);
+    minute = hex2bcd_byte(minute);
+    second = hex2bcd_byte(second);
+    return RTCSetBcd(year,month,day,hour,minute, second);
 }
 
 
