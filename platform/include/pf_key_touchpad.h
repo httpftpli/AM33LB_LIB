@@ -56,12 +56,22 @@
 
 
 #pragma pack(1)
+#if 0 //protal hengji tuji
 typedef struct __message{
   unsigned char type;
   unsigned char magic;
   unsigned short keycode;
   unsigned int tscval;
 } KEYTOUCHMSG;
+#else //protal new wanji yujie
+typedef struct __message{
+  unsigned char type;
+  unsigned char magic;
+  unsigned char keycode;
+  unsigned int tscval;
+  unsigned char end;
+} KEYTOUCHMSG;
+#endif
 #pragma pack()
 
 typedef struct ts_sample {

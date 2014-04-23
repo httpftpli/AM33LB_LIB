@@ -207,7 +207,7 @@ void TimerTickRegistHandler(void (*pfnHandler)(unsigned int tick))
 }
 
 
-void TimerTickPeriodSet(unsigned int microsecond)
+void TimerTickPeriodSet(unsigned int moduleId,unsigned int microsecond)
 {
 
    unsigned int cnt = 0xffffffe - microsecond*3;

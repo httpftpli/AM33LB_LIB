@@ -17,19 +17,20 @@
 // Define a boolean type, and values for true and false.
 //
 //*****************************************************************************
+
 typedef unsigned char tBoolean;
 
-#ifndef true
+#if __bool_true_false_are_defined != 1
+
 #define true 1
+#define false  0
+
 #endif
 
-#ifndef false
-#define false 0
-#endif
+#define TRUE    true
+#define FALSE   false
 
 
-#define TRUE    1
-#define FALSE   0
 
 //*****************************************************************************
 //

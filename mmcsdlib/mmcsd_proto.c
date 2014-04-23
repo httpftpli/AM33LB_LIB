@@ -159,7 +159,7 @@ static unsigned int  emmccardinit(mmcsdCtrlInfo *ctrl) {
       }
    }
    card->ocr = cmd.rsp[0];
-   if ((card->ocr && (0x3UL << 29))== 0) {
+   if ((card->ocr & (0x3UL << 29))== 0) {
       card->accmode = MMCSD_ACCMODE_BYTE;
    } else {
       card->accmode = MMCSD_ACCMODE_SECTOR;

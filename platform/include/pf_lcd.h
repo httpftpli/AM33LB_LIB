@@ -121,7 +121,7 @@ extern void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, uns
  * @return none
 
  */
-inline void LCD_SetPixel(unsigned int x, unsigned int y, unsigned int color) {
+static inline void LCD_SetPixel(unsigned int x, unsigned int y, unsigned int color) {
    if ((color & 0xffff0000) == 0) {
       Pix((x), (y)) = (unsigned short)color;
    }

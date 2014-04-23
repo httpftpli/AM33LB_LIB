@@ -239,6 +239,26 @@
 #define ASCII_FONT20_IN_SOURCE     1
 #endif 
 
+
+#define UCS16_CODEC  1
+#define ASCII_CODEC  2
+#define UTF8_CODEC   3
+
+#ifndef CHARACTER_DIS_CODEC
+#define CHARACTER_DIS_CODEC  UCS16_CODEC
+#endif
+
+#if CHARACTER_DIS_CODEC == UTF8_CODEC
+typedef  char TEXTCHAR;
+#define T(A) A
+#elif CHARACTER_DIS_CODEC == ASCII_CODEC
+typedef  char TEXTCHAR;
+#define T(A) A
+#elif CHARACTER_DIS_CODEC == UCS16_CODEC
+typedef  unsigned short  TEXTCHAR;
+#define T(A) L##A
+#endif
+
 #ifndef BEEP_OFF
 #define BEEP_OFF() beepOff()
 #endif 
