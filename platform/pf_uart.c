@@ -247,19 +247,20 @@ void isr_uart_for_keyboard(unsigned int intNum) {
             ((unsigned char *)&keyTouchpadMsg)[i] = tempval;
             //UARTPutc(tempval);
         }
-        if (isKeyTouchEvent(&keyTouchpadMsg)) {
+         if (isKeyTouchEvent(&keyTouchpadMsg)) {
             /*if(keyTouchpadMsg.type & MSG_TYPE_KEY){*/
             if (keyTouchpadMsg.keycode != 0xff) {
                 g_keycode = keyCode(keyTouchpadMsg.keycode);
                 atomicSet(&g_keyPushed);
                 if (keyhandler != NULL) keyhandler(g_keycode);
             }
-            if (keyTouchpadMsg.type & MSG_TYPE_TOUCH) {
+            if (keyTouchpadMsg.tscval!=0xffffffff) {
                 g_ts.x = g_tsRaw.x = keyTouchpadMsg.tscval & 0xffff;
                 g_ts.y = g_tsRaw.y = keyTouchpadMsg.tscval >> 16;
                 ts_linear(&tsCalibration, (int *)&g_ts.x,  (int *)&g_ts.y);
                 atomicSet(&g_touched);
             }
+
             //if (keyTouchpadMsg.type & MSG_TYPE_KEYRESET) {
             //  atomicSet(&g_keyRest);
             //}

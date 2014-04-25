@@ -14,8 +14,8 @@ extern "C" {
 
 #define FOR_TEST
 
-#define LCD_XSize				800
-#define LCD_YSize				600
+#define LCD_XSize				(lcdCtrl.panel->width)
+#define LCD_YSize				(lcdCtrl.panel->height)
 
 //for display
 //#define	LCD_24BIT_888RGB

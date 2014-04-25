@@ -12,6 +12,7 @@
 
 
 #include "pf_key_touchpad.h"
+#include "pf_platform_cfg.h"
 #include "type.h"
 #include "pf_lcd.h"
 #include "mmcsd_proto.h"
@@ -20,6 +21,7 @@
 #include "mmath.h"
 #include "lib_gui.h"
 #include "atomic.h"
+#include <stdio.h>
 
 #if 0   //protcal hengji  tuji
 #define KEYSCANCODE_0     0x0204  
@@ -72,7 +74,7 @@
 #define KEYSCANCODE_7		17
 #define KEYSCANCODE_8		18
 #define KEYSCANCODE_9		19
-#define KEYSCANCODE_DOT	50
+#define KEYSCANCODE_DOT	   50
 #define KEYSCANCODE_ZF		51  
 #define KEYSCANCODE_A		24
 #define KEYSCANCODE_B		26
@@ -133,8 +135,7 @@ volatile TS_SAMPLE g_ts;
 */
 
 volatile TS_SAMPLE g_tsRaw;
-TS_CALIBRATION tsCalibration = {.matrix.An=-238,.matrix.Bn=-4,.matrix.Cn=874,
-   .matrix.Dn=1,.matrix.En=173,.matrix.Fn=-56};
+TS_CALIBRATION tsCalibration = {.magic= 0,};
 
 void (*keyhandler)(int keycode) = NULL;
 void (*touchhandler)(void) = NULL;
@@ -344,98 +345,131 @@ void  ts_linear(TS_CALIBRATION *cal,  int *x,  int *y) {
 BOOL TouchCalibrate(BOOL  force) {
 #define CALIBRATION_SUCCESS   0x55555555
 #define CALIBRATION_FAIL    0xAAAAAAAA
-   static const unsigned char calIcon[] = { 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80,
-      0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0xFF, 0xFF,
-      0xFF, 0xFF, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01,
-      0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80 }; 
+    static const unsigned char calIcon[] = { 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80,
+        0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0xFF, 0xFF,
+        0xFF, 0xFF, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01,
+        0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80 };
 
-   char inandsecterbuf[512];
-   int x1, x2, x3;
-   int y1, y2, y3, K;
-   int xL1, xL2, xL3;
-   int yL1, yL2, yL3;
-   int A, B, C, D, E, F;
-   int m, n;
-   MMCSDP_Read(mmcsdctr,inandsecterbuf,TOUCH_CAL_PARAM_SECTOR,1);
-   memcpy(&tsCalibration,inandsecterbuf,sizeof tsCalibration ); 
-   if ((CALIBRATION_SUCCESS == tsCalibration.magic)&&(force==0)) {
-      return TRUE;
-   }
-   const tLCD_PANEL  *panel = LCDTftInfoGet();
-   LCDFbClear(C_BLACK);
-   drawStringEx(T("calibrate touch pad"), panel->width / 2 - 100, panel->height / 2 + 50, FONT_ASCII_16, C_WHITE, C_TRANSPARENT);
-   tsCalibration.xfb[0] = 0 + CALIBRATION_POINT_OFFSET;
-   tsCalibration.xfb[1] = panel->width - CALIBRATION_POINT_OFFSET;
-   tsCalibration.xfb[2] = panel->width / 2;
-   tsCalibration.xfb[3] = panel->width / 2;
+    char inandsecterbuf[512];
+    int x1, x2, x3;
+    int y1, y2, y3, K;
+    int xL1, xL2, xL3;
+    int yL1, yL2, yL3;
+    int A, B, C, D, E, F;
+    int m, n;  
+    MMCSDP_Read(mmcsdctr, inandsecterbuf, TOUCH_CAL_PARAM_SECTOR, 1);
+    memcpy(&tsCalibration, inandsecterbuf, sizeof tsCalibration);
+    if ((CALIBRATION_SUCCESS == tsCalibration.magic) && (force == 0)) {
+        return TRUE;
+    }
+    TS_CALIBRATION tsCalibrationTemp;
+    memcpy(&tsCalibrationTemp, inandsecterbuf, sizeof tsCalibrationTemp);
+    const tLCD_PANEL  *panel = LCDTftInfoGet();
+    LCDFbClear(C_BLACK);
+    const  char *disstr =  T("Calibrate touch pad,press any key to skip");
+    unsigned int disstrwigth = getStringMetricWidth(disstr);
+    drawStringEx(disstr, panel->width / 2 - disstrwigth/2, panel->height / 2 + 50, FONT_ASCII_16, C_WHITE, C_TRANSPARENT);
+    tsCalibrationTemp.xfb[0] = 0 + CALIBRATION_POINT_OFFSET;
+    tsCalibrationTemp.xfb[1] = panel->width - CALIBRATION_POINT_OFFSET;
+    tsCalibrationTemp.xfb[2] = panel->width / 2;
+    tsCalibrationTemp.xfb[3] = panel->width / 2;
 
 
-   tsCalibration.yfb[0] = 0 + CALIBRATION_POINT_OFFSET;
-   tsCalibration.yfb[1] = panel->height / 2;
-   tsCalibration.yfb[2] = panel->height - CALIBRATION_POINT_OFFSET;
-   tsCalibration.yfb[3] = panel->height / 2;
-   for (int i = 0; i < 4; i++) {      
-      LCDDrawMask(calIcon, tsCalibration.xfb[i] - 8, tsCalibration.yfb[i] - 8, 16, 16, C_WHITE, C_TRANSPARENT);
-      if (0 == i) {        
-         delay(200);
-         atomicClear(&g_touched);
-         while (!atomicTest(&g_touched));
-      } else {
-         atomicClear(&g_touched);
-         while (!(atomicTest(&g_touched) && ((ABS(tsCalibration.x[i-1] - g_tsRaw.x) > 800) || ( ABS(tsCalibration.y[i-1] - g_tsRaw.y) > 800))));
-      }
-      tsCalibration.x[i] = g_tsRaw.x;
-      tsCalibration.y[i] = g_tsRaw.y;
-      drawRectFillEx(tsCalibration.xfb[i] - 8, tsCalibration.yfb[i] - 8, 16, 16, C_BLACK);
-   }
+    tsCalibrationTemp.yfb[0] = 0 + CALIBRATION_POINT_OFFSET;
+    tsCalibrationTemp.yfb[1] = panel->height / 2;
+    tsCalibrationTemp.yfb[2] = panel->height - CALIBRATION_POINT_OFFSET;
+    tsCalibrationTemp.yfb[3] = panel->height / 2;
+    do {
+        for (int i = 0; i < 4; i++) {
+            LCDDrawMask(calIcon, tsCalibrationTemp.xfb[i] - 8, tsCalibrationTemp.yfb[i] - 8, 16, 16, C_WHITE, C_TRANSPARENT);
+            if (0 == i) {
+                delay(200);
+                atomicClear(&g_touched);
+                atomicClear(&g_keyPushed);
+                while (1) {
+                    if (atomicTest(&g_touched)) {
+                        break;
+                    }
+                    if (atomicTest(&g_keyPushed)) {
+                        return false;
+                    }
+                }
+            } else {
+                atomicClear(&g_touched);
+                atomicClear(&g_keyPushed);
+                while (1) {
+                    if (atomicTest(&g_touched)
+                        && ((ABS(tsCalibrationTemp.x[i - 1] - g_tsRaw.x) > 800)
+                        || (ABS(tsCalibrationTemp.y[i - 1] - g_tsRaw.y) > 800))) {
+                        break;
+                    }
+                    if (atomicTest(&g_keyPushed)) {
+                        return false;
+                    }
+                }
+            }
+            tsCalibrationTemp.x[i] = g_tsRaw.x;
+            tsCalibrationTemp.y[i] = g_tsRaw.y;
+            drawRectFillEx(tsCalibrationTemp.xfb[i] - 8, tsCalibrationTemp.yfb[i] - 8, 16, 16, C_BLACK);
+        }
 
-   x1 = tsCalibration.x[0];
-   x2 = tsCalibration.x[1];
-   x3 = tsCalibration.x[2];
-   y1 = tsCalibration.y[0];
-   y2 = tsCalibration.y[1];
-   y3 = tsCalibration.y[2];
-   xL1 = tsCalibration.xfb[0];
-   xL2 = tsCalibration.xfb[1];
-   xL3 = tsCalibration.xfb[2];
-   yL1 = tsCalibration.yfb[0];
-   yL2 = tsCalibration.yfb[1];
-   yL3 = tsCalibration.yfb[2];
-   K = (x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2);
-   m = (int)((xL1 - xL3) * (y2 - y3));
-   n = (int)((xL2 - xL3) * (y1 - y3));
-   m = m - n;
-   A = ((int)((xL1 - xL2) * (y2 - y3)) - (int)((xL2 - xL3) * (y1 - y2))) * 1000 / K;
-   B = ((xL2 - xL3) * (x1 - x2) - (x2 - x3) * (xL1 - xL2)) * 1000 / K;
-   C = xL1 - (A * x1 + B * y1) / 1000;
-   D = ((yL1 - yL2) * (y2 - y3) - (yL2 - yL3) * (y1 - y2)) * 1000 / K;
-   E = ((yL2 - yL3) * (x1 - x2) - (x2 - x3) * (yL1 - yL2)) * 1000 / K;
-   F = yL1 - (D * x1 + E * y1) / 1000;
-   tsCalibration.matrix.An = A;
-   tsCalibration.matrix.Bn = B;
-   tsCalibration.matrix.Cn = C;
-   tsCalibration.matrix.Dn = D;
-   tsCalibration.matrix.En = E;
-   tsCalibration.matrix.Fn = F;
+        x1 = tsCalibrationTemp.x[0];
+        x2 = tsCalibrationTemp.x[1];
+        x3 = tsCalibrationTemp.x[2];
+        y1 = tsCalibrationTemp.y[0];
+        y2 = tsCalibrationTemp.y[1];
+        y3 = tsCalibrationTemp.y[2];
+        xL1 = tsCalibrationTemp.xfb[0];
+        xL2 = tsCalibrationTemp.xfb[1];
+        xL3 = tsCalibrationTemp.xfb[2];
+        yL1 = tsCalibrationTemp.yfb[0];
+        yL2 = tsCalibrationTemp.yfb[1];
+        yL3 = tsCalibrationTemp.yfb[2];
+        K = (x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2);
+        m = (int)((xL1 - xL3) * (y2 - y3));
+        n = (int)((xL2 - xL3) * (y1 - y3));
+        m = m - n;
+        A = ((int)((xL1 - xL2) * (y2 - y3)) - (int)((xL2 - xL3) * (y1 - y2))) * 1000 / K;
+        B = ((xL2 - xL3) * (x1 - x2) - (x2 - x3) * (xL1 - xL2)) * 1000 / K;
+        C = xL1 - (A * x1 + B * y1) / 1000;
+        D = ((yL1 - yL2) * (y2 - y3) - (yL2 - yL3) * (y1 - y2)) * 1000 / K;
+        E = ((yL2 - yL3) * (x1 - x2) - (x2 - x3) * (yL1 - yL2)) * 1000 / K;
+        F = yL1 - (D * x1 + E * y1) / 1000;
+        tsCalibrationTemp.matrix.An = A;
+        tsCalibrationTemp.matrix.Bn = B;
+        tsCalibrationTemp.matrix.Cn = C;
+        tsCalibrationTemp.matrix.Dn = D;
+        tsCalibrationTemp.matrix.En = E;
+        tsCalibrationTemp.matrix.Fn = F;
 
-   int tempx = tsCalibration.x[3];
-   int tempy = tsCalibration.x[3];
-   ts_linear(&tsCalibration, &tempx, &tempy);
-   if ((ABS(tempx - tsCalibration.xfb[3]) < 16) && (ABS(tempy - tsCalibration.yfb[3]) < 10)) {
-      //Save_touchData(&Tch_ctrs);
-      drawStringEx(T("calibrate success"), panel->width / 2 - 100, panel->height / 2 + 75, FONT_ASCII_16,C_WHITE, C_TRANSPARENT);
-      delay(1000);
-      atomicClear(&g_touched);
-      tsCalibration.magic = CALIBRATION_SUCCESS;
-      memcpy(inandsecterbuf,&tsCalibration,sizeof tsCalibration );
-      MMCSDP_Write(mmcsdctr,inandsecterbuf,TOUCH_CAL_PARAM_SECTOR,1);
-      return TRUE;
-   } else {
-      drawStringEx(T("calibrate fail"), panel->width / 2 - 100, panel->height / 2 + 75, FONT_ASCII_16,C_WHITE, C_TRANSPARENT);
-      delay(1000);
-      atomicClear(&g_touched);
-      return FAIL;
-   }
+        int tempx = tsCalibrationTemp.x[3];
+        int tempy = tsCalibrationTemp.x[3];
+        ts_linear(&tsCalibrationTemp, &tempx, &tempy);
+        int xtol = tempx - tsCalibrationTemp.xfb[3];
+        int ytol = tempy - tsCalibrationTemp.yfb[3];
+        char disstrvar[400];
+        if ((ABS(xtol) < TS_CALIBRATION_X_TOLERANCE) && (ABS(ytol) < TS_CALIBRATION_Y_TOLERANCE)) {
+            //Save_touchData(&Tch_ctrs);
+            sprintf(disstrvar,"calibrate success! Xoff:%d  Yoff:%d",xtol,ytol);
+            disstrwigth = getStringMetricWidth(disstrvar);
+            drawRectFillEx(0,panel->height / 2 + 80,panel->width ,getFontYSize(FONT_ASCII_16),C_BLACK);
+            drawStringEx(disstrvar, panel->width / 2 - disstrwigth/2, panel->height / 2 + 80, FONT_ASCII_16, C_WHITE, C_TRANSPARENT);
+            delay(1000);
+            atomicClear(&g_touched);
+            tsCalibrationTemp.magic = CALIBRATION_SUCCESS;
+            memcpy(inandsecterbuf, &tsCalibrationTemp, sizeof tsCalibrationTemp);
+            MMCSDP_Write(mmcsdctr, inandsecterbuf, TOUCH_CAL_PARAM_SECTOR, 1);
+            memcpy(&tsCalibration, &tsCalibrationTemp, sizeof tsCalibrationTemp);
+            return TRUE;
+        } else {
+            sprintf(disstrvar,"calibrate fail! Xoff:%d  Yoff:%d",xtol,ytol);
+            disstrwigth = getStringMetricWidth(disstrvar);
+            drawRectFillEx(0,panel->height / 2 + 80,panel->width ,getFontYSize(FONT_ASCII_16),C_BLACK);
+            drawStringEx(disstrvar, panel->width / 2 - disstrwigth/2, panel->height / 2 + 80, FONT_ASCII_16, C_WHITE, C_TRANSPARENT);
+            delay(2000);
+            atomicClear(&g_touched);
+        }
+    }while (1);
 }
 
 

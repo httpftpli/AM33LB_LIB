@@ -230,6 +230,15 @@
 #endif
 
 
+#ifndef TS_CALIBRATION_X_TOLERANCE
+#define TS_CALIBRATION_X_TOLERANCE 10
+#endif
+
+
+#ifndef TS_CALIBRATION_Y_TOLERANCE
+#define TS_CALIBRATION_Y_TOLERANCE 6
+#endif
+
 
 #ifndef ASCII_FONT16_IN_SOURCE
 #define ASCII_FONT16_IN_SOURCE     1
@@ -255,7 +264,7 @@ typedef  char TEXTCHAR;
 typedef  char TEXTCHAR;
 #define T(A) A
 #elif CHARACTER_DIS_CODEC == UCS16_CODEC
-typedef  unsigned short  TEXTCHAR;
+typedef  wchar_t  TEXTCHAR;
 #define T(A) L##A
 #endif
 
