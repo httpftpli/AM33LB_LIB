@@ -1,6 +1,7 @@
 #ifndef __ALGORITHM__H__
 #define __ALGORITHM__H__
 
+#include "stdbool.h"
 
 extern void bubbleSortAscend(int *buf, unsigned int nNum);
 extern int sum(int *buf,unsigned int nNum);
@@ -35,14 +36,14 @@ typedef struct
 
 
 extern void ringBufInit(RINGBUF *ringBuf, void * buf, unsigned int sizeOfItem,unsigned int nItem);
-extern BOOL isRingBufFull(RINGBUF *ringBuf);
-extern BOOL isRingBufEmpty(RINGBUF *ringBuf);
-extern BOOL ringBufPush(RINGBUF *ringBuf, void *item);
-extern BOOL ringBufPop(RINGBUF * ringBuf, void * item);
-extern BOOL ringBufRead(RINGBUF * ringBuf, void ** item);
+extern bool isRingBufFull(RINGBUF *ringBuf);
+extern bool isRingBufEmpty(RINGBUF *ringBuf);
+extern bool ringBufPush(RINGBUF *ringBuf, void *item);
+extern bool ringBufPop(RINGBUF * ringBuf, void * item);
+extern bool ringBufRead(RINGBUF * ringBuf, void ** item);
 
 extern unsigned short crc16_IBM(void* dataIn, int length);
-extern unsigned short crc16_MD(void *date, uint16 len);
+extern unsigned short crc16_MD(void *date, unsigned short len);
 
 extern void MD5Init(MD5_CTX *context);
 extern void MD5Update(MD5_CTX *context,unsigned char *input,unsigned int inputlen);
