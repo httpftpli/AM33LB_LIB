@@ -5,8 +5,12 @@
  *        
  */
 
+
+
 #ifndef _PL_LCD_H_
 #define _PL_LCD_H_
+
+#include "pf_platform_cfg.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -88,7 +92,7 @@ typedef struct _S_LcdCtrl
 } tLCDCTRL;
 
 extern tLCDCTRL lcdCtrl;
-extern void LCDBackLightON(void);
+extern void LCDBackLightON(unsigned char lightpwm);
 extern void LCDBackLightOFF(void);
 //extern void LCDModuleClkConfig(void);
 extern unsigned int LCDVersionGet(void);
@@ -103,12 +107,18 @@ extern void LCDFrameBufferCurSet(unsigned int num);
 extern void LCDSwapFb(void);
 extern void LCDSwapContex(void);
 extern const  tLCD_PANEL *LCDTftInfoGet(void);
-extern void LCDFbClear(unsigned short color);
+extern void LCDFbClear(unsigned int color);
 extern void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, unsigned short width,
                   unsigned short height, unsigned int color_f, unsigned int color_b);
-
+#if LCD_PIX_SIZE==2
 #define FrameBuffer(X)  ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
 #define FrameBuffer2D(X,Y) ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
+#elif LCD_PIX_SIZE==4
+#define FrameBuffer(X)  ((unsigned int *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
+#define FrameBuffer2D(X,Y) ((unsigned int *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
+#else
+#error
+#endif
 #define Pix(X,Y) FrameBuffer2D(X,Y)
 
 
@@ -122,13 +132,17 @@ extern void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, uns
 
  */
 static inline void LCD_SetPixel(unsigned int x, unsigned int y, unsigned int color) {
-   if ((color & 0xffff0000) == 0) {
-      Pix((x), (y)) = (unsigned short)color;
-   }
+#if LCD_PIX_SIZE==2
+    Pix((x), (y)) = (unsigned short)color;
+#elif LCD_PIX_SIZE==4
+    Pix((x), (y)) = color;
+#else
+#error
+#endif
 }
 
 
-unsigned int inline  LCD_GetPixel(unsigned int x,unsigned int y ){
+inline unsigned int LCD_GetPixel(unsigned int x,unsigned int y ){
    return Pix((x), (y));
 }
 

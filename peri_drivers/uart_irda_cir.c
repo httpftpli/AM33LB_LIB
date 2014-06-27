@@ -411,10 +411,10 @@ void UARTLineCharacConfig(unsigned int baseAdd,
  *     bit be represented in a default manner\n
  *  - (UART_EVEN_PARITY) - signifying that even parity be enabled and the
  *     parity bit be represented in a default manner\n
- *  - (UART_ODD_PARITY_REPR_1) - signifying that odd parity be enabled and the
- *     parity bit be represented by a logic 1\n
- *  - (UART_EVEN_PARITY_REPR_0)- signifying that even parity be enabled and the
- *     parity bit be represented by a logic 0\n
+ *  - (UART_PARITY_REPR_1) - signifying that odd parity be
+ *     enabled and the parity bit be represented by a logic 1\n
+ *  - (UART_PARITY_REPR_0)- signifying that even parity be
+ *     enabled and the parity bit be represented by a logic 0\n
  *  - (UART_PARITY_NONE) - signifying that no parity be enabled\n
  *
  * \return None
@@ -442,10 +442,10 @@ void UARTParityModeSet(unsigned int baseAdd, unsigned int parityFlag)
  *     bit is represented in a default manner\n
  *  - (UART_EVEN_PARITY) - signifying that even parity is enabled and the
  *     parity bit is represented in a default manner\n
- *  - (UART_ODD_PARITY_REPR_1) - signifying that odd parity is enabled and the
- *     parity bit is represented by a logic 1\n
- *  - (UART_EVEN_PARITY_REPR_0)- signifying that even parity is enabled and the
- *     parity bit is represented by a logic 0\n
+ *  - (UART_PARITY_REPR_1) - signifying that odd parity is
+ *     enabled and the parity bit is represented by a logic 1\n
+ *  - (UART_PARITY_REPR_0)- signifying that even parity is
+ *     enabled and the parity bit is represented by a logic 0\n
  *  - (UART_PARITY_NONE) - signifying that no parity is enabled\n
  *
  */

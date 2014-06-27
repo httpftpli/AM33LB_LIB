@@ -11,6 +11,7 @@
 #define NUM_OF_APPSECTION     8
 #define APP_MAGIC_OK          0x5555aaaa
 #define APP_MAGIC_NO          0xaaaa5555
+#define APP_FLAG              0x444e49ed
 
 #define BOOTLOADER_BEGIN_SECTOR   256
 #define BOOTLOADER_ENTRY          0x402f0400
@@ -22,17 +23,18 @@ typedef struct __appsection{
    unsigned int imageaddr;         //地址，相对于打包后的文件头
    unsigned int imageSize;         //大小，单位：字节
    unsigned int imageCheck;        //暂时不用
-   char imageRevPrefix;            //版本号前缀
-   char dumy;                      //填充字符，无意义，为使结构体4字节对齐
+   char imageRevPrefix;           //版本号前缀,数字，范围0-255
    unsigned short imageMainRev;    //主版本号
    unsigned short imageMidRev;     //中间版本号
    unsigned short imageMinRev;     //小版本号
+   unsigned int   dummy;         //暂时不用
 }APPSETCTION;
 
 
 
 typedef struct app_header_
 {
+   unsigned int flag;
    unsigned int magic;
    unsigned short numOfAppsec;
    unsigned short secflag;

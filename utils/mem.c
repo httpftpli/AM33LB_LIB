@@ -19,6 +19,7 @@
 
 
 extern void memset_eabi_16(void *s,unsigned short val,unsigned int size);
+extern void memset_eabi_32(void *s,unsigned int val,unsigned int size);
 
 /**
  * @brief memset 的16位版本 
@@ -53,8 +54,21 @@ void  memset16(void *s, unsigned short val, size_t16 n) {
    for (int i = 0; i < nmode; i++) {
       ((unsigned short *)s_temp)[i] = val;
    }
-};
+}
 
+void memset32(void *s,unsigned int val,size_t32 n){
+   ASSERT(((unsigned int)s&0x03)==0);
+   unsigned int s_temp = (unsigned int)s;
+   unsigned int n_8 = n / 8; 
+   if(n_8){
+      memset_eabi_32((void*)s_temp, val, n_8*8);
+      s_temp  +=  n_8 * 8 *4 ;
+   } 
+   unsigned int nmode = n % 8;
+   for (int i = 0; i < nmode; i++) {
+      ((unsigned int *)s_temp)[i] = val;
+   } 
+}
 
 BOOL memis(void *mem,unsigned char dat,unsigned int memlen){
    unsigned char * buf = mem;

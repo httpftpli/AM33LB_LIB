@@ -61,7 +61,7 @@ void GUIPROP_DispChar(U16P c) {
       unsigned int mask = htonlAt((void*)(addr+i*nbyteperline));
       for(int j=0;j<width;j++){
         GUI_COLOR color = (mask & (1<<(31-j))) ?  GUI_Context.Color: GUI_Context.BkColor;
-        LCD_SetPixel(x + j, y + i, color);
+        drawPix(x + j, y + i, color);
       }
   }
    GUI_Context.DispPosX += dis;

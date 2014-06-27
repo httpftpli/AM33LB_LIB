@@ -34,6 +34,10 @@ typedef  I16    I16P ;
 typedef  U16   U16P; 
 
 
+
+#define container_of(ptr, type, member) ((type *)((char *)ptr - offsetof(type,member)))
+        
+
 #ifndef UNUSED
 #define UNUSED(A)  (void) ((A))
 #endif
@@ -49,6 +53,7 @@ typedef  U16   U16P;
 
 typedef bool BOOL;
 typedef unsigned int size_t16;
+typedef unsigned int size_t32;
 typedef wchar_t wchar;
 typedef struct {unsigned short x0,y0,x1,y1;} RECT_U16 ;
 typedef struct {unsigned int x0,y0,x1,y1;} RECT_U32 ;

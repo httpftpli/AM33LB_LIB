@@ -49,6 +49,7 @@
 		PUBLIC	CPUfiqd
 		PUBLIC	CPUfiqe
                 PUBLIC memset_eabi_16
+                PUBLIC memset_eabi_32
 ;***************************************************************************
 ;                   FUNCTION DEFINITIONS
 ;***************************************************************************
@@ -148,10 +149,25 @@ memset_eabi_16
           mov  r9, r1
           mov  r10, r1
           mov  r11, r1
-  LOOPxx: stmia r0!,{r1, r5-r11}       
+  LOOP_16_xx: stmia r0!,{r1, r5-r11}       
           subs  r2,r2,#16
-          bne LOOPxx
+          bne LOOP_16_xx
           pop {r5-r11,pc}
+
+memset_eabi_32
+          push {r5-r11,lr}
+          mov  r5, r1
+          mov  r6, r1
+          mov  r7, r1
+          mov  r8, r1
+          mov  r9, r1
+          mov  r10, r1
+          mov  r11, r1
+  LOOP_32_xx: stmia r0!,{r1, r5-r11}       
+          subs  r2,r2,#8
+          bne LOOP_32_xx
+          pop {r5-r11,pc}
+
           
          END
          

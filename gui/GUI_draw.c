@@ -26,26 +26,48 @@ GUI_CONTEXT GUI_Context = {
   .pAFont = &GUI_Fontascii_16,
 };
 
- 
+
+
+void drawPix(uint16 x, uint16 y, COLOR color) {
+    if (COLORA(color) != 0) {
+        LCD_SetPixel(x, y, color2Lcd(color));
+    }
+}
+
+
 void drawHLine(uint16 x, uint16 y, uint16 lineLen) {
-   memset16(&Pix(x, y), GUI_Context.Color, lineLen);
+    unsigned int color = color2Lcd(GUI_Context.Color);
+#if LCD_PIX_SIZE==2
+    memset16(&Pix(x,y),color, lineLen);
+#elif LCD_PIX_SIZE==4
+    memset32(&Pix(x,y),color, lineLen);
+#else 
+#error
+#endif
 }
 
 
 void drawHLineEx(uint16 x, uint16 y, uint16 lineLen, COLOR color) {
-   memset16(&Pix(x, y), color, lineLen);
+    unsigned int c = color2Lcd(color);
+#if LCD_PIX_SIZE==2
+    memset16(&Pix(x,y),c, lineLen);
+#elif LCD_PIX_SIZE==4
+    memset32(&Pix(x,y),c, lineLen);
+#else 
+#error
+#endif
 }
 
 
 void drawVLine(uint16 x, uint16 y, uint16 lineLen) {
    for (uint32 i = 0; i < lineLen; i++) {
-      LCD_SetPixel(x, y + i, GUI_Context.Color);
+      drawPix(x, y + i,GUI_Context.Color);
    }
 }
 
 void drawVLineEx(uint16 x, uint16 y, uint16 lineLen,COLOR color) {
    for (uint32 i = 0; i < lineLen; i++) {
-      LCD_SetPixel(x, y + i,color);
+      drawPix(x, y + i,color);
    }
 } 
 

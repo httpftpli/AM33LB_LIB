@@ -52,7 +52,7 @@ static void *framebuffer = (void *)(0x80000000+DDR_RAM_SIZE-FRAMEBUFFER_SIZE);
 
 tLCDCTRL lcdCtrl = {
    .frame_num = 2,
-   .pixsize = 2,
+   .pixsize = LCD_PIX_SIZE,
    .red.length = 5,
    .red.offset = 11,
    .red.msb_right = 0,
@@ -182,7 +182,24 @@ void isr_lcd(unsigned int num) {
    }
 }
 
-
+/**
+ * @brief LCD¿ØÖÆ
+ * @return   none 
+ * @param [in] light
+ *  LCD light pwm
+ * @date    2013/8/8
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
+void LCDBackLightCtr(unsigned char lightpwm) {
+   unsigned int addr = modulelist[UART_LCDBACKLIGHT_MODULE].baseAddr;
+   unsigned char buf[8] = {0xbb,0x07,0x00,0x00,0x00,0x00,0x00,0x0d};
+   buf[2] = lightpwm;
+   while(!UARTSendNoBlock(UART_LCDBACKLIGHT_MODULE,buf,sizeof buf));
+}
 
 /**
  * @brief ¿ªÆôLCD±³¹â 
@@ -194,12 +211,14 @@ void isr_lcd(unsigned int num) {
  * @pre
  * @see 
  */
-void LCDBackLightON(void) {
-  unsigned int addr = modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr;
+void LCDBackLightON(unsigned char lightpwm) {
+  /*unsigned int addr = modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr;
    if (GPIO_DIR_INPUT == GPIODirModeGet(addr,GPIO_LCDBACKLIGHT_PIN)){
        GPIODirModeSet(addr, GPIO_LCDBACKLIGHT_PIN, GPIO_DIR_OUTPUT);
    }
-       GPIOPinWrite(addr, GPIO_LCDBACKLIGHT_PIN, 0);
+       GPIOPinWrite(addr, GPIO_LCDBACKLIGHT_PIN, 0);*/
+
+   LCDBackLightCtr(lightpwm);
 }
 
 
@@ -215,11 +234,13 @@ void LCDBackLightON(void) {
  */
 void LCDBackLightOFF(void)
 {
-   if (GPIO_DIR_INPUT == GPIODirModeGet(modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr,
+   /*if (GPIO_DIR_INPUT == GPIODirModeGet(modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr,
                                         GPIO_LCDBACKLIGHT_PIN)){
       GPIODirModeSet(modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr,GPIO_LCDBACKLIGHT_PIN,GPIO_DIR_OUTPUT);
    }  
-   GPIOPinWrite(modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr, GPIO_LCDBACKLIGHT_PIN,1);
+   GPIOPinWrite(modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr, GPIO_LCDBACKLIGHT_PIN,1);*/
+
+   LCDBackLightCtr(0);
 }
 
 /**
@@ -325,8 +346,8 @@ void LCDRasterInit() {
 
    memcpy(lcdCtrl.palette[0],palette_32b,lcdCtrl.palettesize[0]);
    memcpy(lcdCtrl.palette[1],palette_32b,lcdCtrl.palettesize[1]);
-   memset(lcdCtrl.frameaddr[0], 0, lcdCtrl.pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
-   memset(lcdCtrl.frameaddr[1], 0, lcdCtrl.pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
+   memset(lcdCtrl.frameaddr[0], 0, pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
+   memset(lcdCtrl.frameaddr[1], 0, pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
    moduleEnable(MODULE_ID_LCDC);
    RasterClocksEnable(baseaddr);
    RasterAutoUnderFlowEnable(baseaddr);
@@ -342,11 +363,15 @@ void LCDRasterInit() {
 
    /* Configuring modes(ex:tft or stn,color or monochrome etc) for raster controller */
    if (2 == pixsize) {
-      RasterModeConfig(baseaddr, RASTER_DISPLAY_MODE_TFT | (LCDC_RASTER_CTRL_PLM_DATA << LCDC_RASTER_CTRL_PLM_SHIFT),
-                       RASTER_PALETTE_DATA, RASTER_COLOR, RASTER_RIGHT_ALIGNED);
+       RasterModeConfig(baseaddr, RASTER_DISPLAY_MODE_TFT | (LCDC_RASTER_CTRL_PLM_DATA << LCDC_RASTER_CTRL_PLM_SHIFT),
+                        RASTER_PALETTE_DATA, RASTER_COLOR, RASTER_RIGHT_ALIGNED);
+   } else if (4 == pixsize) {
+       RasterModeConfig(baseaddr, RASTER_DISPLAY_MODE_TFT_UNPACKED | (LCDC_RASTER_CTRL_PLM_DATA << LCDC_RASTER_CTRL_PLM_SHIFT),
+                        RASTER_PALETTE_DATA, RASTER_COLOR, RASTER_RIGHT_ALIGNED);
    } else {
-      mdError("pixsize should equal 2");
+       mdError("pixsize should equal 2 or 4");
    }
+
 
    /* Configuring the polarity of timing parameters of raster controller */
 
@@ -422,8 +447,14 @@ const tLCD_PANEL *LCDTftInfoGet(void){
  * @pre
  * @see 
  */
-void LCDFbClear(unsigned short color){
-  memset16(&Pix(0,0),color,800*600);
+void LCDFbClear(unsigned int color){
+#if LCD_PIX_SIZE==2
+    memset16(&Pix(0,0),color, LCD_XSize*LCD_YSize);
+#elif LCD_PIX_SIZE==4
+    memset32(&Pix(0,0),color, LCD_XSize*LCD_YSize);
+#else 
+#error
+#endif
 }
 
 
@@ -437,7 +468,7 @@ void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, unsigned s
          for (int k = 0; k < 8; k++) {
             unsigned char mask = *((unsigned char *)buf + i * nbyteperline + j);
             unsigned int color = (mask & (1 << (8 - k))) ? color_f : color_b;
-            LCD_SetPixel(x + 8 * j + k, y + i, color);
+            drawPix(x + 8 * j + k, y + i, color);
          }
       }
    }

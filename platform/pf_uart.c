@@ -23,6 +23,7 @@
 #include "pf_uart.h"
 #include "mmath.h"
 #include "pf_key_touchpad.h"
+#include "pf_timertick.h"
 
 
 
@@ -222,18 +223,14 @@ void UART0ModuleClkConfig(void) {
 
 
 
-
-
-
-
+static UARTRCVHANDLER rcvhandler = NULL;
 
 void UARTRcvRegistHander(UARTRCVHANDLER handler) {
-
+     rcvhandler = NULL;
 }
 
 
 
-UARTRCVHANDLER rcvhandler = NULL;
 
 
 extern void (*keyhandler)(int keycode);
@@ -274,6 +271,32 @@ void isr_uart_for_keyboard(unsigned int intNum) {
     }
 }
 
+
+
+bool UARTSendNoBlock(unsigned int moduleId,void *buf,size_t len){
+    unsigned int baseAdd = modulelist[moduleId].baseAddr;
+    unsigned int lcrRegValue = 0;
+    unsigned int retVal = FALSE;
+    char *buftemp = (char *)buf;
+    ASSERT(len<=64);
+
+    /* Switching to Register Operational Mode of operation. */
+    lcrRegValue = UARTRegConfigModeEnable(baseAdd, UART_REG_OPERATIONAL_MODE);
+
+    /*
+    ** Checking if either THR alone or both THR and Transmitter Shift Register
+    ** are empty.
+    */
+    if (HWREG(baseAdd + UART_LSR) & (UART_LSR_TX_SR_E | UART_LSR_TX_FIFO_E)) {
+        for (int i = 0; i < len; i++) {
+            HWREG(baseAdd + UART_THR) = buftemp[i];
+            retVal = TRUE;
+        }
+    }
+    /* Restoring the value of LCR. */
+    HWREG(baseAdd + UART_LCR) = lcrRegValue;
+    return retVal;
+}
 
 
 static unsigned int UARTDivisorValCompute1(unsigned int moduleClk, unsigned int baudRate, unsigned int *mode_nX) {
@@ -383,5 +406,42 @@ void uartInit(unsigned int moduleId, unsigned int boudRate,
     moduleIntConfigure(moduleId);
 }
 //! @}
+//! 
+
+
+
+void uartInitFor9Bit(unsigned int moduleId,unsigned int boudRate,
+                     unsigned stopBit, unsigned int intFlag){
+    uartInit(  moduleId,   boudRate, 8, UART_PARITY_REPR_1,
+                stopBit, intFlag,1, 1);
+}
+
+
+void uartSend9Bit(unsigned int moduleId,unsigned short data){
+    unsigned int addr = modulelist[moduleId].baseAddr;
+    unsigned int bit9 = data & 1<<8;
+    while((UART_LSR_TX_SR_E | UART_LSR_TX_FIFO_E) !=
+          (HWREG(addr + UART_LSR) & (UART_LSR_TX_SR_E | UART_LSR_TX_FIFO_E)));
+    UARTParityModeSet(addr, bit9 ? UART_PARITY_REPR_1 : UART_PARITY_REPR_0);
+    UARTCharPutNonBlocking(addr,(unsigned short)data);
+}
+
+
+bool uartRcv9bit(unsigned int moduleId,unsigned short *pdat,unsigned int timeout){
+    unsigned int addr = modulelist[moduleId].baseAddr;
+    unsigned int timermark = TimerTickGet();
+    unsigned short datatmp;
+    while (1) {
+        if((timermark+timeout)>TimerTickGet()) return false;
+        if ((HWREG(addr + UART_LSR) & UART_LSR_RX_FIFO_E)==1) {
+            datatmp = (unsigned char)HWREG(addr + UART_RHR);
+            datatmp |= (unsigned char) (!!(HWREG(addr + UART_LCR)& 1<<4) ^ 
+                     (UARTRxErrorGet(addr)==UART_PARITY_ERROR)) << 8;
+            *pdat = datatmp;
+            return  true;
+        }
+    }
+}
+
 
 /****************************** End of file *********************************/

@@ -190,14 +190,26 @@ U32       GUI_CalcVisColorError(GUI_COLOR color);
 
 
 typedef unsigned int COLOR;
+#define RGB(R,G,B)      ((B)|(G)<<8|(R)<<16|0xff000000)
+#define RGBA(R,G,B,A)   ((B)|(G)<<8|(R)<<16|(A)<<24)
+#define COLORR(C)       (((C)&0xff0000)>>16)
+#define COLORG(C)       (((C)&0x00ff00)>>8)
+#define COLORB(C)       ((C)&0xff)
+#define COLORA(C)       (((C)&0xff000000)>>24)
+#define C_RED				RGB(0xff,0,0)
+#define C_GREEN				RGB(0,0xff,0)
+#define C_BLUE				RGB(0,0,0xff)
+#define C_BLACK             RGB(0,0,0)
+#define C_WHITE             RGB(0xff,0xff,0xff)
+#define C_TRANSPARENT       RGBA(0,0,0,0)
 
-#define C_RED				0xf800
-#define C_GREEN				0x07e0
-#define C_BLUE				0x1f
-#define C_BLACK             0x00
-#define C_WHITE             0xffff
-#define C_TRANSPARENT       0xffffffff
-
+#if LCD_PIX_SIZE==2
+#define color2Lcd(C) ((COLORB(C)&0xf8)<<8|(COLORG(C)&0xfc)<<3|(COLORR(C)>>3))
+#elif LCD_PIX_SIZE==4
+#define color2Lcd(C) (C)
+#else 
+#error 
+#endif
 
 #define ALIGN_LEFT     0		
 #define ALIGN_MIDDLE	1			
@@ -221,7 +233,7 @@ extern unsigned int  initFont(unsigned int addr);
 extern char  getCurFontYSize();
 extern char getFontYSize(GUI_FONT *font);
 
-
+extern void drawPix(uint16 x,uint16 y,COLOR color);
 extern void drawHLine(uint16 x, uint16 y, uint16 lineLen);
 extern void drawHLineEx(uint16 x, uint16 y, uint16 lineLen, COLOR color) ;
 extern void drawVLine(uint16 x, uint16 y, uint16 lineLen);

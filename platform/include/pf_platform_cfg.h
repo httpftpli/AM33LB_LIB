@@ -173,7 +173,11 @@
 
 //config FRAMEBUFFER memory 
 #ifndef FRAMEBUFFER_SIZE
-#define FRAMEBUFFER_SIZE    3*1024*1024  //must 1M bytpe algined 
+#define FRAMEBUFFER_SIZE    8*1024*1024  //must 1M bytpe algined 
+#endif
+
+#if LCD_PIX_SIZE!=4
+#define LCD_PIX_SIZE  2
 #endif
 
 #ifndef DDR_RAM_SIZE 
@@ -202,6 +206,10 @@
 #endif
 #ifndef LCD_BACKLIG_OFF
 #define LCD_BACKLIG_OFF          0
+#endif
+
+#ifndef UART_LCDBACKLIGHT_MODULE
+#define UART_LCDBACKLIGHT_MODULE  MODULE_ID_UART4
 #endif
 
 //config LCD backlight control gpio
@@ -267,10 +275,6 @@ typedef  char TEXTCHAR;
 typedef  wchar_t  TEXTCHAR;
 #define T(A) L##A
 #endif
-
-#ifndef BEEP_OFF
-#define BEEP_OFF() beepOff()
-#endif 
 
 
 #endif
