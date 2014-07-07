@@ -24,6 +24,7 @@
 #include "mmath.h"
 #include "pf_key_touchpad.h"
 #include "pf_timertick.h"
+#include <math.h>
 
 
 
@@ -264,7 +265,7 @@ void isr_uart_for_keyboard(unsigned int intNum) {
         }
     }
     if (intval == UART_INTID_CHAR_TIMEOUT) {
-        unsigned int val = *(unsigned int *)0x48022064;
+        unsigned int val = HWREG(baseaddr+0x64);
         for (int i = 0; i < val; i++) {
             volatile  unsigned char tempval1 = HWREGB(baseaddr + UART_RHR);
         }
@@ -300,18 +301,35 @@ bool UARTSendNoBlock(unsigned int moduleId,void *buf,size_t len){
 
 
 static unsigned int UARTDivisorValCompute1(unsigned int moduleClk, unsigned int baudRate, unsigned int *mode_nX) {
-    unsigned int divisor13, devisor16, erate13, erate16;
-    divisor13 = (moduleClk) / (13 * baudRate);
-    devisor16 = (moduleClk) / (16 * baudRate);
-    erate13 = ABS((int)baudRate - (int)(moduleClk / divisor13 / 13));
-    erate16 = ABS((int)baudRate - (int)(moduleClk / devisor16 / 16));
-    if (erate13 < erate16) {
-        *mode_nX = 13;
-        return divisor13;
-    } else {
-        *mode_nX = 16;
-        return devisor16;
+    int divisor,divisor13,divisor16,erate13m,erate13p,erate16m,erate16p,erate13,erate16;
+    divisor13 = (int)(moduleClk) / (13 * baudRate);
+    divisor16 = (int)(moduleClk) / (16 * baudRate);
+    erate13m = ABS((int)baudRate - (int)(moduleClk / divisor13 / 13));
+    erate13p = ABS((int)baudRate - (int)(moduleClk /(divisor13+1) / 13));
+    erate16m = ABS((int)baudRate - (int)(moduleClk / divisor16 / 16));   
+    erate16p = ABS((int)baudRate - (int)(moduleClk /(divisor16+1) / 16));
+    if(erate13m< erate13p){
+       erate13 = erate13m;
+    } else{
+       erate13 = erate13p;
+       divisor13++;
     }
+
+    if(erate16m<= erate16p){
+       erate16 = erate16m;
+    } else{
+       erate16 = erate16p;
+       divisor16++ ;
+    }
+
+    if(erate13<= erate16){
+       divisor = divisor13;
+       *mode_nX = 13;
+    } else{
+       divisor = divisor16;
+       *mode_nX = 16;
+    }
+    return divisor;
 }
 
 
@@ -410,10 +428,16 @@ void uartInit(unsigned int moduleId, unsigned int boudRate,
 
 
 
+static void (*beforsend)();
+static void (*aftersend)();
+
 void uartInitFor9Bit(unsigned int moduleId,unsigned int boudRate,
-                     unsigned stopBit, unsigned int intFlag){
+                     unsigned stopBit, unsigned int intFlag,void (*beforSend)(),void (*afterSend)()){
     uartInit(  moduleId,   boudRate, 8, UART_PARITY_REPR_1,
                 stopBit, intFlag,1, 1);
+    beforsend = beforSend;
+    aftersend = afterSend;
+    if(aftersend!=NULL) aftersend();
 }
 
 
@@ -423,7 +447,9 @@ void uartSend9Bit(unsigned int moduleId,unsigned short data){
     while((UART_LSR_TX_SR_E | UART_LSR_TX_FIFO_E) !=
           (HWREG(addr + UART_LSR) & (UART_LSR_TX_SR_E | UART_LSR_TX_FIFO_E)));
     UARTParityModeSet(addr, bit9 ? UART_PARITY_REPR_1 : UART_PARITY_REPR_0);
+    if(beforsend!=NULL) beforsend();
     UARTCharPutNonBlocking(addr,(unsigned short)data);
+    if(aftersend!=NULL) aftersend();
 }
 
 
@@ -432,7 +458,7 @@ bool uartRcv9bit(unsigned int moduleId,unsigned short *pdat,unsigned int timeout
     unsigned int timermark = TimerTickGet();
     unsigned short datatmp;
     while (1) {
-        if((timermark+timeout)>TimerTickGet()) return false;
+        if((timermark+timeout)<=TimerTickGet()) return false;
         if ((HWREG(addr + UART_LSR) & UART_LSR_RX_FIFO_E)==1) {
             datatmp = (unsigned char)HWREG(addr + UART_RHR);
             datatmp |= (unsigned char) (!!(HWREG(addr + UART_LCR)& 1<<4) ^ 

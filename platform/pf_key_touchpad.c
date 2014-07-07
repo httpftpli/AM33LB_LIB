@@ -342,6 +342,8 @@ void  ts_linear(TS_CALIBRATION *cal,  int *x,  int *y) {
  * @pre
  * @see 
  */
+
+#if   CHARACTER_DIS_CODEC == ASCII_CODEC
 BOOL TouchCalibrate(BOOL  force) {
 #define CALIBRATION_SUCCESS   0x55555555
 #define CALIBRATION_FAIL    0xAAAAAAAA
@@ -366,7 +368,7 @@ BOOL TouchCalibrate(BOOL  force) {
     memcpy(&tsCalibrationTemp, inandsecterbuf, sizeof tsCalibrationTemp);
     const tLCD_PANEL  *panel = LCDTftInfoGet();
     LCDFbClear(C_BLACK);
-    const  char *disstr =  T("Calibrate touch pad,press any key to skip");
+    const  TEXTCHAR *disstr =  T("Calibrate touch pad,press any key to skip");
     unsigned int disstrwigth = getStringMetricWidth(disstr);
     drawStringEx(disstr, panel->width / 2 - disstrwigth/2, panel->height / 2 + 50, FONT_ASCII_16, C_WHITE, C_TRANSPARENT);
     tsCalibrationTemp.xfb[0] = 0 + CALIBRATION_POINT_OFFSET;
@@ -471,7 +473,7 @@ BOOL TouchCalibrate(BOOL  force) {
         }
     }while (1);
 }
-
+#endif
 
 
 

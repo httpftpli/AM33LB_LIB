@@ -131,9 +131,12 @@ void dmtimerInitForMatch(unsigned int moduleId, unsigned int TCval ,unsigned int
       bitSet(val,1);
    }
    bitSet(val,6);
-   //if (flag & 0x DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW ) {
-   //}
-   //todo trig
+   //do trigger
+   val &= ~(0x03<<10);
+   val |= (flag&(0x03<<10));
+
+   val &= ~(0x1<<12);
+   val |= (flag&(0x01<<12));   
 
    HWREG(baseaddr + DMTIMER_TCLR) = val;
 
@@ -177,6 +180,15 @@ void dmtimerInitForMatch(unsigned int moduleId, unsigned int TCval ,unsigned int
 void dmtimerInitForOverFlow(unsigned int moduleId, unsigned int TCval ,unsigned int flag) {
    dmtimerInitForMatch(moduleId, TCval, 0 ,flag &(~(DMTIMER_FLAG_INTENABLE_MATCH&DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW_AND_MATCH)));
 }
+
+
+void dmtimerInitForPwm(unsigned int moduleId, unsigned int THightUs ,unsigned int TLowUs) {
+   unsigned int clk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
+   unsigned int tc = 0xffffffff-clk/1000000*(THightUs+TLowUs);
+   unsigned int match = tc + clk/1000000*THightUs;
+   dmtimerInitForMatch(moduleId, tc, match ,DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW_AND_MATCH|DMTIMER_FLAG_OUTPUTPHASE_TOGGLE );
+}
+
 
 
 /**

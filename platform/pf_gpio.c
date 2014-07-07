@@ -182,5 +182,31 @@ void GPIOInit(unsigned int moduleId, int debounceTimer,unsigned int debounceEnab
    moduleIntConfigure(moduleId);
 }
 
+
+
+void GPIODirSet(unsigned int moduleId,
+                    unsigned int pinNumber,
+                    unsigned int pinDirection){
+    unsigned int baseaddr = modulelist[moduleId].baseAddr;
+    GPIODirModeSet(baseaddr,pinNumber,pinDirection);
+}
+
+void GPIODirGet(unsigned  int moduleId,unsigned int pinNumber){
+    unsigned int baseaddr = modulelist[moduleId].baseAddr;
+    GPIODirModeGet(baseaddr,pinNumber);
+}
+
+
+void GPIOPinWr(unsigned int moduleId, unsigned int pinNumber, unsigned int value) {
+    unsigned int baseAdd = modulelist[moduleId].baseAddr;
+    GPIOPinWrite(baseAdd,pinNumber,value);
+}
+
+unsigned int GPIOPinRd(unsigned int moduleId,
+                         unsigned int pinNumber){
+    unsigned int baseAdd = modulelist[moduleId].baseAddr;
+    return GPIOPinRead(baseAdd,pinNumber);
+}
+
 //! @}
 /****************************** End of file *********************************/
