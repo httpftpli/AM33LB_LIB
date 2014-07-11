@@ -3,13 +3,13 @@
  *
  * \brief  This file contains functions which performs the platform specific
  *         configurations of GPIO.
- *  
- * 
- * @addtogroup GPIO 
- * @brief GPIO 
- *  
- * \#include  "gpio_v2.h" 
- * @{ 
+ *
+ *
+ * @addtogroup GPIO
+ * @brief GPIO
+ *
+ * \#include  "gpio_v2.h"
+ * @{
  */
 
 
@@ -29,24 +29,24 @@
 
 
 
-const unsigned char  unMapTbl[256] = { 
-    0, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,      
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,     
-    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,      
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,     
-    6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,      
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,     
-    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,    
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,   
-    7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,      
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,      
-    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,      
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,     
-    6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,     
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,      
-    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,      
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0      
-};  
+const unsigned char  unMapTbl[256] = {
+    0, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
+};
 
 typedef void (*GPIOIntHandler)();
 
@@ -74,23 +74,23 @@ void isr_Gpio(unsigned int intnum){
 
 
 /**
- * @brief 
+ * @brief
  *        注册GPIO中断服务程序
- * @param [in] modulOfGpio 
+ * @param [in] modulOfGpio
  *        GPIO模块号，例如GPIO2_8,modulOfGpio=2
- * @param [in] bitOfGpio GPIO位,例如GPIO2_8, bitOfGpio=8 
+ * @param [in] bitOfGpio GPIO位,例如GPIO2_8, bitOfGpio=8
  * @param [in]  gpiohandler
- * @return  void         
+ * @return  void
  * @date    2013/5/7
  * @note
  * 只有响应GPIO使能中断的情况下，才会执行gpiohandler函数，gpiohandler在中断线程中执行
  * @code
- * 
+ *
  * @endcode
  *
  * @pre
  *
- * @see 
+ * @see
  */
 void GPIORegistHandler(unsigned char modulOfGpio,unsigned bitOfGpio,
                        void (*gpiohandler)()){
@@ -103,17 +103,17 @@ void GPIORegistHandler(unsigned char modulOfGpio,unsigned bitOfGpio,
 /**
  * @brief 删除GPIO中断服务程序
  * @param [in] modulOfGpio 见 GPIORegistHandler()
- * @param [in] bitOfGpio 见 GPIORegistHandler() 
- * @return           
+ * @param [in] bitOfGpio 见 GPIORegistHandler()
+ * @return
  * @date    2013/5/7
- * @note 
+ * @note
  * @code
- * 
+ *
  * @endcode
  *
  * @pre
  *
- * @see 
+ * @see
  */
 void GPIOClearHandler(unsigned char modulOfGpio, unsigned bitOfGpio){
    mdAssert(modulOfGpio<4);
@@ -125,16 +125,16 @@ void GPIOClearHandler(unsigned char modulOfGpio, unsigned bitOfGpio){
 /**
  * @brief GPIO初始化
  * @param [in] moduleId GPIOID 模块,\b MODULE_ID_GPIOX
- * @param [in] debounceTimer GPIO消抖动时间 
- * @param [in] debounceEnableBitmap 
+ * @param [in] debounceTimer GPIO消抖动时间
+ * @param [in] debounceEnableBitmap
  *        32位gpio使能消抖为映射
- * @return  NONE      
+ * @return  NONE
  * @date    2013/5/29
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void GPIOInit(unsigned int moduleId, int debounceTimer,unsigned int debounceEnableBitmap) {
    static unsigned int moduleinited0,moduleinited1,moduleinited2,moduleinited3;
@@ -173,7 +173,7 @@ void GPIOInit(unsigned int moduleId, int debounceTimer,unsigned int debounceEnab
    moduleEnable(moduleId);
    unsigned int baseaddr = modulelist[moduleId].baseAddr;
    GPIOModuleEnable(baseaddr);
-   GPIOModuleReset(baseaddr);   
+   GPIOModuleReset(baseaddr);
    GPIOIdleModeConfigure(baseaddr, GPIO_IDLE_MODE_NO_IDLE);
    GPIOAutoIdleModeControl(baseaddr, GPIO_AUTO_IDLE_MODE_DISABLE);
    GPIOAutoIdleModeControl(baseaddr, GPIO_AUTO_IDLE_MODE_DISABLE);
@@ -211,7 +211,9 @@ unsigned int GPIOPinRd(unsigned int moduleId,
 
 void GPIOPinTogle(unsigned int moduleId, unsigned int pinNumber) {
     unsigned int baseAdd = modulelist[moduleId].baseAddr;
-    GPIOPinWrite(baseAdd,pinNumber,!GPIOPinRead(baseAdd,pinNumber));
+    unsigned int dataout =HWREG(baseAdd + GPIO_DATAOUT);
+    dataout &= 1<<pinNumber;
+    GPIOPinWrite(baseAdd,pinNumber,!dataout);
 }
 //! @}
 /****************************** End of file *********************************/
