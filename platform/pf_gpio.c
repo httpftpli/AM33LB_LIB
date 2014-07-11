@@ -202,11 +202,16 @@ void GPIOPinWr(unsigned int moduleId, unsigned int pinNumber, unsigned int value
     GPIOPinWrite(baseAdd,pinNumber,value);
 }
 
+
 unsigned int GPIOPinRd(unsigned int moduleId,
                          unsigned int pinNumber){
     unsigned int baseAdd = modulelist[moduleId].baseAddr;
     return GPIOPinRead(baseAdd,pinNumber);
 }
 
+void GPIOPinTogle(unsigned int moduleId, unsigned int pinNumber) {
+    unsigned int baseAdd = modulelist[moduleId].baseAddr;
+    GPIOPinWrite(baseAdd,pinNumber,!GPIOPinRead(baseAdd,pinNumber));
+}
 //! @}
 /****************************** End of file *********************************/

@@ -347,7 +347,6 @@ void SPIMasterInit_SendOnly(unsigned int moduleId, unsigned char csChanel, unsig
    McSPIMasterModeConfig(addr, MCSPI_MULTI_CH,
                          MCSPI_TX_ONLY_MODE, MCSPI_DATA_LINE_COMM_MODE_1,
                          csChanel);
-   McSPIInitDelayConfig(addr,MCSPI_INITDLY_32 );
    /* Configure the McSPI bus clock depending on clock mode. */
    McSPIClkConfig(addr, inclk, spiClk, csChanel,
                   cpol << 1 | cpha);

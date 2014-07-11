@@ -11,5 +11,6 @@ extern void GPIODirSet(unsigned int moduleId,unsigned int pinNumber,unsigned int
 extern void GPIODirGet(unsigned  int moduleId,unsigned int pinNumber);
 extern void GPIOPinWr(unsigned int moduleId, unsigned int pinNumber, unsigned int value);
 extern unsigned int GPIOPinRd(unsigned int moduleId,unsigned int pinNumber);
+extern void GPIOPinTogle(unsigned int moduleId, unsigned int pinNumber);
 
 #endif
