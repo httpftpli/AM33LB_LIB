@@ -2024,6 +2024,9 @@ BYTE check_fs (	/* 0:FAT-VBR, 1:Any BR but not FAT, 2:Not a BR, 3:Disk error */
 	if (LD_WORD(&fs->win[BS_55AA]) != 0xAA55)		/* Check record signature (always placed at offset 510 even if the sector size is >512) */
 		return 2;
 
+	//
+	if(fs->win[0])
+
 	if ((LD_DWORD(&fs->win[BS_FilSysType]) & 0xFFFFFF) == 0x544146)	/* Check "FAT" string */
 		return 0;
 	if ((LD_DWORD(&fs->win[BS_FilSysType32]) & 0xFFFFFF) == 0x544146)
@@ -2103,6 +2106,22 @@ FRESULT chk_mounted (	/* FR_OK(0): successful, !=0: any error occurred */
 	/* Search FAT partition on the drive. Supports only generic partitions, FDISK and SFD. */
 	fmt = check_fs(fs, bsect = 0);		/* Load sector 0 and check if it is an FAT-VBR (in SFD) */
 	if (LD2PT(vol) && !fmt) fmt = 1;	/* Force non-SFD if the volume is forced partition */
+
+	//dai------------------------------------------------------------
+	//判断第1个扇区是否是DBR
+	if(fmt==1)
+	{
+		if((fs->win[0]==0xeb)&&(fs->win[1]!=0x5e))
+		{
+			//每扇区字节数------
+			if(((LD_WORD(&fs->win[0xb])%512)==0)&&(LD_WORD(&fs->win[0xb])!=0))
+			{
+				fmt=0;
+			}
+		}
+	}
+	//--------------------------------------------------------------
+	
 	if (fmt == 1) {						/* Not an FAT-VBR, the physical drive can be partitioned */
 		/* Check the partition listed in the partition table */
 		pi = LD2PT(vol);
