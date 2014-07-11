@@ -79,6 +79,15 @@ BOOL memis(void *mem,unsigned char dat,unsigned int memlen){
    return TRUE;
 }
 
+BOOL memis_32(void *mem,unsigned int dat,unsigned int memlen32){
+   unsigned int * buf = mem;
+   for (int i= 0;i<memlen32;i++) {
+      if(buf[i]!=dat)
+         return FALSE;
+   }
+   return TRUE;
+}
+
 
 /**
  * @brief 判断字符串是不是以指定的字符串结尾

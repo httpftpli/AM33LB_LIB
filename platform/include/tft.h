@@ -68,6 +68,20 @@ static  const tLCD_PANEL lcd_panels[] = {
 		.pxl_clk = 30000000,
 		.invert_pxl_clk = 0,
 		},
+     [4]={
+		.name = "TFT_EJ080NA",
+	    .width = 800,
+		.height = 600,
+		.hfp = 210,
+		.hbp = 46,
+		.hsw = 20,
+		.vfp = 12,
+		.vbp = 23-10,
+		.vsw = 10,
+		.pxl_clk = 40000000,
+		.invert_pxl_clk = 0,
+		},
+
 };
 
 #ifdef __cplusplus
