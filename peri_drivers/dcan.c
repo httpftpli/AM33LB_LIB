@@ -996,8 +996,8 @@ BOOL DCANIFBusyStatusGet(unsigned int baseAdd, unsigned int IFnum)
 
 void DCANIFDataSet(unsigned int baseAdd,unsigned IFnum,void *data,unsigned int dlc){
      while(DCANIFBusyStatusGet(baseAdd, IFnum));
-     HWREG(baseAdd + DCAN_IFDATA(IFnum)) = ((unsigned int*)data)[1];
-     HWREG(baseAdd + DCAN_IFDATB(IFnum)) = ((unsigned int*)data)[0];
+     HWREG(baseAdd + DCAN_IFDATA(IFnum)) = ((unsigned int*)data)[0];
+     HWREG(baseAdd + DCAN_IFDATB(IFnum)) = ((unsigned int*)data)[1];
      HWREG(baseAdd + DCAN_IFMCTL(IFnum)) =  (HWREG(baseAdd + DCAN_IFMCTL(IFnum))&0xfffffff0)+dlc;
 }
 
@@ -1028,10 +1028,10 @@ void DCANIFArbSet(unsigned baseAdd,unsigned int IFnum,unsigned int arb){
 void DCANIFDataRead(unsigned int baseAdd,unsigned int regNum, unsigned int* data )
 {
     /* Read the data bytes from the DCAN_IFDATA register */
-    data[1] = HWREG(baseAdd + DCAN_IFDATA(regNum));
+    data[0] = HWREG(baseAdd + DCAN_IFDATA(regNum));
 
     /* Read the data bytes from the DCAN_IFDATB register */
-    data[0] = HWREG(baseAdd + DCAN_IFDATB(regNum));
+    data[1] = HWREG(baseAdd + DCAN_IFDATB(regNum));
 }
 
 

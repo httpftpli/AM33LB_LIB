@@ -24,12 +24,26 @@ typedef struct {
    unsigned short fgDataRcved:1;
 }G_CAN;
 
+
+#if 0
 typedef struct {
-   unsigned int id:29;
-   unsigned int dir:1;
-   unsigned int xtd:1;
-   unsigned int dlc;
-   unsigned int data[2];
+	unsigned int id:29;
+	unsigned int dir:1;
+	unsigned int xtd:1;							//??????㊣那??,0=㊣那℅???,1=??????
+	unsigned int dlc;
+	unsigned int data[2];
+}CAN_FRAME;
+#endif
+
+typedef struct
+{
+	uint32 Command:13;						//?邦????
+	uint32 SourceId:8;							//??ID
+	uint32 TargetId:8;							//??㊣那ID
+	uint32 dir:1;
+	uint32 xtd:1;								//??????㊣那??,0=㊣那℅???,1=??????
+	uint32 dlc;								//??????????
+	uint32 data[2];
 }CAN_FRAME;
 
 extern volatile G_CAN g_can[2];
