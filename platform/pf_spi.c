@@ -314,9 +314,72 @@ void SPIMasterInit(unsigned int moduleId, unsigned char csChanel, unsigned int s
 }
 
 
+/**
+ * @brief 
+ *        SPI主机初始化,只发送，硬件有64字节的fifo全部用于发送，所以关闭了发送中断
+ * @param [in] moduleId SPI模块号
+ * @param [in] csChanel 哪个CS        
+ * @param [in] spiClk SPI clk频率 
+ * @param [in]  cpha SPI相位
+ * @param [in]  cpol SPI时钟极性
+ * @param [in] wordLen字长
+ * @return           
+ * @date    2013/8/8
+ * @note 
+ * cpha cpol 参数和SPI总线规范的定义一致
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
+void SPIMasterInit_SendOnly(unsigned int moduleId, unsigned char csChanel, unsigned int spiClk, unsigned char cpha, unsigned char cpol, unsigned char csPolar,unsigned char wordLen) {
+   ASSERT(cpha < 2);
+   ASSERT(cpol < 2);
+   ASSERT((wordLen >= 4) && (wordLen <= 32));
+   ASSERT(csChanel <= 3);
+   moduleEnable(moduleId);
+   unsigned int addr = modulelist[moduleId].baseAddr;
+   unsigned int inclk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
+   McSPIReset(addr);
+   McSPICSEnable(addr);
+   McSPIMasterModeEnable(addr);
+   /* Perform the necessary configuration for master mode.*/
+   McSPIMasterModeConfig(addr, MCSPI_MULTI_CH,
+                         MCSPI_TX_ONLY_MODE, MCSPI_DATA_LINE_COMM_MODE_1,
+                         csChanel);
+   /* Configure the McSPI bus clock depending on clock mode. */
+   McSPIClkConfig(addr, inclk, spiClk, csChanel,
+                  cpol << 1 | cpha);
 
+   /* Configure the word length.*/
+   McSPIWordLengthSet(addr, MCSPI_WORD_LENGTH(wordLen), csChanel);
 
+   /* Set polarity of SPIEN */
+   McSPICSPolarityConfig(addr, (csPolar==0)?MCSPI_CS_POL_LOW:MCSPI_CS_POL_HIGH, csChanel);
+   //McSPITurboModeEnable(addr,0);
 
+   /* Enable the transmitter FIFO of McSPI peripheral.*/
+   McSPITxFIFOConfig(addr, MCSPI_TX_FIFO_ENABLE, csChanel);
+   moduleIntConfigure(moduleId);
+   McSPIChannelEnable(addr, 0);
+}
+
+/**
+ * @brief SPI写
+ * @param [in] moduleId SPI模块号
+ * @param [in] data  待发送的数据，8bit 
+ * @return  BOOL         
+ * @date    2013/8/8
+ * @note 
+ * @code
+ * @endcode
+ * @pre
+ * @see 
+ */
+void SPIWrite_SendOnly(unsigned int moduleId, unsigned short data) {
+   unsigned int addr  =  modulelist[moduleId].baseAddr;  
+   while(McSPITransmitData(addr, (unsigned int)data, 0)==0);
+}
 
 
 

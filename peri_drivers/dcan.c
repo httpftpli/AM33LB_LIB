@@ -670,19 +670,18 @@ unsigned int DCANFreeMsgObjGet(unsigned int baseAdd,unsigned int begin)
     unsigned int regNum;
     unsigned int offSet;
 
-    while(index < 128)
+    while(index <= 128)
     {
         regNum = (index-1) / 32;
         offSet = (index-1) % 32;
 
         if(!(HWREG(baseAdd + DCAN_TXRQ(regNum)) & (1 << offSet)))
         {
-            break;
+            return(index);
         }
         index++;
     }
-
-    return(index);
+    return -1;
 }
 
 /**

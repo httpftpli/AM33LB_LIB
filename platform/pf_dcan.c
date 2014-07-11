@@ -196,8 +196,8 @@ __weak void isr_DCANLine0(unsigned intnum)
 }
 
 
-BOOL CANSendFinishGetClr(unsigned int baseAddr) {
-   unsigned int index = (SOC_DCAN_0_REGS == baseAddr) ? 0 : 1;
+BOOL CANSendFinishGetClr(unsigned int moduleId) {
+   unsigned int index = modulelist[moduleId].index;
    BOOL val = g_can[index].fgSendFinish;
    g_can[index].fgSendFinish = 0;
    return val;
@@ -227,10 +227,9 @@ BOOL CANSendFinishGetClr(unsigned int baseAddr) {
  * @see 
  */
 
-unsigned int CANSend_noblock(unsigned int baseAddr,CAN_FRAME *frame){
-    unsigned int msgNum;
-    if(CANSendFinishGetClr(baseAddr)==false)
-       return CAN_SEND_PRE_SENDING;  
+unsigned int CANSend_noblock(unsigned int moduleId,CAN_FRAME *frame){
+    unsigned int baseAddr = modulelist[moduleId].baseAddr;
+    unsigned int msgNum; 
     while (DCANIFBusyStatusGet(baseAddr,DCAN_IF_WRITE));
     unsigned int arb = *(unsigned int *)frame;
     arb ^= (1<<29);
@@ -241,8 +240,7 @@ unsigned int CANSend_noblock(unsigned int baseAddr,CAN_FRAME *frame){
          | DCAN_IFMCTL_NEWDAT;
 
     /* Get the transmit request status */
-    msgNum = DCANFreeMsgObjGet(baseAddr,DCAN_MSGOBF_TX_BEGIN);
-
+    while((msgNum = DCANFreeMsgObjGet(baseAddr,DCAN_MSGOBF_TX_BEGIN))== -1);
     /* Configure the command register */
     DCANCommandRegSet(baseAddr, (DCAN_DAT_A_ACCESS | DCAN_MSG_WRITE | DCAN_TXRQST_ACCESS | 
                                 DCAN_DAT_B_ACCESS | DCAN_ACCESS_CTL_BITS | 

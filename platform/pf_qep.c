@@ -2,11 +2,11 @@
  *  \file   pf_qep.c
  *
  *  \brief
- *  \author  lfl 
+ *  \author  lfl
  *  \addtogroup QEP
  *  \# include "pf_qep.h"
- *  @{ 
- *   
+ *  @{
+ *
  */
 
 
@@ -19,7 +19,7 @@
 #include "debug.h"
 
 
-const unsigned int POSORIGIN = 50000;
+const unsigned int POSORIGIN = 0x80000000;
 //unittime us;unitposition um;positionFactor 0.1um,capTimeFactor ns;
 unsigned int unitPosition,positionFactor = 1,capTimeFactor;
 
@@ -36,15 +36,15 @@ static void (*qephandler[3])(unsigned int flag);
 
 /**
  * @brief 设置位置和编码值的比例因子
- * @param [in] factor 
+ * @param [in] factor
  *        比如位置编码器值加1，对应的实际位置为10us，factor可设置为10
- * @return           
+ * @return
  * @date    2013/7/9
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void QEPSetPosFactor(unsigned int factor) {
    positionFactor = factor;
@@ -62,16 +62,16 @@ static void QEPSetInputMode(unsigned int baseAddr, unsigned int mode) {
 
 
 /**
- * @brief 
- * 交换正交信号线 
+ * @brief
+ * 交换正交信号线
  * @param [in] moduleId  \b MODULE_ID_eQEPX
- * @return           
+ * @return
  * @date    2013/7/9
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void QEPSwapQuadInput(unsigned int moduleId) {
    unsigned int baseAddr = modulelist[moduleId].baseAddr;
@@ -83,23 +83,23 @@ void QEPSwapQuadInput(unsigned int moduleId) {
 
 /**
  * @brief qep 初始化
- * @param [in] moduleId  控制器模块号 \b MODULE_ID_eQEPX 
+ * @param [in] moduleId  控制器模块号 \b MODULE_ID_eQEPX
  * @param [in] inputmode
- * - QEP_MODE_QUAD 
+ * - QEP_MODE_QUAD
  *   正交模式，如果用于正交编码器，选此模式
- * - QEP_MODE_DERECTION 直接计数模式 
+ * - QEP_MODE_DERECTION 直接计数模式
  * - QEP_MODE_UPCOUNT 向上计数测频模式
  * - QEP_MODE_DOWNCOUNT 向下计数测频模式
- * @return    NONE      
+ * @return    NONE
  * @date    2013/7/9
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void QEPInit(unsigned int moduleId, unsigned int inputmode) {
-   unsigned int infreq = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
+   unsigned int infreq = modulelist[moduleId].moduleClk->iClk[0]->clockSpeedHz;
    unsigned int baseAddr = modulelist[moduleId].baseAddr;
    //soft reset Quadrature position counter
    HWREGH(baseAddr + EQEP_QEPCTL) &= ~(1 << 3);
@@ -120,9 +120,10 @@ void QEPInit(unsigned int moduleId, unsigned int inputmode) {
    HWREGH(baseAddr + EQEP_QEINT) = 1 << 11 | 1 << 8 | 1 << 6 | 1 << 5 | 1 << 2 | 1 << 1;
    // position compare: enable;  shadow disable;
    HWREGH(baseAddr + EQEP_QPOSCTL) = 1 << 12;
-   QEPSetPos(baseAddr, 0, QEP_SETPOS_IMMED);
+   QEPSetPos(moduleId, 0, QEP_SETPOS_IMMED);
    //enable Quadrature position counter
    HWREGH(baseAddr + EQEP_QEPCTL) |= 1 << 3;
+   moduleIntConfigure(moduleId);
 }
 
 
@@ -130,23 +131,23 @@ void QEPInit(unsigned int moduleId, unsigned int inputmode) {
 /**
  * @brief 设置当前位置的编码值
  * @param [in] moduleId qep控制器模块ID \b MODULE_ID_eQEPX
- * @param [in] pos   编码值        
+ * @param [in] pos   编码值
  * @param [in] setEvent  编码值生效时机
- *  
- * - QEP_SETPOS_IMMED --立即生效 
+ *
+ * - QEP_SETPOS_IMMED --立即生效
  * - QEP_SETPOS_INDEX_RISEEDGE --index信号上升沿生效
  * - QEP_SETPOS_INDEX_FALLEDGE --index信号下降沿生效
  * - QEP_SETPOS_STROBE_RISEEDGE --strobe信号上升沿生效
- * - QEP_SETPOS_STROBE_WISE 
+ * - QEP_SETPOS_STROBE_WISE
  *   --正转时strobe信号上升沿生效，反转时strobe信号下升沿生效
- * @return   NONE       
+ * @return   NONE
  * @date    2013/7/9
- * @note 
- *  
+ * @note
+ *
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void QEPSetPos(unsigned int moduleID, unsigned int pos, unsigned int setEvent) {
    unsigned int baseAddr = modulelist[moduleID].baseAddr;
@@ -172,14 +173,14 @@ void QEPSetPos(unsigned int moduleID, unsigned int pos, unsigned int setEvent) {
 
 /**
  * @brief 读当前编码器值
- * @param [in] 模块ID \b MODULE_ID_eQEPX 
- * @return  编码器值         
+ * @param [in] 模块ID \b MODULE_ID_eQEPX
+ * @return  编码器值
  * @date    2013/7/9
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 unsigned int QEPReadPos(unsigned int moduleId) {
    unsigned int baseAddr = modulelist[moduleId].baseAddr;
@@ -201,18 +202,18 @@ static int QEPCalcuLatchVelocity(unsigned int moduleId) {
 
 
 /**
- * @brief 
+ * @brief
  *        设置编码器比较值，当编码器和比较值相同的时候产生中断
  * @param [in] moduleId \b MODULE_ID_eQEPX
- * @param [in]  compare 
+ * @param [in]  compare
  *        比较值，比较值已经乘上了比例因子，所以compare为实际值，不是编码器值
- * @return           
+ * @return
  * @date    2013/7/9
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void QEPSetPosCompare(unsigned int moduleId, unsigned int compare) {
    unsigned int baseAddr = modulelist[moduleId].baseAddr;
@@ -223,16 +224,16 @@ void QEPSetPosCompare(unsigned int moduleId, unsigned int compare) {
 
 
 /**
- * @brief 
+ * @brief
  *        设置当前位置为比较值，当到达当前位置的时候产生中断
- * @param [in] moduleId \b MODULE_ID_eQEPX 
- * @return           
+ * @param [in] moduleId \b MODULE_ID_eQEPX
+ * @return
  * @date    2013/7/9
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void QEPSetPosCompareCurrent(unsigned int moduleId) {
    unsigned int val = QEPReadPos(moduleId);
@@ -243,24 +244,24 @@ void QEPSetPosCompareCurrent(unsigned int moduleId) {
 
 /**
  * @brief 注册中断回调函数
- * @param [in] moduleId \b MODULE_ID_eQEPX 
- * @param [in]  handler 回调函数 \n 
+ * @param [in] moduleId \b MODULE_ID_eQEPX
+ * @param [in]  handler 回调函数 \n
  *   handler 的参数 flag:
 *   - QEP_HANDER_FlAG_COMPARE_MATCH --比较中断 见
 *     QEPSetPosCompareCurrent() , QEPSetPosCompare()
 *   - QEP_HANDER_FlAG_PHASE_ERROR
 *     --错误中断，比如正交信号错误等
 *   - QEP_HANDER_FlAG_POSCNT_ERROR --计数器错误
- *  - QEP_HANDER_FlAG_POSCNT_OVERFLOW  --计数器上溢出 
- *  - QEP_HANDER_FlAG_POSCNT_UNDERFLOW --计数器下溢出 
- *  
- * @return           
+ *  - QEP_HANDER_FlAG_POSCNT_OVERFLOW  --计数器上溢出
+ *  - QEP_HANDER_FlAG_POSCNT_UNDERFLOW --计数器下溢出
+ *
+ * @return
  * @date    2013/7/9
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void QEPRegistHandler(unsigned int moduleId, void (*handler)(unsigned int flag)) {
    unsigned int index = modulelist[moduleId].index;
@@ -271,14 +272,14 @@ void QEPRegistHandler(unsigned int moduleId, void (*handler)(unsigned int flag))
 
 /**
  * @brief  获取当前速度
- * @param [in] moduleId \b MODULE_ID_eQEPX 
- * @return  当前速度         
+ * @param [in] moduleId \b MODULE_ID_eQEPX
+ * @return  当前速度
  * @date    2013/7/9
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 signed int QEPGetVelocity(unsigned int moduleId) {
    unsigned int index = modulelist[moduleId].index;
@@ -288,17 +289,17 @@ signed int QEPGetVelocity(unsigned int moduleId) {
 
 
 /**
- * @brief 
+ * @brief
  *        使能速度测试，不用测速时不需要调用此函数
  * @param [in] moduleId \b MODULE_ID_eQEPX
- * @param [in] timeResolution_us    时间分辨率，单位 us 
- * @return           
+ * @param [in] timeResolution_us    时间分辨率，单位 us
+ * @return
  * @date    2013/7/9
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void QEPVelocityDetectStart(unsigned int moduleId, unsigned int timeResolution_us) {
    unsigned int index = modulelist[moduleId].index;
@@ -322,7 +323,7 @@ void isr_qep(unsigned intnum) {
    if (stat & 1 << 11) { //UTO  calculate velocity
       velocity[index] = QEPCalcuLatchVelocity(baseaddr);
    }
-   if ((stat & 1 << 11) && (qephandler[index] != NULL)) { // compare match event
+   if ((stat & 1 << 8) && (qephandler[index] != NULL)) { // compare match event
       qephandler[index](QEP_HANDER_FlAG_COMPARE_MATCH);
    }
    if ((stat & 1 << 2) && (qephandler[index] != NULL)) { //Quadrature phase error

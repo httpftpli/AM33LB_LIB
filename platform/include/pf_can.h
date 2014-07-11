@@ -35,7 +35,7 @@ typedef struct {
 extern volatile G_CAN g_can[2];
 
 extern void DCANInit(unsigned int moduleId,unsigned int mode,unsigned int bitRate);
-extern unsigned int CANSend_noblock(unsigned int baseAddr,CAN_FRAME *frame);
-extern BOOL CANSendFinishGetClr(unsigned int baseAddr);
+extern unsigned int CANSend_noblock(unsigned int moduleId,CAN_FRAME *frame);
+extern BOOL CANSendFinishGetClr(unsigned int moduleId);
 extern void CANRegistRcvedHandler(void (*handler)(unsigned int index,CAN_FRAME *frame));
 #endif
