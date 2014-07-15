@@ -2,11 +2,11 @@
  *  \file   pf_key_touchpad.c
  *
  *  \brief
- *  \#include  "pf_key_touchpad.h" 
- *  \author  lfl  
+ *  \#include  "pf_key_touchpad.h"
+ *  \author  lfl
  *  \addtogroup KEY_TOUCHPAD
- *  @{ 
- *   
+ *  @{
+ *
  */
 
 
@@ -21,10 +21,11 @@
 #include "mmath.h"
 #include "lib_gui.h"
 #include "atomic.h"
+#include <wchar.h>
 #include <stdio.h>
 
 #if 0   //protcal hengji  tuji
-#define KEYSCANCODE_0     0x0204  
+#define KEYSCANCODE_0     0x0204
 #define KEYSCANCODE_1     0x0100
 #define KEYSCANCODE_2     0x0101
 #define KEYSCANCODE_3     0x0102
@@ -35,7 +36,7 @@
 #define KEYSCANCODE_8     0x0202
 #define KEYSCANCODE_9     0x0203
 #define KEYSCANCODE_DOT   0x0404
-#define KEYSCANCODE_ZF    0x0403  
+#define KEYSCANCODE_ZF    0x0403
 #define KEYSCANCODE_A     0x0300
 #define KEYSCANCODE_B     0x0301
 #define KEYSCANCODE_C     0x0302
@@ -64,7 +65,7 @@
 
 #else //protcal waji yujie
 
-#define KEYSCANCODE_0		20  
+#define KEYSCANCODE_0		20
 #define KEYSCANCODE_1		8
 #define KEYSCANCODE_2		9
 #define KEYSCANCODE_3		10
@@ -75,7 +76,7 @@
 #define KEYSCANCODE_8		18
 #define KEYSCANCODE_9		19
 #define KEYSCANCODE_DOT	   50
-#define KEYSCANCODE_ZF		51  
+#define KEYSCANCODE_ZF		51
 #define KEYSCANCODE_A		24
 #define KEYSCANCODE_B		26
 #define KEYSCANCODE_C		52
@@ -113,7 +114,7 @@ KEYTOUCHMSG keyTouchpadMsg;
 /** @brief 标记是否有按键 */
 atomic g_keyPushed;
 /**
-* @brief 
+* @brief
 *  标记键盘复位，键盘首次上电或者复位是会发送复位信息
 */
 atomic g_keyRest;
@@ -211,10 +212,10 @@ unsigned int keyCode(unsigned int scancode) {
       break;
    case KEYSCANCODE_F5 :
       key = KEY_F5;
-      break;      
+      break;
    case KEYSCANCODE_F6:
       key = KEY_F6;
-      break; 
+      break;
    case KEYSCANCODE_RIGHT:
       key =   KEY_RIGHT;
       break;
@@ -291,10 +292,10 @@ BOOL isKeyTouchEvent(KEYTOUCHMSG *msg){
 /**
  * @brief 注册特定按键的中断回调函数
  * @param [in] handler 回调函数
- * @return NONE          
+ * @return NONE
  * @date    2013/7/8
- * @note 
- * 注册的回调函数可用于处理全局快捷键 
+ * @note
+ * 注册的回调函数可用于处理全局快捷键
  */
 void registKeyHandler(void handler(int keycode)){
   keyhandler = handler;
@@ -303,10 +304,10 @@ void registKeyHandler(void handler(int keycode)){
 /**
  * @brief 注册触摸屏的回调中断回调函数，用于全局快捷触摸功能，在没有键盘的时候当快捷键使用
  * @param [in] handler 回调函数
- * @return NONE          
+ * @return NONE
  * @date    2013/7/8
- * @note 
- * 注册的回调函数可用于处理全局快捷键 
+ * @note
+ * 注册的回调函数可用于处理全局快捷键
  */
 void registTouchHandler(void handler()){
   touchhandler = handler;
@@ -321,29 +322,28 @@ void  ts_linear(TS_CALIBRATION *cal,  int *x,  int *y) {
 
 
 /**
- * @brief 触摸屏校准 
+ * @brief 触摸屏校准
  *        ,该函数只校准一次，如果校准不成功函数返回FALSE,需重新调用该函数
- * @param force 
+ * @param force
  *         - FALSE --
  *         当前触摸参数有效时读取当前校准参数
  *         \n
  *         - TRUE --
  *           不管当前校准参数有没有效，都强制重新校准，如果校准成功保存当前参数
  *           \n
- * @return 
- * - TRUE 成功 \n 
- * - FALSE 失败 \n 
- *  
+ * @return
+ * - TRUE 成功 \n
+ * - FALSE 失败 \n
+ *
  * @date    2013/5/31
- * @note 
- * 该函数会修改显存 
+ * @note
+ * 该函数会修改显存
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 
-#if   CHARACTER_DIS_CODEC == ASCII_CODEC
 BOOL TouchCalibrate(BOOL  force) {
 #define CALIBRATION_SUCCESS   0x55555555
 #define CALIBRATION_FAIL    0xAAAAAAAA
@@ -358,7 +358,7 @@ BOOL TouchCalibrate(BOOL  force) {
     int xL1, xL2, xL3;
     int yL1, yL2, yL3;
     int A, B, C, D, E, F;
-    int m, n;  
+    int m, n;
     MMCSDP_Read(mmcsdctr, inandsecterbuf, TOUCH_CAL_PARAM_SECTOR, 1);
     memcpy(&tsCalibration, inandsecterbuf, sizeof tsCalibration);
     if ((CALIBRATION_SUCCESS == tsCalibration.magic) && (force == 0)) {
@@ -449,10 +449,14 @@ BOOL TouchCalibrate(BOOL  force) {
         ts_linear(&tsCalibrationTemp, &tempx, &tempy);
         int xtol = tempx - tsCalibrationTemp.xfb[3];
         int ytol = tempy - tsCalibrationTemp.yfb[3];
-        char disstrvar[400];
+        TEXTCHAR disstrvar[400];
         if ((ABS(xtol) < TS_CALIBRATION_X_TOLERANCE) && (ABS(ytol) < TS_CALIBRATION_Y_TOLERANCE)) {
             //Save_touchData(&Tch_ctrs);
-            sprintf(disstrvar,"calibrate success! Xoff:%d  Yoff:%d",xtol,ytol);
+            #if ((CHARACTER_DIS_CODEC == UTF8_CODEC)||(CHARACTER_DIS_CODEC == ASCII_CODEC))
+            sprintf(disstrvar, "calibrate success! Xoff:%d  Yoff:%d", xtol, ytol);
+            #else
+            swprintf(disstrvar,400,T("calibrate success! Xoff:%d  Yoff:%d"), xtol, ytol);
+            #endif
             disstrwigth = getStringMetricWidth(disstrvar);
             drawRectFillEx(0,panel->height / 2 + 80,panel->width ,getFontYSize(FONT_ASCII_16),C_BLACK);
             drawStringEx(disstrvar, panel->width / 2 - disstrwigth/2, panel->height / 2 + 80, FONT_ASCII_16, C_WHITE, C_TRANSPARENT);
@@ -464,7 +468,11 @@ BOOL TouchCalibrate(BOOL  force) {
             memcpy(&tsCalibration, &tsCalibrationTemp, sizeof tsCalibrationTemp);
             return TRUE;
         } else {
+            #if ((CHARACTER_DIS_CODEC == UTF8_CODEC)||(CHARACTER_DIS_CODEC == ASCII_CODEC))
             sprintf(disstrvar,"calibrate fail! Xoff:%d  Yoff:%d",xtol,ytol);
+            #else
+            swprintf(disstrvar,400,T("calibrate fail! Xoff:%d  Yoff:%d"),xtol,ytol);
+            #endif
             disstrwigth = getStringMetricWidth(disstrvar);
             drawRectFillEx(0,panel->height / 2 + 80,panel->width ,getFontYSize(FONT_ASCII_16),C_BLACK);
             drawStringEx(disstrvar, panel->width / 2 - disstrwigth/2, panel->height / 2 + 80, FONT_ASCII_16, C_WHITE, C_TRANSPARENT);
@@ -473,21 +481,20 @@ BOOL TouchCalibrate(BOOL  force) {
         }
     }while (1);
 }
-#endif
 
 
 
 /**
  * @brief 软件触发触摸
- * @param [in] unsigned short x  校准以后的x坐标 
- * @param [in] unsigned short y  校准以后的y坐标 
- * @return none 
+ * @param [in] unsigned short x  校准以后的x坐标
+ * @param [in] unsigned short y  校准以后的y坐标
+ * @return none
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void simulateTouch(unsigned short x,unsigned short y){
    g_ts.x = x;
