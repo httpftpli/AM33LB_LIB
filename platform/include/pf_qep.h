@@ -9,6 +9,8 @@
 #define QEP_HANDER_FlAG_POSCNT_ERROR      3
 #define QEP_HANDER_FlAG_POSCNT_OVERFLOW   4
 #define QEP_HANDER_FlAG_POSCNT_UNDERFLOW  5
+#define QEP_HANDER_FlAG_STROB             6
+#define QEP_HANDER_FlAG_DIR_CHANGE        7
 
 #define QEP_MODE_QUAD         0
 #define QEP_MODE_DERECTION    1

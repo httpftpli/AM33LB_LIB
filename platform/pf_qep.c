@@ -117,13 +117,27 @@ void QEPInit(unsigned int moduleId, unsigned int inputmode) {
    //campare position :0xffffffff
    HWREG(baseAddr + EQEP_QPOSCMP) = 0xffffffff;
    //int enable  UTO,PCM,PCO,PCU,PHE,PCE,QDC
-   HWREGH(baseAddr + EQEP_QEINT) = 1 << 11 | 1 << 8 | 1 << 6 | 1 << 5 | 1 << 2 | 1 << 1;
+   HWREGH(baseAddr + EQEP_QEINT) = 1 << 11 | 1 << 8 | 1 << 6 | 1 << 5 |1<<3 | 1 << 2 | 1 << 1;
    // position compare: enable;  shadow disable;
    HWREGH(baseAddr + EQEP_QPOSCTL) = 1 << 12;
    QEPSetPos(moduleId, 0, QEP_SETPOS_IMMED);
    //enable Quadrature position counter
    HWREGH(baseAddr + EQEP_QEPCTL) |= 1 << 3;
    moduleIntConfigure(moduleId);
+}
+
+
+
+void  QEPSetStrobe(unsigned int moduleId,bool strobePluseRevers,bool interrupt){
+   unsigned int baseAddr = modulelist[moduleId].baseAddr;
+   HWREGH(baseAddr + EQEP_QDECCTL) |= !!strobePluseRevers << 5;
+   HWREGH(baseAddr + EQEP_QPOSCTL) |= 1 << 6;
+   if (interrupt) {
+       HWREGH(baseAddr + EQEP_QCLR)  |= 1 << 9;
+       HWREGH(baseAddr + EQEP_QEINT) |= 1 << 9;
+   }else{
+       HWREGH(baseAddr + EQEP_QEINT) &= ~(1 << 9);
+   }
 }
 
 
@@ -304,7 +318,7 @@ signed int QEPGetVelocity(unsigned int moduleId) {
 void QEPVelocityDetectStart(unsigned int moduleId, unsigned int timeResolution_us) {
    unsigned int index = modulelist[moduleId].index;
    unsigned int baseAddr = modulelist[moduleId].baseAddr;
-   unsigned int inFreq = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
+   unsigned int inFreq = modulelist[moduleId].moduleClk->iClk[0]->clockSpeedHz;
    unitTime = timeResolution_us;
    unsigned long long tick = inFreq / 1000000 * timeResolution_us;
    mdAssert(tick <= 0xffffffff);
@@ -320,25 +334,35 @@ void isr_qep(unsigned intnum) {
    unsigned int index = modulelist[intnum].index;
    //read interrupt status
    unsigned short stat = HWREGH(baseaddr + EQEP_QFLG);
+   //clear interrupt status
+   HWREGH(baseaddr + EQEP_QFLG) = stat;
    if (stat & 1 << 11) { //UTO  calculate velocity
-      velocity[index] = QEPCalcuLatchVelocity(baseaddr);
+      velocity[index] = QEPCalcuLatchVelocity(intnum);
    }
-   if ((stat & 1 << 8) && (qephandler[index] != NULL)) { // compare match event
+   if ((qephandler[index] == NULL)) {
+       return;
+   }
+   if (stat & 1 << 8) { // compare match event
       qephandler[index](QEP_HANDER_FlAG_COMPARE_MATCH);
    }
-   if ((stat & 1 << 2) && (qephandler[index] != NULL)) { //Quadrature phase error
+   if (stat & 1 << 2) { //Quadrature phase error
       qephandler[index](QEP_HANDER_FlAG_PHASE_ERROR);
    }
-   if ((stat & 1 << 1) && (qephandler[index] != NULL)) { //Quadrature phase error
+   if (stat & 1 << 3) { //Dir change
+      qephandler[index](QEP_HANDER_FlAG_DIR_CHANGE);
+   }
+   if (stat & 1 << 1) { //Quadrature phase error
       qephandler[index](QEP_HANDER_FlAG_POSCNT_ERROR);
    }
-   if ((stat & 1 << 6) && (qephandler[index] != NULL)) { //Position counter overflow
+   if (stat & 1 << 6) { //Position counter overflow
       qephandler[index](QEP_HANDER_FlAG_POSCNT_OVERFLOW);
    }
-   if ((stat & 1 << 5) && (qephandler[index] != NULL)) { //Position counter underflow
+   if (stat & 1 << 5) { //Position counter underflow
       qephandler[index](QEP_HANDER_FlAG_POSCNT_UNDERFLOW);
    }
-   HWREGH(baseaddr + EQEP_QCLR) |= stat;
+   if (stat & 1 << 9){ //strobe
+      qephandler[index](QEP_HANDER_FlAG_STROB);
+   }
 }
 
 //! @}
