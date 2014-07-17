@@ -335,7 +335,7 @@ void isr_qep(unsigned intnum) {
    //read interrupt status
    unsigned short stat = HWREGH(baseaddr + EQEP_QFLG);
    //clear interrupt status
-   HWREGH(baseaddr + EQEP_QFLG) = stat;
+   HWREGH(baseaddr + EQEP_QCLR) = stat;
    if (stat & 1 << 11) { //UTO  calculate velocity
       velocity[index] = QEPCalcuLatchVelocity(intnum);
    }
