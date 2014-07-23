@@ -40,7 +40,7 @@ BOOL TouchCalibrate(BOOL force);
 
 
 
-volatile static TS_SAMPLE tsSampleRaw;
+extern volatile  TS_SAMPLE g_tsRaw;
 volatile static unsigned int tsenable = 1;
 
 static void StepEnable(void);
@@ -94,8 +94,8 @@ void  isr_tsc(unsigned int intnum) {
          preTsSampleRaw.x = sum(arr_x + 2, SAMPLES - 4) / (SAMPLES - 4);
          preTsSampleRaw.y = sum(arr_y + 2, SAMPLES - 4) / (SAMPLES - 4);
       } else {
-         g_ts.x = tsSampleRaw.x =  preTsSampleRaw.x;
-         g_ts.y = tsSampleRaw.y =  preTsSampleRaw.y;
+         g_ts.x = g_tsRaw.x =  preTsSampleRaw.x;
+         g_ts.y = g_tsRaw.y =  preTsSampleRaw.y;
          preTsSampleRaw.x = sum(arr_x + 2, SAMPLES - 4) / (SAMPLES - 4);
          preTsSampleRaw.y = sum(arr_y + 2, SAMPLES - 4) / (SAMPLES - 4);
          ts_linear(&tsCalibration,(int*)&(g_ts.x),(int *)&(g_ts.y));
