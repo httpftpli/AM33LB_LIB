@@ -91,13 +91,13 @@ void  isr_tsc(unsigned int intnum) {
          preTsSampleRaw.x = 1; //sum(arr_x+2 , SAMPLES-4 ) / (SAMPLES-4 );
          preTsSampleRaw.y = 1; //sum(arr_y+2 , SAMPLES-4 ) / (SAMPLES-4 );
       } else if (1 == preTsSampleRaw.x) {
-         preTsSampleRaw.x = sum(arr_x + 2, SAMPLES - 4) / (SAMPLES - 4);
-         preTsSampleRaw.y = sum(arr_y + 2, SAMPLES - 4) / (SAMPLES - 4);
+         preTsSampleRaw.y = sum(arr_x + 2, SAMPLES - 4) / (SAMPLES - 4);
+         preTsSampleRaw.x = sum(arr_y + 2, SAMPLES - 4) / (SAMPLES - 4);
       } else {
          g_ts.x = g_tsRaw.x =  preTsSampleRaw.x;
          g_ts.y = g_tsRaw.y =  preTsSampleRaw.y;
-         preTsSampleRaw.x = sum(arr_x + 2, SAMPLES - 4) / (SAMPLES - 4);
-         preTsSampleRaw.y = sum(arr_y + 2, SAMPLES - 4) / (SAMPLES - 4);
+         preTsSampleRaw.y = sum(arr_x + 2, SAMPLES - 4) / (SAMPLES - 4);
+         preTsSampleRaw.x = sum(arr_y + 2, SAMPLES - 4) / (SAMPLES - 4);
          ts_linear(&tsCalibration,(int*)&(g_ts.x),(int *)&(g_ts.y));
          atomicSet(&g_touched);      
          //UARTprintf("x: %d  ; y: %d  ;", tsSampleRaw.x, tsSampleRaw.y);
