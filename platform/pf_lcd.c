@@ -343,11 +343,10 @@ void LCDRasterInit() {
    lcdCtrl.activeframe = 0;
   
    //init palette and framebuffer
-
    memcpy(lcdCtrl.palette[0],palette_32b,lcdCtrl.palettesize[0]);
    memcpy(lcdCtrl.palette[1],palette_32b,lcdCtrl.palettesize[1]);
-   memset(lcdCtrl.frameaddr[0], 0, pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
-   memset(lcdCtrl.frameaddr[1], 0, pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width);
+   memset32(lcdCtrl.frameaddr[0], 0, pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width/4);
+   memset32(lcdCtrl.frameaddr[1], 0, pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width/4);
    moduleEnable(MODULE_ID_LCDC);
    RasterClocksEnable(baseaddr);
    RasterAutoUnderFlowEnable(baseaddr);

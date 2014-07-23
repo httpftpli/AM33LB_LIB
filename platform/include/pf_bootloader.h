@@ -22,7 +22,7 @@
 typedef struct __appsection{
    unsigned int imageaddr;         //地址，相对于打包后的文件头
    unsigned int imageSize;         //大小，单位：字节
-   unsigned int imageCheck;        //暂时不用
+   unsigned int imageCheck;        //magic
    char imageRevPrefix;           //版本号前缀,数字，范围0-255
    unsigned short imageMainRev;    //主版本号
    unsigned short imageMidRev;     //中间版本号

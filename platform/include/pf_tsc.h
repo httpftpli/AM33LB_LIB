@@ -5,6 +5,6 @@
 extern void TouchScreenInit();
 extern void tsEnalbe(void);
 extern void tsDisable(void);
-extern void TSCADCModuleClkConfig(void);
+//extern void TSCADCModuleClkConfig(void);
 
 #endif

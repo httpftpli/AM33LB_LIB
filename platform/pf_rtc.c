@@ -2,14 +2,14 @@
  *  \file   pf_rtc.c
  *
  *  \brief
- *  \author  李飞亮  
+ *  \author  李飞亮
  *  \addtogroup RTC
  *  \# include "pf_rtc.h"
  *  RTC分内置RTC和外置RTC,上点复位时从外置RTC读取时钟，并初始化内置RTC,运
- *  行时只从内置RTC读取 
- *  
+ *  行时只从内置RTC读取
+ *
  *  @{
- *   
+ *
  */
 
 
@@ -25,6 +25,7 @@
 #include "pf_rx8025.h"
 #include "pf_timertick.h"
 #include "module.h"
+#include <time.h>
 
 
 void isr_RTC(unsigned int intnum) {
@@ -43,15 +44,15 @@ void isr_RTC(unsigned int intnum) {
 
 
 static void RTCAM335XInit(unsigned int calendar,unsigned int time){
-    //RTCModuleClkConfig();   
+    //RTCModuleClkConfig();
     moduleEnable(MODULE_ID_RTC);
     RTCWriteProtectDisable(SOC_RTC_0_REGS);
     RTC32KClkSourceSelect(SOC_RTC_0_REGS, RTC_INTERNAL_CLK_SRC_SELECT);
     RTC32KClkClockControl(SOC_RTC_0_REGS, RTC_32KCLK_ENABLE);
     RTCEnable(SOC_RTC_0_REGS);
     RTCCalendarSet(SOC_RTC_0_REGS,  calendar);
-    RTCTimeSet(SOC_RTC_0_REGS, time);      
-    RTCRun(SOC_RTC_0_REGS); 
+    RTCTimeSet(SOC_RTC_0_REGS, time);
+    RTCRun(SOC_RTC_0_REGS);
     RTCIntTimerEnable(SOC_RTC_0_REGS, RTC_INT_EVERY_SECOND);
     RTCWriteProtectEnable(SOC_RTC_0_REGS);
  }
@@ -60,18 +61,18 @@ static void RTCAM335XInit(unsigned int calendar,unsigned int time){
 
 
 /**
- * @brief RTC初始化 
- * 读出RX8025，初始化内置RTC 
- * @return 
- * - FAIL 
- * - SUCCESS 
+ * @brief RTC初始化
+ * 读出RX8025，初始化内置RTC
+ * @return
+ * - FAIL
+ * - SUCCESS
  * @date    2013/5/7
  * @note
  * @code
  * @endcode
- * @pre 
- * 初始化I2C0 
- * @see 
+ * @pre
+ * 初始化I2C0
+ * @see
  */
 BOOL RTCInit(void){
     unsigned char hour,minute,second,year,month,day;
@@ -92,28 +93,28 @@ BOOL RTCInit(void){
 
 
 /**
- * @brief 读取RTC 
+ * @brief 读取RTC
  *  从内置RTC读取时钟和日历
  * @param [out] year
- * @param [out] month           
+ * @param [out] month
  * @param [out] day
  * @param [out] hour
  * @param [out] minute
  * @param [out] second
- * @return NONE          
+ * @return NONE
  * @date    2013/5/7
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
-void RTCReadBcd(unsigned char *year, unsigned char *month,
+void RTCReadBcd(unsigned short *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
              unsigned char *minute, unsigned char *second) {
    unsigned int time = RTCTimeGet(SOC_RTC_0_REGS); //FIRST READ TIME;
    unsigned int can = RTCCalendarGet(SOC_RTC_0_REGS);
-   *year = (can & YEAR_MASK) >> YEAR_SHIFT;
+   *year = (can & YEAR_MASK) >> YEAR_SHIFT+ 2<<24;
    *month = (can & MONTH_MASK) >> MONTH_SHIFT;
    *day = (can & DAY_MASK) >> DAY_SHIFT;
    *hour = (time & HOUR_MASK) >> HOUR_SHIFT;
@@ -121,11 +122,11 @@ void RTCReadBcd(unsigned char *year, unsigned char *month,
    *second = (time & SECOND_MASK) >> SECOND_SHIFT;
 }
 
-void RTCReadHex(unsigned char *year, unsigned char *month,
+void RTCReadHex(unsigned short *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
              unsigned char *minute, unsigned char *second) {
    RTCReadBcd(year,month,day,hour,minute,second);
-   *year = bcd2hex_2(*year);
+   *year = bcd2hex_2(*year)+2000;
    *month = bcd2hex_2(*month);
    *day = bcd2hex_2(*day);
    *hour = bcd2hex_2(*hour);
@@ -134,50 +135,55 @@ void RTCReadHex(unsigned char *year, unsigned char *month,
 }
 
 /**
- * @brief 设置RTC ，并写入外置RTC 
+ * @brief 设置RTC ，并写入外置RTC
  * @param [out] year
- * @param [out] month           
+ * @param [out] month
  * @param [out] day
  * @param [out] hour
  * @param [out] minute
  * @param [out] second
- * @return BOOL 
- * - FALSE -- 
+ * @return BOOL
+ * - FALSE --
  *   外部RTC写入失败，内部RTCXI设置成功\n\r
- * - TRUE --成功 
+ * - TRUE --成功
  * @date    2013/5/7
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
-BOOL RTCSetBcd(unsigned char year, unsigned char month,
+BOOL RTCSetBcd(unsigned short year, unsigned char month,
              unsigned char  day, unsigned char hour,
              unsigned char minute, unsigned char second){
+    year = (unsigned char)year;
     unsigned int time = hour<<HOUR_SHIFT |minute<<MINUTE_SHIFT | second<<SECOND_SHIFT;
+    //IntMasterFIQDisable();
+    //RTCSecondSet(SOC_RTC_0_REGS,second);
+    //RTCMinuteSet(SOC_RTC_0_REGS,minute);
+    //RTCHourSet(SOC_RTC_0_REGS,hour);
     RTCTimeSet(SOC_RTC_0_REGS,time);
     unsigned int can = day<<DAY_SHIFT|month<<MONTH_SHIFT|year<<YEAR_SHIFT;
     RTCCalendarSet(SOC_RTC_0_REGS,can);
+    IntMasterFIQEnable();
     RTCRun(SOC_RTC_0_REGS);
     BOOL ret;
     ret = Rx8025SetCalendar(year,month,day);
     if (FALSE == ret ) {
        return ret;
     }
-    return Rx8025SetTime(hour, minute, second); 
+    return Rx8025SetTime(hour, minute, second);
 }
 
-BOOL RTCSetHex(unsigned char year, unsigned char month,
+BOOL RTCSetHex(unsigned short year, unsigned char month,
              unsigned char  day, unsigned char hour,
              unsigned char minute, unsigned char second){
-    mdAssert(year<100);
     mdAssert(month<13);
     mdAssert(day<32);
     mdAssert(hour<25);
     mdAssert(minute<61);
     mdAssert(second<61);
-    year = hex2bcd_byte(year);
+    year = hex2bcd_byte(year%100);
     month = hex2bcd_byte(month);
     day = hex2bcd_byte(day);
     hour = hex2bcd_byte(hour);

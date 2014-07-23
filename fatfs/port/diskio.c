@@ -33,8 +33,8 @@
 
 PARTITION VolToPart[] = {
     {DRIVER_NUM_MMCSD0, 1},     // Logical drive 0
-    {DRIVER_NUM_MMCSD0, 2},     // Logical drive 1 
-    {DRIVER_NUM_USB,    1},     // Logical drive 2   
+    {DRIVER_NUM_MMCSD0, 2},     // Logical drive 1
+    {DRIVER_NUM_USB,    1},     // Logical drive 2
 };
 
 extern tUSBHMSCInstance g_USBHMSCDevice[];
@@ -61,7 +61,7 @@ DSTATUS disk_initialize (
          index = 1;
       }
       ctrl =  mmcsdctr + index;
-      card = ctrl->card; 
+      card = ctrl->card;
 
       if (ctrl->inited == 0) {
          mdError("mmcsd controller is not inited\r\n");
@@ -90,7 +90,7 @@ DSTATUS disk_initialize (
       } else {
          mdDebug(" ,Low Capacity\r\n");
       }
-      return 0; 
+      return 0;
 
    case DRIVER_NUM_USB :
       {
@@ -200,14 +200,15 @@ DRESULT disk_read(
    default:
       break;
    }
-   return RES_PARERR; 
+   return RES_PARERR;
 }
 
 
 DWORD get_fattime(void) {
-   unsigned char y, M, d, h, m, s;
+   unsigned char M, d, h, m, s;
+   unsigned short y;
    RTCReadHex(&y, &M, &d, &h, &m, &s);
-   return (y+2000-1980)<<25 | M<<21 | d<<16 | h<<11 | m<<5 | s;
+   return (y-1980)<<25 | M<<21 | d<<16 | h<<11 | m<<5 | s;
 }
 
 
@@ -254,7 +255,7 @@ DRESULT disk_write (
          if (USBHMSCBlockWrite(ulMSCInstance, sector, (unsigned char *)buff,
                                count) == 0) return RES_OK;
       }
-      return RES_ERROR; 
+      return RES_ERROR;
    default:
       break;
    }
@@ -322,11 +323,11 @@ DRESULT disk_ioctl (
             *(unsigned int *)buff = 1;
             return RES_OK;
          case CTRL_ERASE_SECTOR:
-            break; 
+            break;
       }
    default:
       break;
-   }     
+   }
 	return RES_PARERR;
 }
 #endif

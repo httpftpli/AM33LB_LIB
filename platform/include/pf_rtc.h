@@ -4,17 +4,17 @@
 #include "pf_rx8025.h"
 
 extern BOOL RTCInit(void);
-extern void RTCReadBcd(unsigned char *year, unsigned char *month,
+extern void RTCReadBcd(unsigned short *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
              unsigned char *minute, unsigned char *second);
-extern void RTCReadHex(unsigned char *year, unsigned char *month,
+extern void RTCReadHex(unsigned short *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
              unsigned char *minute, unsigned char *second);
 
-extern BOOL RTCSetBcd(unsigned char year, unsigned char month,
+extern BOOL RTCSetBcd(unsigned short year, unsigned char month,
              unsigned char  day, unsigned char hour,
              unsigned char minute, unsigned char second);
-extern BOOL RTCSetHex(unsigned char year, unsigned char month,
+extern BOOL RTCSetHex(unsigned short year, unsigned char month,
              unsigned char  day, unsigned char hour,
              unsigned char minute, unsigned char second);
 

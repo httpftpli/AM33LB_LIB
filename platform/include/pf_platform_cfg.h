@@ -237,6 +237,10 @@
 #define TFT_PANEL    TFT_LSA40AT9001  
 #endif
 
+#ifndef TOUCHPAD
+#define TOUCHPAD  UART
+#endif
+
 
 #ifndef TS_CALIBRATION_X_TOLERANCE
 #define TS_CALIBRATION_X_TOLERANCE 10

@@ -109,8 +109,8 @@ void  isr_tsc(unsigned int intnum) {
    }
 }
 
-
-void TSCADCModuleClkConfig(void) {
+#if 0
+void TSCADCModuleClkConfig(void) { 
    /* Writing to MODULEMODE field of CM_WKUP_TSC_CLKCTRL register. */
    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_ADC_TSC_CLKCTRL) |=
       CM_WKUP_ADC_TSC_CLKCTRL_MODULEMODE_ENABLE;
@@ -142,6 +142,7 @@ void TSCADCModuleClkConfig(void) {
              (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_ADC_TSC_CLKCTRL) &
                  CM_WKUP_ADC_TSC_CLKCTRL_IDLEST));
 }
+#endif
 
 static void IdleStepConfig(void) {
    /* Configure ADC to Single ended operation mode */

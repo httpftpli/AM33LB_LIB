@@ -33,6 +33,49 @@ BURN_RET  burnAppFormBuf(void *appBuf, unsigned int appLen, unsigned int burnSeg
     unsigned int ret;
     unsigned char *buf = (unsigned char *)appBuf;
     unsigned char bufsector[512];
+    APPHEADER *realheader = (APPHEADER *)bufsector;
+    APPSETCTION *realsection = &(realheader->appsec1);
+
+    if ((appBuf == NULL) || (appLen == 0) || (burnSegFlag == 0) ||
+        ((unsigned int)appBuf % 4 != 0)) {
+        return BURN_PARAM_ERROR;
+    }
+    //process burn
+    ret = MMCSDP_Read(mmcsdctr, bufsector, APP_HEAD_SECTOR, 1);
+    if (false == ret) {
+        return BURN_DES_ERROR;
+    }
+
+    realsection->imageaddr = APP_BEGIN_SECTOR ;
+    realsection->imageSize = appLen;
+    realsection->imageCheck = APP_MAGIC_NO;
+    //clear the magic
+    ret = MMCSDP_Write(mmcsdctr, realheader, APP_HEAD_SECTOR, 1); //modify app heard
+    if (false == ret) {
+        return BURN_DES_ERROR;
+    }
+    //burn data
+    ret = MMCSDP_Write(mmcsdctr, buf, APP_BEGIN_SECTOR,DIVUP(realsection->imageSize,512));
+    if (false == ret) {
+        return BURN_DES_ERROR;
+    }
+
+    //flag the magic
+    realsection->imageCheck = APP_MAGIC_OK;
+    realheader->magic = APP_MAGIC_OK;
+    ret =  MMCSDP_Write(mmcsdctr, realheader, APP_HEAD_SECTOR, 1); //modify app heard
+    if (false == ret) {
+        return BURN_DES_ERROR;
+    }
+   return BURN_OK;
+}
+
+
+
+/*BURN_RET  burnAppFormBuf(void *appBuf, unsigned int appLen, unsigned int burnSegFlag) {
+    unsigned int ret;
+    unsigned char *buf = (unsigned char *)appBuf;
+    unsigned char bufsector[512];
     APPHEADER *appheader = (APPHEADER *)appBuf;
     APPSETCTION *appsection = &(appheader->appsec1);
     APPHEADER *realheader = (APPHEADER *)bufsector;
@@ -65,13 +108,13 @@ BURN_RET  burnAppFormBuf(void *appBuf, unsigned int appLen, unsigned int burnSeg
     unsigned short temp =0;
     for (int i=0;i<16;i++) {//check number of app section
         if (appheader->secflag&(1<<i) == 1) {
-            temp++;     
+            temp++;
         }
     }
     if (temp != appheader->numOfAppsec) {
         return BURN_FILE_ERROR;
     }
-    for (int i = 0; i < NUM_OF_APPSECTION; i++) { //check addr of app section 
+    for (int i = 0; i < NUM_OF_APPSECTION; i++) { //check addr of app section
         if ((burnSegFlag & 0x01 << i) && ((appsection+i)->imageaddr + (appsection+i)->imageSize) > (appLen - 16)) {
             return BURN_FILE_ERROR;
         }
@@ -113,7 +156,7 @@ BURN_RET  burnAppFormBuf(void *appBuf, unsigned int appLen, unsigned int burnSeg
         return BURN_DES_ERROR;
     }
    return BURN_OK;
-}
+}*/
 
 
 

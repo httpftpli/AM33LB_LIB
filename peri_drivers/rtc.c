@@ -984,8 +984,9 @@ void RTCTimeSet(unsigned int baseAdd, unsigned int time)
 
      
     /* Stop the RTC.*/
-    HWREG(baseAdd + RTC_CTRL) &= ~(RTC_CTRL_RUN);
-
+    while (HWREG(baseAdd + RTC_STATUS)&0x02) {
+        HWREG(baseAdd + RTC_CTRL) &= ~(RTC_CTRL_RUN);
+    }
     /* Writing to SECOND register.*/
     HWREG(baseAdd + RTC_SECOND) = (time & SECOND_MASK) >> SECOND_SHIFT;
 

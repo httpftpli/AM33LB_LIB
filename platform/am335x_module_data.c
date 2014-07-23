@@ -83,6 +83,13 @@ extern __weak  void isr_mcspi(unsigned int intnum);
 extern __weak  void isr_dmtimer(unsigned int num);
 
 
+#if TOUCHPAD == AM335X_ADC_TSC
+#define IS_TSC isr_tsc
+#else
+#define IS_TSC isr_uart_for_keyboard
+#endif
+
+
 
 MODULE modulelist[128] = {
    [MODULE_ID_EDMA] =  {.index=0, .baseAddr = SOC_EDMA30CC_0_REGS,.INTNum={SYS_INT_EDMACOMPINT,0,0},  .INTPriority={INT_PRIORITY_DMA_COMP,0,0},.isr={isr_Edma3Completion,0,0}},
@@ -105,12 +112,12 @@ MODULE modulelist[128] = {
    [MODULE_ID_DCAN1] = {.index=1, .baseAddr = SOC_DCAN_1_REGS,.INTNum={SYS_INT_DCAN1_INT0,0,0},.INTPriority={INT_PRIORITY_DCAN1_LINE0,0,0},.isr={isr_DCANLine0,0,0},.moduleClk=&dcan1ModClock},
    [MODULE_ID_MMCSD0] = {.index=0,.baseAddr = SOC_MMCHS_0_REGS,.INTNum={SYS_INT_MMCSD0INT,0,0},.INTPriority={INT_PRIORITY_MMCSD0,0,0},.isr={isr_HSMMCSD,0,0},.moduleClk=&mmcsd0ModClock},
    [MODULE_ID_MMCSD1] = {.index=1,.baseAddr = SOC_MMCHS_1_REGS,.INTNum={SYS_INT_MMCSD1INT,0,0},.INTPriority={INT_PRIORITY_MMCSD1,0,0},.isr={isr_HSMMCSD,0,0}},
-   [MODULE_ID_ADCTSC] = {.index=0,.baseAddr = SOC_ADC_TSC_0_REGS,.INTNum={SYS_INT_ADC_TSC_GENINT,0,0},.INTPriority={INT_PRIORITY_ADCTSC,0,0},.isr={isr_tsc,0,0},.moduleClk=&adcTscModClock},
+   [MODULE_ID_ADCTSC] = {.index=0,.baseAddr = SOC_ADC_TSC_0_REGS,.INTNum={SYS_INT_ADC_TSC_GENINT,0,0},.INTPriority={INT_PRIORITY_ADCTSC,0,0},.isr={IS_TSC,0,0},.moduleClk=&adcTscModClock},
    [MODULE_ID_UART0] =  {.index=1,.baseAddr = SOC_UART_0_REGS,.INTNum={SYS_INT_UART0INT,0,0},.INTPriority={0,0,0},.isr={0,0,0},.moduleClk=&uart0ModClock},
    [MODULE_ID_UART1] =  {.index=1,.baseAddr = SOC_UART_1_REGS,.INTNum={SYS_INT_UART1INT,0,0},.INTPriority={INT_PRIORITY_UART1,0,0},.isr={0,0,0},.moduleClk=&uart1ModClock}, 
    [MODULE_ID_UART2] =  {.index=1,.baseAddr = SOC_UART_2_REGS,.INTNum={SYS_INT_UART2INT,0,0},.INTPriority={INT_PRIORITY_UART2,0,0},.isr={0,0,0},.moduleClk=&uart2ModClock},
    [MODULE_ID_UART3] =  {.index=1,.baseAddr = SOC_UART_3_REGS,.INTNum={SYS_INT_UART3INT,0,0},.INTPriority={INT_PRIORITY_UART3,0,0},.isr={0,0,0},.moduleClk=&uart3ModClock},
-   [MODULE_ID_UART4] =  {.index=1,.baseAddr = SOC_UART_4_REGS,.INTNum={SYS_INT_UART4INT,0,0},.INTPriority={INT_PRIORITY_UART4,0,0},.isr={isr_uart_for_keyboard,0,0},.moduleClk=&uart4ModClock},
+   [MODULE_ID_UART4] =  {.index=1,.baseAddr = SOC_UART_4_REGS,.INTNum={SYS_INT_UART4INT,0,0},.INTPriority={INT_PRIORITY_UART4,0,0},.isr={IS_TSC,0,0},.moduleClk=&uart4ModClock},
    [MODULE_ID_UART5] =  {.index=1,.baseAddr = SOC_UART_5_REGS,.INTNum={SYS_INT_UART5INT,0,0},.INTPriority={INT_PRIORITY_UART5,0,0},.isr={0,0,0},.moduleClk=&uart5ModClock},
    [MODULE_ID_TIMER0] = {.index=0,.baseAddr = SOC_DMTIMER_0_REGS,.INTNum={SYS_INT_TINT0,0,0},.INTPriority={INT_PRIORITY_TIMER0,0,0},.isr={0,0,0},.moduleClk=&timer0ModClock},
    [MODULE_ID_TIMER1] = {.index=1,.baseAddr = SOC_DMTIMER_1_REGS,.INTNum={SYS_INT_TINT1_1MS,0,0},.INTPriority={INT_PRIORITY_TIMER1,0,0},.isr={0,0,0},.moduleClk=&timer1ModClock},

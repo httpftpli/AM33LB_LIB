@@ -202,6 +202,12 @@ unsigned int QEPReadPos(unsigned int moduleId) {
 }
 
 
+unsigned int QEPReadDir(unsigned int moduleId) {
+   unsigned int baseAddr = modulelist[moduleId].baseAddr;
+   return ((HWREG(baseAddr + EQEP_QEPSTS)>>5)&0x1);
+}
+
+
 
 static int QEPCalcuLatchVelocity(unsigned int moduleId) {
    unsigned int index = modulelist[moduleId].index;

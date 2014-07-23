@@ -1,7 +1,7 @@
 #ifndef _PF_QEP_H_
 #define _PF_QEP_H_
 
-#define QEP_INPUT_CLK_100MZ         100000000  
+#define QEP_INPUT_CLK_100MZ         100000000
 
 
 #define QEP_HANDER_FlAG_COMPARE_MATCH     1
@@ -14,7 +14,7 @@
 
 #define QEP_MODE_QUAD         0
 #define QEP_MODE_DERECTION    1
-#define QEP_MODE_UPCOUNT      2      
+#define QEP_MODE_UPCOUNT      2
 #define QEP_MODE_DOWNCOUNT    3
 
 #define QEP_SETPOS_IMMED                  (1<<0)
@@ -37,9 +37,10 @@ extern void QEPSwapQuadInput(unsigned int moduleId);
 extern void QEPSetPosFactor(unsigned int factor);
 extern void QEPSetPosCompare(unsigned int moduleId,unsigned int compare);
 extern unsigned int QEPReadPos(unsigned int moduleId);
+extern unsigned int QEPReadDir(unsigned int moduleId);
 extern int QEPCalcuLatchVelocity(unsigned int moduleId);//pulse*factor/s
 extern void QEPSetPosCompareCurrent(unsigned int moduleId);
-            
+
 
 #ifdef __cplusplus
 }
