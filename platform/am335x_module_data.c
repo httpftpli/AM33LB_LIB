@@ -83,7 +83,7 @@ extern __weak  void isr_mcspi(unsigned int intnum);
 extern __weak  void isr_dmtimer(unsigned int num);
 
 
-#if TOUCHPAD == AM335X_ADC_TSC
+#ifdef AM335X_ADC_TSC
 #define IS_TSC isr_tsc
 #else
 #define IS_TSC isr_uart_for_keyboard
