@@ -2,10 +2,10 @@
  *  \file   pf_tsc.c
  *
  *  \brief
- *  \author  李飞亮  
+ *  \author  李飞亮
  *  \addtogroup GUI
- *  @{ 
- *   
+ *  @{
+ *
  */
 
 #include "soc_AM335x.h"
@@ -31,9 +31,6 @@
 #define SAMPLES       8
 
 extern mmcsdCtrlInfo mmcsdctr[2];
-
-
-static TS_CALIBRATION tsCalibration ;
 
 
 BOOL TouchCalibrate(BOOL force);
@@ -99,7 +96,7 @@ void  isr_tsc(unsigned int intnum) {
          preTsSampleRaw.y = sum(arr_x + 2, SAMPLES - 4) / (SAMPLES - 4);
          preTsSampleRaw.x = sum(arr_y + 2, SAMPLES - 4) / (SAMPLES - 4);
          ts_linear(&tsCalibration,(int*)&(g_ts.x),(int *)&(g_ts.y));
-         atomicSet(&g_touched);      
+         atomicSet(&g_touched);
          //UARTprintf("x: %d  ; y: %d  ;", tsSampleRaw.x, tsSampleRaw.y);
          //UARTprintf("fbx: %d  ; fby: %d \n\r", msg.xpt, msg.ypt);
       }
@@ -109,40 +106,6 @@ void  isr_tsc(unsigned int intnum) {
    }
 }
 
-#if 0
-void TSCADCModuleClkConfig(void) { 
-   /* Writing to MODULEMODE field of CM_WKUP_TSC_CLKCTRL register. */
-   HWREG(SOC_CM_WKUP_REGS + CM_WKUP_ADC_TSC_CLKCTRL) |=
-      CM_WKUP_ADC_TSC_CLKCTRL_MODULEMODE_ENABLE;
-
-   /* Waiting for MODULEMODE field to reflect the written value. */
-   while (CM_WKUP_ADC_TSC_CLKCTRL_MODULEMODE_ENABLE !=
-             (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_ADC_TSC_CLKCTRL) &
-                 CM_WKUP_ADC_TSC_CLKCTRL_MODULEMODE));
-
-   /*
-   ** Waiting for IDLEST field in CM_WKUP_CONTROL_CLKCTRL register to attain
-   ** desired value.
-   */
-   while ((CM_WKUP_CONTROL_CLKCTRL_IDLEST_FUNC <<
-           CM_WKUP_CONTROL_CLKCTRL_IDLEST_SHIFT) !=
-             (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CONTROL_CLKCTRL) &
-                 CM_WKUP_CONTROL_CLKCTRL_IDLEST));
-
-   while (CM_WKUP_CLKSTCTRL_CLKACTIVITY_ADC_FCLK !=
-             (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL) &
-                 CM_WKUP_CLKSTCTRL_CLKACTIVITY_ADC_FCLK));
-
-   /*
-   ** Waiting for IDLEST field in CM_WKUP_ADC_TSC_CLKCTRL register to attain
-   ** desired value.
-   */
-   while ((CM_WKUP_ADC_TSC_CLKCTRL_IDLEST_FUNC <<
-           CM_WKUP_ADC_TSC_CLKCTRL_IDLEST_SHIFT) !=
-             (HWREG(SOC_CM_WKUP_REGS + CM_WKUP_ADC_TSC_CLKCTRL) &
-                 CM_WKUP_ADC_TSC_CLKCTRL_IDLEST));
-}
-#endif
 
 static void IdleStepConfig(void) {
    /* Configure ADC to Single ended operation mode */
@@ -155,7 +118,7 @@ static void IdleStepConfig(void) {
    /* Configure the Analog Supply to Touch screen */
    TSCADCIdleStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_OFF,
                                     TSCADC_XNPSW_PIN_OFF, TSCADC_YPPSW_PIN_OFF);
-   /* 
+   /*
    **Configure the Analong Ground of Touch screen.
    */
    TSCADCIdleStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_OFF,
@@ -174,7 +137,7 @@ static void TSchargeStepConfig(void) {
    /* Configure the Analog Supply to Touch screen */
    TSCADCChargeStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_OFF,
                                       TSCADC_XNPSW_PIN_OFF, TSCADC_YPPSW_PIN_OFF);
-   /* 
+   /*
    **Configure the Analong Ground of Touch screen.
    */
    TSCADCChargeStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_OFF,

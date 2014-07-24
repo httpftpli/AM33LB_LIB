@@ -46,6 +46,7 @@ void isr_RTC(unsigned int intnum) {
 static void RTCAM335XInit(unsigned int calendar,unsigned int time){
     //RTCModuleClkConfig();
     moduleEnable(MODULE_ID_RTC);
+    IntMasterIRQDisable();
     RTCWriteProtectDisable(SOC_RTC_0_REGS);
     RTC32KClkSourceSelect(SOC_RTC_0_REGS, RTC_INTERNAL_CLK_SRC_SELECT);
     RTC32KClkClockControl(SOC_RTC_0_REGS, RTC_32KCLK_ENABLE);
@@ -55,6 +56,7 @@ static void RTCAM335XInit(unsigned int calendar,unsigned int time){
     RTCRun(SOC_RTC_0_REGS);
     RTCIntTimerEnable(SOC_RTC_0_REGS, RTC_INT_EVERY_SECOND);
     RTCWriteProtectEnable(SOC_RTC_0_REGS);
+    IntMasterIRQEnable();
  }
 
 
@@ -114,7 +116,7 @@ void RTCReadBcd(unsigned short *year, unsigned char *month,
              unsigned char *minute, unsigned char *second) {
    unsigned int time = RTCTimeGet(SOC_RTC_0_REGS); //FIRST READ TIME;
    unsigned int can = RTCCalendarGet(SOC_RTC_0_REGS);
-   *year = (can & YEAR_MASK) >> YEAR_SHIFT+ 2<<24;
+   *year = ((can & YEAR_MASK) >> YEAR_SHIFT)+ 0x2000;
    *month = (can & MONTH_MASK) >> MONTH_SHIFT;
    *day = (can & DAY_MASK) >> DAY_SHIFT;
    *hour = (time & HOUR_MASK) >> HOUR_SHIFT;
@@ -126,7 +128,7 @@ void RTCReadHex(unsigned short *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
              unsigned char *minute, unsigned char *second) {
    RTCReadBcd(year,month,day,hour,minute,second);
-   *year = bcd2hex_2(*year)+2000;
+   *year = bcd2hex_4(*year);
    *month = bcd2hex_2(*month);
    *day = bcd2hex_2(*day);
    *hour = bcd2hex_2(*hour);
@@ -158,15 +160,15 @@ BOOL RTCSetBcd(unsigned short year, unsigned char month,
              unsigned char minute, unsigned char second){
     year = (unsigned char)year;
     unsigned int time = hour<<HOUR_SHIFT |minute<<MINUTE_SHIFT | second<<SECOND_SHIFT;
-    //IntMasterFIQDisable();
-    //RTCSecondSet(SOC_RTC_0_REGS,second);
-    //RTCMinuteSet(SOC_RTC_0_REGS,minute);
-    //RTCHourSet(SOC_RTC_0_REGS,hour);
+    RTCWriteProtectDisable(SOC_RTC_0_REGS);
+    IntMasterIRQDisable();
     RTCTimeSet(SOC_RTC_0_REGS,time);
+    IntMasterIRQEnable();
     unsigned int can = day<<DAY_SHIFT|month<<MONTH_SHIFT|year<<YEAR_SHIFT;
+    IntMasterIRQDisable();
     RTCCalendarSet(SOC_RTC_0_REGS,can);
-    IntMasterFIQEnable();
-    RTCRun(SOC_RTC_0_REGS);
+    IntMasterIRQEnable();
+    RTCWriteProtectEnable(SOC_RTC_0_REGS);
     BOOL ret;
     ret = Rx8025SetCalendar(year,month,day);
     if (FALSE == ret ) {
