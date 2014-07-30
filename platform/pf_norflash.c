@@ -77,7 +77,7 @@ void GPMCInitForNOR(){
                                       //WRAPBURST|READMULTIPLE|READTYPE|WRITEMULTIPLE|WRITETYPE|
          0x00 <<25    |     0x00 << 23         |     0<<22        |     0<<21          | 
    //CLKACTIVATIONTIME|ATTACHEDDEVICEPAGELENGTH|WAITREADMONITORING| WAITWRITEMONITORING| 
-        1 << 12  | 0 << 10  | 0x00 << 8 |   0 << 4           |  0 << 0;
+        0 << 12  | 0 << 10  | 0x00 << 8 |   0 << 4           |  0 << 0;
      //DEVICESIZE|DEVICETYPE| MUXADDDATA|TIMEPARAGRANULARITY | GPMCFCLKDIVIDER
          
      
