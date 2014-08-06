@@ -48,10 +48,10 @@
 #define MODULE_ID_GFX            SYS_INT_GFXINT                        
 #define MODULE_ID_2DHWA    SYS_INT_2DHWAINT                       
 #define MODULE_ID_ePWM2    SYS_INT_ePWM2INT                       
-#define MODULE_IDXX        SYS_INT_3PGSWRXTHR0                
-#define MODULE_IDXXX       SYS_INT_3PGSWRXINT0                   
-#define MODULE_IDXXXX      SYS_INT_3PGSWTXINT0                   
-#define MODULE_IDXXDFD     SYS_INT_3PGSWMISC0                    
+#define MODULE_ID_3GPSW      SYS_INT_3PGSWRXTHR0                
+#define MODULE_ID_3GPSW_1      SYS_INT_3PGSWRXINT0                   
+#define MODULE_ID_3GPSW_2      SYS_INT_3PGSWTXINT0                   
+#define MODULE_ID_3GPSW_3     SYS_INT_3PGSWMISC0                    
 #define MODULE_ID_UART3    SYS_INT_UART3INT                      
 #define MODULE_ID_UART4    SYS_INT_UART4INT                      
 #define MODULE_ID_UART5    SYS_INT_UART5INT                      

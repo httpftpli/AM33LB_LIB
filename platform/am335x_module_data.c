@@ -134,6 +134,7 @@ MODULE modulelist[128] = {
    [MODULE_ID_SPI0]   = {.index=0,.baseAddr = SOC_SPI_0_REGS,.INTNum={SYS_INT_SPI0INT,0,0},.INTPriority={INT_PRIORITY_SPI1,0,0},.isr={isr_mcspi,0,0}, .moduleClk=&spi0ModClock},
    [MODULE_ID_SPI1]   = {.index=1,.baseAddr = SOC_SPI_1_REGS,.INTNum={SYS_INT_SPI1INT,0,0},.INTPriority={INT_PRIORITY_SPI1,0,0},.isr={isr_mcspi,0,0}, .moduleClk=&spi1ModClock},
    [MODULE_ID_RTC]    = {.index=0,.baseAddr = SOC_RTC_0_REGS,.INTNum={0,0,0},              .INTPriority={0,0,0},                .isr={0,0,0},         .moduleClk=&rtcModClock},
+   [MODULE_ID_3GPSW]  = {.index=0,.baseAddr = 0,             .INTNum={0,0,0},              .INTPriority={0,0,0},                .isr={0,0,0},         .moduleClk=&cpgmac0ModClock},
 };
 
 

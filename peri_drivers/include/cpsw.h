@@ -61,6 +61,7 @@ extern "C" {
 #define CPSW_SLIVER_NON_GIG_FULL_DUPLEX        CPSW_SL_MACCONTROL_FULLDUPLEX
 #define CPSW_SLIVER_NON_GIG_HALF_DUPLEX        (0x00u)
 #define CPSW_SLIVER_GIG_FULL_DUPLEX            CPSW_SL_MACCONTROL_GIG
+#define CPSW_SLIVER_INBAND                     CPSW_SL_MACCONTROL_EXT_EN
 
 /*
 ** Macros which can be used as 'statFlag' to the API CPSWSlMACStatusGet
@@ -303,6 +304,7 @@ extern void CPSWRxFlowControlDisable(unsigned int baseAddr, unsigned int portNum
 extern void CPSWSoftwareIdleEnable(unsigned int baseAddr);
 extern void CPSWSoftwareIdleDisable(unsigned int baseAddr, unsigned int portNum);
 extern void CPSWStatisticsEnable(unsigned int baseAddr);
+extern void CPSWVLANAwareEnable(unsigned int baseAddr);
 extern void CPSWVLANAwareDisable(unsigned int baseAddr);
 extern void CPSWPortSrcAddrSet(unsigned int baseAddr, unsigned char *ethAddr);
 extern unsigned int CPSWStatisticsGet(unsigned int baseAddr, unsigned int statReg);
@@ -343,8 +345,32 @@ extern void CPSWContextSave(CPSWCONTEXT *contextPtr);
 extern void CPSWContextRestore(CPSWCONTEXT *contextPtr);
 extern void CPSWHostPortDualMacModeSet(unsigned int baseAddr);
 extern void CPSWALEVLANAwareSet(unsigned int baseAddr);
+extern void CPSWALEVLANAwareClear(unsigned int baseAddr);
 extern void CPSWPortVLANConfig(unsigned int baseAddr, unsigned int vlanId,
                                unsigned int cfiBit, unsigned int vlanPri);
+extern void CPSWALERateLimitTXMode(unsigned int baseAddr);
+extern void CPSWALERateLimitRXMode(unsigned int baseAddr);
+extern void CPSWALERateLimitEnable(unsigned int baseAddr);
+extern void CPSWALERateLimitDisable(unsigned int baseAddr);
+extern void CPSWALEAUTHModeSet(unsigned int baseAddr);
+extern void CPSWALEAUTHModeClear(unsigned int baseAddr);
+extern void CPSWALEUnknownUntaggedEgressSet(unsigned int baseAddr,
+                                            unsigned int ueVal);
+extern void CPSWALEUnknownRegFloodMaskSet(unsigned int baseAddr,
+                                          unsigned int rfmVal);
+extern void CPSWALEUnknownUnRegFloodMaskSet(unsigned int baseAddr,
+                                            unsigned int ufmVal);
+extern void CPSWALEUnknownMemberListSet(unsigned int baseAddr,
+                                        unsigned int mlVal);
+extern void CPSWALEBroadcastRateLimitSet(unsigned int baseAddr,
+                                         unsigned int portNum,
+                                         unsigned int bplVal);
+extern void CPSWALEMulticastRateLimitSet(unsigned int baseAddr,
+                                         unsigned int portNum,
+                                         unsigned int mplVal);
+extern void CPSWALEVIDIngressCheckSet(unsigned int baseAddr,
+                                      unsigned int portNum);
+extern void CPSWALEAgeOut(unsigned int baseAddr);
 #ifdef __cplusplus
 }
 #endif

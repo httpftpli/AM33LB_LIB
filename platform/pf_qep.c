@@ -96,9 +96,13 @@ void QEPSwapQuadInput(unsigned int moduleId) {
  * @code
  * @endcode
  * @pre
+ *  
  * @see
  */
-void QEPInit(unsigned int moduleId, unsigned int inputmode) {
+
+
+
+void QEPInit(unsigned int moduleId, unsigned int inputmode,unsigned int intFlag) {
    unsigned int infreq = modulelist[moduleId].moduleClk->iClk[0]->clockSpeedHz;
    unsigned int baseAddr = modulelist[moduleId].baseAddr;
    //soft reset Quadrature position counter
@@ -117,7 +121,7 @@ void QEPInit(unsigned int moduleId, unsigned int inputmode) {
    //campare position :0xffffffff
    HWREG(baseAddr + EQEP_QPOSCMP) = 0xffffffff;
    //int enable  UTO,PCM,PCO,PCU,PHE,PCE,QDC
-   HWREGH(baseAddr + EQEP_QEINT) = 1 << 11 | 1 << 8 | 1 << 6 | 1 << 5 |1<<3 | 1 << 2 | 1 << 1;
+   HWREGH(baseAddr + EQEP_QEINT) = intFlag ;
    // position compare: enable;  shadow disable;
    HWREGH(baseAddr + EQEP_QPOSCTL) = 1 << 12;
    QEPSetPos(moduleId, 0, QEP_SETPOS_IMMED);
@@ -235,7 +239,7 @@ static int QEPCalcuLatchVelocity(unsigned int moduleId) {
  * @pre
  * @see
  */
-void QEPSetPosCompare(unsigned int moduleId, unsigned int compare) {
+void QEPSetPosCompare(unsigned int moduleId, int compare) {
    unsigned int baseAddr = modulelist[moduleId].baseAddr;
    mdAssert(positionFactor != 0);
    HWREG(baseAddr + EQEP_QPOSCMP) = compare / positionFactor + POSORIGIN;

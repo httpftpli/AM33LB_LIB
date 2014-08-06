@@ -41,7 +41,7 @@
 	MODULE INIT
 ;****************************** Global Symbols*********************************
         PUBLIC Entry
-        IMPORT start_boot   
+        IMPORT start_boot
 
         ;; Forward declaration of sections.
         SECTION IRQ_STACK:DATA:NOROOT(3)
@@ -50,24 +50,24 @@
         SECTION ABT_STACK:DATA:NOROOT(3)
         SECTION UND_STACK:DATA:NOROOT(3)
         SECTION CSTACK:DATA:NOROOT(3)
- 
+
         SECTION .bss:CODE:NOROOT(3)
         SECTION SYSTEMSTART:CODE (4)
 ;************************ Internal Definitions ********************************
 
 ;
 ; to set the mode bits in CPSR for different modes
-;        
+;
 MODE_MSK DEFINE 0x1F            ; Bit mask for mode bits in CPSR
-MODE_USR DEFINE 0x10            
+MODE_USR DEFINE 0x10
 MODE_FIQ DEFINE 0x11
 MODE_IRQ DEFINE 0x12
 MODE_SVC DEFINE 0x13
 MODE_ABT DEFINE 0x17
 MODE_UND DEFINE 0x1B
-MODE_SYS DEFINE 0x1F            
+MODE_SYS DEFINE 0x1F
 
-I_F_BIT DEFINE 0xC0               
+I_F_BIT DEFINE 0xC0
 
 ;******************************************************************************
 ; This source file is assembled for ARM instructions
@@ -89,7 +89,7 @@ Entry:
          orr     r0,r0,#MODE_SVC|I_F_BIT       ; Set Supervisor mode bits
          msr     cpsr_c,r0                     ; Change the mode
          ldr     sp,=SFE(SVC_STACK)            ; End of SVC_STACK
-			 		 
+
          bic     r0,r0,#MODE_MSK               ; Clear the mode bits
          orr     r0,r0,#MODE_ABT|I_F_BIT       ; Set Abort mode bits
          msr     cpsr_c,r0                     ; Change the mode
@@ -122,8 +122,20 @@ Entry:
          MRC     p15, #0, r0, c1, c0, #0
          ORR     r0, r0, #0x00000800
          MCR     p15, #0, r0, c1, c0, #0
+
 ;
-; Clear the BSS section here. 
+; Enable Neon/VFP Co-Processor
+;
+         MRC p15, #0, r1, c1, c0, #2           ; r1 = Access Control Register
+         ORR r1, r1, #(0xf << 20)              ; enable full access for p10,11
+         MCR p15, #0, r1, c1, c0, #2           ; Access Control Register = r1
+         MOV r1, #0
+         MCR p15, #0, r1, c7, c5, #4           ; flush prefetch buffer
+         MOV r0,#0x40000000
+         FMXR FPEXC, r0                        ; Set VFP/Neon enable bit
+
+;
+; Clear the BSS section here.
 ;
          LDR   r0, =SFB(.bss)                  ; Start address of BSS
          LDR   r1, =SFE(.bss)                  ; End address of BSS
@@ -139,13 +151,13 @@ loop_zi_copy:
          LDR   r10,=start_boot
          MOV   lr,pc                           ; Dummy return from start_boot
          BLX   r10                             ; Branch to start_boot
-         SUB   pc, pc, #0x08                   ; looping   
+         SUB   pc, pc, #0x08                   ; looping
 
 ;
 ; End of the file
 ;
-         END    
-    
+         END
+
 
 
 
