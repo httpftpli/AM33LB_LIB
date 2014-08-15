@@ -199,21 +199,73 @@ void GPIODirGet(unsigned  int moduleId,unsigned int pinNumber){
 
 void GPIOPinWr(unsigned int moduleId, unsigned int pinNumber, unsigned int value) {
     unsigned int baseAdd = modulelist[moduleId].baseAddr;
-    GPIOPinWrite(baseAdd,pinNumber,value);
+    __GPIOPinWrite(baseAdd,pinNumber,value);
 }
 
 
 unsigned int GPIOPinRd(unsigned int moduleId,
                          unsigned int pinNumber){
     unsigned int baseAdd = modulelist[moduleId].baseAddr;
-    return GPIOPinRead(baseAdd,pinNumber);
+    return __GPIOPinRead(baseAdd,pinNumber);
 }
 
 void GPIOPinTogle(unsigned int moduleId, unsigned int pinNumber) {
     unsigned int baseAdd = modulelist[moduleId].baseAddr;
     unsigned int dataout =HWREG(baseAdd + GPIO_DATAOUT);
     dataout &= 1<<pinNumber;
-    GPIOPinWrite(baseAdd,pinNumber,!dataout);
+    __GPIOPinWrite(baseAdd,pinNumber,!dataout);
 }
+
+/**
+ * \brief  This API set the GPIO PIN interrrupt 
+ *  
+ *         Whenever the selected event occurs on that GPIO pin and if interrupt
+ *         generation is enabled for that pin, the GPIO module will send an
+ *         interrupt to CPU.
+ *
+ * \param  moduleId    MODULE_ID_GPIOX
+ * \param  pinNumber  The number of the pin in the GPIO instance
+ * \param  eventType  This specifies the event type on whose detection,
+ *                    the GPIO module will send an interrupt to CPU,
+ *                    provided interrupt generation for that pin is enabled.
+ *
+ * 'pinNumber' can take one of the following values:
+ * (0 <= pinNumber <= 31)\n
+ *
+ * 'eventType' can take one of the following values:
+ * - GPIO_INT_TYPE_NO_LEVEL - no interrupt request on occurence of either a
+ *   logic LOW or a logic HIGH on the input GPIO pin\n
+ * - GPIO_INT_TYPE_LEVEL_LOW - interrupt request on occurence of a LOW level
+ *   (logic 0) on the input GPIO pin\n
+ * - GPIO_INT_TYPE_LEVEL_HIGH - interrupt request on occurence of a HIGH level
+ *   (logic 1) on the input GPIO pin\n
+ * - GPIO_INT_TYPE_BOTH_LEVEL - interrupt request on the occurence of both the
+ *   LOW level and HIGH level on the input GPIO pin\n
+ * - GPIO_INT_TYPE_NO_EDGE -  no interrupt request on either rising or
+ *   falling edges on the pin\n
+ * - GPIO_INT_TYPE_RISE_EDGE - interrupt request on occurence of a rising edge
+ *   on the input GPIO pin\n
+ * - GPIO_INT_TYPE_FALL_EDGE - interrupt request on occurence of a falling edge
+ *   on the input GPIO pin\n
+ * - GPIO_INT_TYPE_BOTH_EDGE - interrupt request on occurence of both a rising
+ *   and a falling edge on the pin\n
+ *
+ * \return  None
+ */
+ 
+void GPIOPinIntEnable(unsigned int moduleId,unsigned int pinNumber,unsigned int intTrigFlag){
+    ASSERT(pinNumber<32);
+    unsigned int baseAdd = modulelist[moduleId].baseAddr;
+    __GPIOPinIntDisable(baseAdd,GPIO_INT_LINE_1,pinNumber);
+    GPIOIntTypeSet(baseAdd, pinNumber, intTrigFlag);
+    __GPIOPinIntEnable(baseAdd,GPIO_INT_LINE_1,pinNumber);
+}
+
+void GPIOPinIntDisable(unsigned int moduleId,unsigned int pinNumber,unsigned int intTrigFlag){
+    ASSERT(pinNumber<32);
+    unsigned int baseAdd = modulelist[moduleId].baseAddr;
+    __GPIOPinIntDisable(baseAdd,GPIO_INT_LINE_1,pinNumber);
+}
+
 //! @}
 /****************************** End of file *********************************/

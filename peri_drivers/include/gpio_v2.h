@@ -136,21 +136,21 @@ extern void GPIODirModeSet(unsigned int baseAdd,
                            unsigned int pinDirection);
 extern unsigned int GPIODirModeGet(unsigned int baseAdd,
                                    unsigned int pinNumber);
-extern void GPIOPinWrite(unsigned int baseAdd,
+extern void __GPIOPinWrite(unsigned int baseAdd,
                          unsigned int pinNumber,
                          unsigned int pinValue);
-extern unsigned int GPIOPinRead(unsigned int baseAdd,
+extern unsigned int __GPIOPinRead(unsigned int baseAdd,
                                 unsigned int pinNumber);
 extern void GPIOMultiplePinsWrite(unsigned int baseAdd,
                                   unsigned int setMask,
                                   unsigned int clrMask);
 extern unsigned int GPIOMultiplePinsRead(unsigned int baseAdd,
                                          unsigned int readMask);
-extern void GPIOPinIntEnable(unsigned int baseAdd,
+extern void __GPIOPinIntEnable(unsigned int baseAdd,
                              unsigned int intLine,
                              unsigned int pinNumber);
 
-extern void GPIOPinIntDisable(unsigned int baseAdd,
+extern void __GPIOPinIntDisable(unsigned int baseAdd,
                               unsigned int intLine,
                               unsigned int pinNumber);
 extern void GPIOIntTypeSet(unsigned int baseAdd,

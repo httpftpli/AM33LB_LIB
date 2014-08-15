@@ -155,7 +155,7 @@ unsigned int GPIODirModeGet(unsigned int baseAdd,
  *
  */
 
-void GPIOPinWrite(unsigned int baseAdd,
+void __GPIOPinWrite(unsigned int baseAdd,
                   unsigned int pinNumber,
                   unsigned int pinValue)
 {
@@ -182,7 +182,7 @@ void GPIOPinWrite(unsigned int baseAdd,
  * \return  The pin value of the specified pin of the GPIO instance.
  */
 
-unsigned int GPIOPinRead(unsigned int baseAdd,
+unsigned int __GPIOPinRead(unsigned int baseAdd,
                          unsigned int pinNumber)
 {
     return(HWREG(baseAdd + GPIO_DATAIN) & (1 << pinNumber));
@@ -249,7 +249,7 @@ unsigned int GPIOMultiplePinsRead(unsigned int baseAdd,
  * \return None
  */
 
-void GPIOPinIntEnable(unsigned int baseAdd,
+void __GPIOPinIntEnable(unsigned int baseAdd,
                       unsigned int intLine,
                       unsigned int pinNumber)
 {
@@ -285,7 +285,7 @@ void GPIOPinIntEnable(unsigned int baseAdd,
  * \return  None
  */
 
-void GPIOPinIntDisable(unsigned int baseAdd,
+void __GPIOPinIntDisable(unsigned int baseAdd,
                        unsigned int intLine,
                        unsigned int pinNumber)
 {

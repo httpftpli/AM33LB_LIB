@@ -52,6 +52,22 @@
 #define KEY_RE1		37
 #define KEY_RE2		38
 #define KEY_RE3		39
+
+#define KEY_Hand    53
+#define KEY_Oil	    54
+#define KEY_FUN		55
+#define KEY_SAdd   	56
+#define KEY_SDec 	57
+#define KEY_Zero	58
+#define KEY_LAM1  	59
+#define KEY_LAM2	60
+#define KEY_Moto	61
+#define KEY_Stop	62
+#define KEY_Start	63
+#define KEY_Power	64
+#define KEY_OIL220	65
+#define KEY_BAK		66
+
 #define KEY_NO		0xff
 
 

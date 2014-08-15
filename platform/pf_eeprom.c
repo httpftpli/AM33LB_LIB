@@ -61,7 +61,7 @@ BOOL spiFmromInit(void *mirrorBuf,unsigned int szBuf){
    prebuf[index][1] = 0;
    prebuf[index][2] = 0;
    GPIOInit(FMROM_WP_GPIO_MODULE,0,0);
-   GPIOPinWrite(FMROM_WP_GPIO,FMROM_WP_PIN,0);
+   __GPIOPinWrite(FMROM_WP_GPIO,FMROM_WP_PIN,0);
    GPIODirModeSet(FMROM_WP_GPIO,FMROM_WP_PIN,GPIO_DIR_OUTPUT);
    return SPIRead(FMROM_SPI_MODULE,prebuf+index,3,mirrorBuf,szBuf);
 }
