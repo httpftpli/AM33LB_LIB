@@ -3034,7 +3034,7 @@ USBHostIntHandlerInternal(unsigned int ulIndex, unsigned int ulStatus, unsigned 
         // Set the disconnect flag and clear connect if it happens to be set.
         //
         g_sUSBHCD[ulIndex].ulUSBHIntEvents |= INT_EVENT_DISCONNECT;
-        g_sUSBHCD[ulIndex].ulUSBHIntEvents &= ~INT_EVENT_CONNECT;     
+        g_sUSBHCD[ulIndex].ulUSBHIntEvents &= ~INT_EVENT_CONNECT;
     }
 
     //
@@ -4243,9 +4243,9 @@ USBHCDControlTransfer(unsigned int ulIndex, tUSBRequest *pSetupPacket,
         mdWarn("Time out when usb control transfer,reset device");
         USBHCDTxAbort(ulIndex, 0);
         USBHCDRxAbort(ulIndex, 0);
-        USBHCDReset(ulIndex);
+        //USBHCDReset(ulIndex);
         g_sUSBHEP0State[ulIndex].eState = EP0_STATE_IDLE; //add by lfl
-       
+
     }
     StopTimer(timerindex);
 
