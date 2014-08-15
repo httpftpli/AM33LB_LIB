@@ -2136,11 +2136,19 @@ cpswif_rx_inthandler(u32_t inst_num, struct netif * netif_arr) {
 #endif
 
     /* Process the packet */
+#if 1
     if(ethernet_input((struct pbuf *)pbuf, netif_arr + if_num) != ERR_OK) {
       /* Adjust the link statistics */
       LINK_STATS_INC(link.memerr);
       LINK_STATS_INC(link.drop);
     }
+#endif
+
+
+    pbuf_free((struct pbuf *)pbuf);
+
+
+
 
     /* Acknowledge that this packet is processed */
     CPSWCPDMARxCPWrite(cpswinst->cpdma_base, 0, (unsigned int)curr_bd);

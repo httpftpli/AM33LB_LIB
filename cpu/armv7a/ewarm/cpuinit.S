@@ -123,6 +123,8 @@ Entry:
          ORR     r0, r0, #0x00000800
          MCR     p15, #0, r0, c1, c0, #0
 
+
+#ifdef __ARMVFP__
 ;
 ; Enable Neon/VFP Co-Processor
 ;
@@ -133,7 +135,7 @@ Entry:
          MCR p15, #0, r1, c7, c5, #4           ; flush prefetch buffer
          MOV r0,#0x40000000
          FMXR FPEXC, r0                        ; Set VFP/Neon enable bit
-
+#endif
 ;
 ; Clear the BSS section here.
 ;

@@ -40,6 +40,16 @@ typedef unsigned    int    u32_t;
 typedef signed      int    s32_t;
 typedef u32_t           mem_ptr_t;
 
+
+/* Define (sn)printf formatters for these lwIP types */
+#define U16_F "hu"
+#define S16_F "hd"
+#define X16_F "hx"
+#define U32_F "lu"
+#define S32_F "ld"
+#define X32_F "lx"
+
+
 #ifndef BYTE_ORDER
 #define BYTE_ORDER LITTLE_ENDIAN
 #endif
@@ -56,7 +66,7 @@ typedef u32_t           mem_ptr_t;
     //
     // Setup PACKing macros for IAR Tools
     //
-    #define PACK_STRUCT_BEGIN
+    #define PACK_STRUCT_BEGIN  __packed
     #define PACK_STRUCT_STRUCT
     #define PACK_STRUCT_END
     #define PACK_STRUCT_FIELD(x) x

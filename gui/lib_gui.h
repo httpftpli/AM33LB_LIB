@@ -211,9 +211,21 @@ typedef unsigned int COLOR;
 #error 
 #endif
 
-#define ALIGN_LEFT     0		
-#define ALIGN_MIDDLE	1			
-#define ALIGN_RIGHT	2			
+
+
+
+#define ALIGN_LEFT            0
+#define ALIGN_RIGHT           1
+#define ALIGN_MIDDLE          2
+
+
+
+#define ALIGN_LEFT_UP         ALIGN_LEFT<<4 | ALIGN_LEFT
+#define ALIGN_LEFT_MIDDLE     ALIGN_MIDDLE<<4 | ALIGN_LEFT		
+#define ALIGN_MIDDLE_UP	      ALIGN_LEFT<<4 | ALIGN_MIDDLE
+#define ALIGN_MIDDLE_MIDLE	  ALIGN_MIDDLE<<4 | ALIGN_MIDDLE			
+#define ALIGN_RIGHT_UP	      ALIGN_LEFT<<4 | ALIGN_RIGHT
+#define ALIGN_RIGHT_MIDLE	  ALIGN_MIDDLE<<4 | ALIGN_RIGHT				
 
 
 extern GUI_FONT *fonts[4];

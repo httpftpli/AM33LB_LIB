@@ -19,7 +19,7 @@
 #include "debug.h"
 
 
-const unsigned int POSORIGIN = 0x80000000;
+const unsigned int POSORIGIN = 0;
 //unittime us;unitposition um;positionFactor 0.1um,capTimeFactor ns;
 unsigned int unitPosition,positionFactor = 1,capTimeFactor;
 
@@ -346,6 +346,8 @@ void isr_qep(unsigned intnum) {
    unsigned short stat = HWREGH(baseaddr + EQEP_QFLG);
    //clear interrupt status
    HWREGH(baseaddr + EQEP_QCLR) = stat;
+   //masked by interrupt enable  value
+   stat &= HWREGH(baseaddr + EQEP_QEINT); 
    if (stat & 1 << 11) { //UTO  calculate velocity
       velocity[index] = QEPCalcuLatchVelocity(intnum);
    }

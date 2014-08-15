@@ -84,4 +84,10 @@ sys_arch_unprotect(sys_prot_t lev)
   } 
 }
 
+
+extern unsigned int TimerTickGet();
+u32_t sys_now(void){
+    return (u32_t) TimerTickGet();
+}
+
 #endif /* SYS_LIGHTWEIGHT_PROT */
