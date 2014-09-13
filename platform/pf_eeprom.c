@@ -12,9 +12,9 @@
 
 #define EEPROM_HSI2C_BASEADDR   SOC_I2C_0_REGS
 
+#define SPI_FLASH_CS       0
 
-
-#define FMROM_WP_GPIO         SOC_GPIO_0_REGS        
+#define FMROM_WP_GPIO         SOC_GPIO_0_REGS
 #define FMROM_WP_PIN          31
 #define FMROM_WP_GPIO_MODULE  MODULE_ID_GPIO0
 #define FMROM_SPI_MODULE      MODULE_ID_SPI1
@@ -146,7 +146,7 @@ BOOL  spiFmromRdId(unsigned char *manId,unsigned char *densitycode,unsigned char
    if(!SPIRead(FMROM_SPI_MODULE,prebuf+index,1,&dat,9)){
       return FALSE;
    }
-   while (!isSpiTransferFinish(MODULE_ID_SPI1)); 
+   while (!isSpiTransferFinish(MODULE_ID_SPI1));
    if (SPIGetState(MODULE_ID_SPI1)!= STATE_OK) {
       return FALSE;
    }
@@ -160,7 +160,7 @@ BOOL  spiFmromRdId(unsigned char *manId,unsigned char *densitycode,unsigned char
 }
 
 
- 
+
 
 
 /*BOOL spiFlashWren(void){
@@ -172,90 +172,76 @@ BOOL  spiFmromRdId(unsigned char *manId,unsigned char *densitycode,unsigned char
    return TRUE;
 }*/
 
-BOOL spiFlashChipErase(void){
-   if(g_spitransfer.finish==0)
-     return FALSE;
-   prebuf[0][0] = 0xc7;
-   prebuf[0][1] = 0x94;
-   prebuf[0][2] = 0x80;
-   prebuf[0][3] = 0x9a;
-   SPIWrite(MODULE_ID_SPI0,prebuf,4,NULL,0,0,NULL,0);
-   while (g_spitransfer.finish==0);
-   return TRUE;
+
+bool spiFlashChipErase_block(void){
+   unsigned int count = 10000000;
+   unsigned char buf[] = {0xc7,0x94,0x80,0x9a};
+   SPIWrite_blockPoll(MODULE_ID_SPI0,SPI_FLASH_CS,NULL,0,buf,sizeof buf);
+   while(spiFlashIsBusy()&& count--);
+   if(count==0)
+     return false;
+   return true;
 }
+
 
 
 BOOL spiFlashPageWrite(unsigned int addr,void *buf,unsigned int szbuf){
-   ASSERT(addr%256==0); 
-   if(g_spitransfer.finish==0)
-     return FALSE;
-   prebuf[0][0] = 0x84;
-   prebuf[0][1] = 0;
-   prebuf[0][2] = 0;
-   prebuf[0][3] = 0;
-   SPIWrite(MODULE_ID_SPI0,prebuf,4,buf,szbuf,0,NULL,0);
-   while (g_spitransfer.finish==0);
-   prebuf[0][0] = 0x83;
-   prebuf[0][1] = (unsigned char)(addr >>16);
-   prebuf[0][2] = (unsigned char)(addr >> 8);
-   prebuf[0][3] = 0;
-   SPIWrite(MODULE_ID_SPI0,prebuf,4,NULL,0,0,NULL,0);
-   while (g_spitransfer.finish==0);
+   unsigned char prebuf[4];
+   prebuf[0] = 0x84;
+   prebuf[1] = 0;
+   prebuf[2] = 0;
+   prebuf[3] = 0;
+   SPIWrite_blockPoll(MODULE_ID_SPI0,SPI_FLASH_CS,prebuf,4,buf,szbuf);
+   prebuf[0] = 0x83;
+   prebuf[1] = (unsigned char)(addr >>16);
+   prebuf[2] = (unsigned char)(addr >> 8);
+   prebuf[3] = 0;
+   SPIWrite_blockPoll(MODULE_ID_SPI0,SPI_FLASH_CS,prebuf,4,NULL,0);
+   while(spiFlashIsBusy());
    return TRUE;
-   /*
-   prebuf[0][0] = FLASH_OPCODE_PAGE_PROGRAM;
-   prebuf[0][1] = (unsigned char)(addr >>16);
-   prebuf[0][2] = (unsigned char)(addr >> 8);
-   prebuf[0][3] = 0;
-   SPIWrite(MODULE_ID_SPI0,prebuf,4,buf,szbuf,0,NULL,0);
-   while (g_spitransfer.finish==0);
-   return TRUE;*/
 }
 
 BOOL spiFlashRead(unsigned int addr,void *buf,unsigned int szbuf){
-   if(g_spitransfer.finish==0)
-     return FALSE;
-   prebuf[0][0] = FLASH_OPCODE_READ;
-   prebuf[0][1] = (unsigned char)(addr >> 16);
-   prebuf[0][2] = (unsigned char)(addr >> 8);
-   prebuf[0][3] = (unsigned char)addr;
-   SPIRead(MODULE_ID_SPI0,prebuf,4,buf,szbuf);
-   while (g_spitransfer.finish==0);
+   unsigned char prebuf[4];
+   prebuf[0] = FLASH_OPCODE_READ;
+   prebuf[1] = (unsigned char)(addr >> 16);
+   prebuf[2] = (unsigned char)(addr >> 8);
+   prebuf[3] = (unsigned char)addr;
+   SPIRead_blockPoll(MODULE_ID_SPI0,SPI_FLASH_CS,prebuf,4,buf,szbuf);
    return TRUE;
 }
 
 
-BOOL spiFlashReadId(void *buf){
-   if(g_spitransfer.finish==0)
-     return FALSE;
-   prebuf[0][0] = FLASH_OPCODE_READID;
-   SPIRead(MODULE_ID_SPI0,prebuf,1,buf,6);
-   while (g_spitransfer.finish==0);
-   return TRUE;
+void spiFlashReadId(void *buf,unsigned int len){
+   unsigned char prebuf[1] = {FLASH_OPCODE_READID};
+   SPIRead_blockPoll(MODULE_ID_SPI0,SPI_FLASH_CS,prebuf,1,buf,len);
 }
 
 
-BOOL spiFlashSwitch256PageSize(void){
- if(g_spitransfer.finish==0)
-     return FALSE;
-   prebuf[0][0] = 0x3d;
-   prebuf[0][1] = 0x2a;
-   prebuf[0][2] = 0x80;
-   prebuf[0][3] = 0xa6;
-   SPIWrite(MODULE_ID_SPI0,prebuf,4,NULL,0,0,NULL,0);
-   while (g_spitransfer.finish==0);
-   return TRUE;
+BOOL spiFlashSwitch256PageSize(void) {
+
+    unsigned char buf[] = {0x3d, 0x2a ,0x80,0xa6};
+    if(spiFlashReadStatus() & 0x01) return true;
+    SPIWrite_blockPoll(MODULE_ID_SPI0, SPI_FLASH_CS,NULL,0,buf, sizeof buf);
+    while(spiFlashIsBusy()) ;
+    if(spiFlashReadStatus() & 0x01){
+        return true;
+    }
+    return false;
 }
 
 
 unsigned char spiFlashReadStatus(void){
-  unsigned char val;
-  if(g_spitransfer.finish==0)
-     return FALSE;
-   prebuf[0][0] = 0xd7;
-   SPIRead(MODULE_ID_SPI0,prebuf,1,&val,1);
-   while (g_spitransfer.finish==0);
-   return val;
+   unsigned char buf[2] = {0xd7,0};
+   SPIRead_blockPoll(MODULE_ID_SPI0,SPI_FLASH_CS,NULL ,0,buf,sizeof buf);
+   return buf[1];
 }
+
+
+bool spiFlashIsBusy(void){
+   return !(spiFlashReadStatus()&0x80);
+}
+
+
 
 

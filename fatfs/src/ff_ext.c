@@ -17,7 +17,7 @@ FRESULT f_scandir(
     FRESULT res;
     DIR dir;
     res = f_opendir(&dir, path);                       /* Open the directory */
-    
+
     if (FR_OK == res) {
         for (unsigned int i = 0;i<*nEntrys;i++) {
             res = f_readdir(&dir, fileInfo+i);             /* Read a directory item */
@@ -27,7 +27,7 @@ FRESULT f_scandir(
             }
         }
     }
-    
+
     return res;
 }
 
@@ -65,12 +65,12 @@ FRESULT f_copy(const TCHAR *scrpath,const TCHAR * despath, void *workbuf,unsigne
          f_close(&desfile);
          return  FR_OK;
       }
-   }  
+   }
 
 ERROR:
    f_close(&scrfile);
    f_close(&desfile);
-   return res; 
+   return res;
 }
 
 
@@ -84,3 +84,4 @@ unsigned int long long  getpartitionfree(const TCHAR* driverpath){
    }
    return (long long)freeclst * fs->csize * SS(fs);
 }
+

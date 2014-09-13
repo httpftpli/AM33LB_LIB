@@ -239,6 +239,7 @@
 #define TFT_AT080TN52    0
 #define TFT_AT070TN92    1
 #define TFT_LSA40AT9001  2
+#define TFT_EJ080NA      4
 
 //select TFT panel 
 #ifndef TFT_PANEL

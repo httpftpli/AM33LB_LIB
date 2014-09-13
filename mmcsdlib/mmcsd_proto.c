@@ -3,14 +3,14 @@
  *
  *  \brief  MMCSD
  *
- *   
- *   
+ *
+ *
  */
 
 /**
- * @addtogroup MMCSD 
- * MMCSD document 
- * @{ 
+ * @addtogroup MMCSD
+ * MMCSD document
+ * @{
  */
 
 #include "mmcsd_proto.h"
@@ -32,7 +32,7 @@ extern unsigned int hsMmcSdCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c);
 
 #define DATA_RESPONSE_WIDTH       (SOC_CACHELINE_SIZE)
 /*
-// Cache size aligned data buffer (minimum of 64 bytes) for command response 
+// Cache size aligned data buffer (minimum of 64 bytes) for command response
 #ifdef __TMS470__
 #pragma DATA_ALIGN(dataBuffer, SOC_CACHELINE_SIZE);
 static unsigned char dataBuffer[DATA_RESPONSE_WIDTH];
@@ -148,7 +148,7 @@ static unsigned int  emmccardinit(mmcsdCtrlInfo *ctrl) {
    if (status == 0) {
       return 0;
    }
-   
+
    while (count--) {
       cmd.arg |= cmd.rsp[0] | 0x2<<29;
       status = hsMmcSdCmdSend(ctrl, &cmd);
@@ -163,10 +163,10 @@ static unsigned int  emmccardinit(mmcsdCtrlInfo *ctrl) {
       card->accmode = MMCSD_ACCMODE_BYTE;
    } else {
       card->accmode = MMCSD_ACCMODE_SECTOR;
-   }   
+   }
    //add m1 finish ////////
-   
-   
+
+
    if(-1==count)
      return 0;
 
@@ -234,10 +234,10 @@ static unsigned int  emmccardinit(mmcsdCtrlInfo *ctrl) {
    cmd.arg = 0;
    cmd.blksize = 512;
    cmd.nblks = 1;
-   
+
    /* clean the data cache. */
    CacheDataCleanBuff((unsigned int)(card->raw_excsd), cmd.blksize * cmd.nblks);//add by lfl
-   
+
    status = hsMmcSdCmdSend(ctrl, &cmd);
    if (status == 0) {
       return 0;
@@ -432,7 +432,7 @@ static unsigned int sdcardinit(mmcsdCtrlInfo *ctrl) {
       return 0;
    }
 
-   ctrl->xferSetup(ctrl, 1, card->raw_scr, 8, 1);//NOTICE: check mmu and cache aplay 
+   ctrl->xferSetup(ctrl, 1, card->raw_scr, 8, 1);//NOTICE: check mmu and cache aplay
 
    cmd.idx = SD_CMD(51);
    cmd.flags = MMCSD_CMDFLAG_DATA_READ;
@@ -451,7 +451,7 @@ static unsigned int sdcardinit(mmcsdCtrlInfo *ctrl) {
    }
 
    /* Invalidate the data cache. */
-   CacheDataInvalidateBuff((unsigned int)card->raw_scr,8);//NOTICE: check mmu and cache aplay 
+   CacheDataInvalidateBuff((unsigned int)card->raw_scr,8);//NOTICE: check mmu and cache aplay
 
    /*card->raw_scr[0] = (dataBuffer[3] << 24) | (dataBuffer[2] << 16) |\
       (dataBuffer[1] << 8) | (dataBuffer[0]);
@@ -472,13 +472,13 @@ static unsigned int sdcardinit(mmcsdCtrlInfo *ctrl) {
  * \param    mmcsdCtrlInfo It holds the mmcsd control information.
  *
  * \returns  type of the MMCSD card
- *         
+ *
  */
 static unsigned int mmcsdcardtypecheck(mmcsdCtrlInfo *ctrl) {
    unsigned int status;
    mmcsdCmd cmd;
 
-   /* 
+   /*
     * Card type can be found by sending CMD55. If the card responds,
     * it is a SD card. Else, we assume it is a MMC Card
     */
@@ -545,10 +545,10 @@ static unsigned int mmcbuswidthset(mmcsdCtrlInfo *ctrl) {
 
    if (ddr) {
       (buswidth == 4)?
-         (cmd.arg = 0x03B70500):(cmd.arg = 0x03B70600);  //4bit or 8bit 
+         (cmd.arg = 0x03B70500):(cmd.arg = 0x03B70600);  //4bit or 8bit
    }else{
       (buswidth == 4)?
-         (cmd.arg = 0x03B70100):(cmd.arg = 0x03B70200);  //4bit or 8bit 
+         (cmd.arg = 0x03B70100):(cmd.arg = 0x03B70200);  //4bit or 8bit
    }
 
    //send cmd6  switch  bus width
@@ -573,37 +573,37 @@ static unsigned int mmcbuswidthset(mmcsdCtrlInfo *ctrl) {
  *  mmcsdCtrlInfo结构体代表主机控制器，首先需调用本函数初始化，然后调用
  *  MMCSDP_CtrlInit()完成控制器的初始化
  * @param [out] ctrl    mmcsdCtrlInfo结构体
- * @param [in]  moduleId 控制器moduleId  \b MODULE_ID_MMCSDX 
- * @param [in]  opClk 
+ * @param [in]  moduleId 控制器moduleId  \b MODULE_ID_MMCSDX
+ * @param [in]  opClk
  *        mmcsd的时钟频率，由mmcclk引脚输出
- * @param [in]  ddrSupport 
+ * @param [in]  ddrSupport
  *        mmcsd双边沿支持，48mhz时不支持ddr
- * @param [in]  card 
+ * @param [in]  card
  *        mmcsdCardInfo结构体，该结构体代表卡
- * @param [in]  preXferHook 
+ * @param [in]  preXferHook
  *        发送数据前的回调函数，如果 \b NULL
  *        ,使用默认回调函数
- * @param [in]  cmdstatusget 
+ * @param [in]  cmdstatusget
  *        获取控制器命令信息回调函数，如果 \b
  *        NULL ,使用默认回调函数
- * @param [in]  xferstatusget 
+ * @param [in]  xferstatusget
  *        获取控制器发送数据状态回调函数 如果 \b
  *        NULL ,使用默认回调函数
- * 
+ *
  * @param [in]  busWidthSupport  总线宽度支持
  *        MMCSD_BUSWIDTH_8BIT  \b MMCSD_BUSWIDTH_4BIT
  *        \b MMCSD_BUSWIDTH_1BIT
- *  
- * @return  void 
- * @date    2013/5/4 
- * @note 
- * opClk = 48000000是 不支持ddr busWidthSupport不支持 \b 
- * MMCSD_BUSWIDTH_8BIT 
- * @see 
+ *
+ * @return  void
+ * @date    2013/5/4
+ * @note
+ * opClk = 48000000是 不支持ddr busWidthSupport不支持 \b
+ * MMCSD_BUSWIDTH_8BIT
+ * @see
  */
 void  MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int moduleId,
                        unsigned int opClk,unsigned short busWidthSupport,
-                       unsigned short ddrSupport, 
+                       unsigned short ddrSupport,
                        mmcsdCardInfo *card,
                        void preXferHook(mmcsdCtrlInfo *ctrl,unsigned char rwFlag,
                                       void *buf,unsigned int blksize,unsigned int nBlks),
@@ -618,12 +618,12 @@ void  MMCSDP_CtrlInfoInit(mmcsdCtrlInfo *ctrl,unsigned int moduleId,
    ctrl->busWidthSupport = busWidthSupport;
    ctrl->busDdrSupport = !!ddrSupport;
    ctrl->card = card;
-  
+
    if (preXferHook == NULL) {
       preXferHook = HSMMCSDXferSetup;
    }
    ctrl->xferSetup = preXferHook;
-  
+
    if (cmdstatusget == NULL) {
       cmdstatusget = HSMMCSDCmdStatusGet;
    }
@@ -691,7 +691,7 @@ unsigned int MMCSDP_AppCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c) {
  * \param    mmcsdCtrlInfo It holds the mmcsd control information.
  *
  * \param   buswidth   SD/MMC bus width.\n
- * 
+ *
  *
  * \return  None.
  *
@@ -729,11 +729,11 @@ unsigned int MMCSDP_TranSpeedSet(mmcsdCtrlInfo *ctrl) {
    cmd.flags = MMCSD_CMDFLAG_DATA_READ;
    cmd.nblks = 1;
    cmd.blksize = 64;
-   //cmd.data = (unsigned char *)dataBuffer;   
-   
+   //cmd.data = (unsigned char *)dataBuffer;
+
    /* clean the data cache. */
    CacheDataCleanBuff((unsigned int)(dataBuffer), cmd.blksize * cmd.nblks);//add by lfl
-   
+
    cmdStatus = hsMmcSdCmdSend(ctrl, &cmd);
 
    if (cmdStatus == 0) {
@@ -811,7 +811,7 @@ unsigned int MMCSDP_StopCmdSend(mmcsdCtrlInfo *ctrl) {
 /**
  * \brief   This function intializes the mmcsdcontroller.
  *
- * \param   mmcsdCtrlInfo *ctrl It holds the mmcsd control 
+ * \param   mmcsdCtrlInfo *ctrl It holds the mmcsd control
  *           information.
  *
  * \returns  NO
@@ -840,15 +840,15 @@ unsigned int MMCSDP_CardPresent(mmcsdCtrlInfo *ctrl) {
 
 /**
  * \brief This function intializes the MMCSD Card.
- * 
- * \param ctrl It holds the mmcsd control information. 
+ *
+ * \param ctrl It holds the mmcsd control information.
  * \param cardType  card type ,the value can be
- * \b MMCSD_CARD_AUTO, \b MMCSD_CARD_MMC, \b MMCSD_CARD_SD 
- * 
- * \returns 1 - Intialization is successfull. 
+ * \b MMCSD_CARD_AUTO, \b MMCSD_CARD_MMC, \b MMCSD_CARD_SD
+ *
+ * \returns 1 - Intialization is successfull.
  *         0 - Intialization is failed.
  * \return
- * 
+ *
  */
 unsigned int MMCSDP_CardInit(mmcsdCtrlInfo *ctrl, unsigned int cardType) {
 
@@ -886,7 +886,7 @@ unsigned int MMCSDP_CardInit(mmcsdCtrlInfo *ctrl, unsigned int cardType) {
  * \param    block         It determines to which block data to be written
  * \param    nblks         It determines the number of blocks to be written
  *
- * \return  int 
+ * \return  int
  *        1 - successfull written of data
  *        0 - failure to write the data.
  * @note  1 bock = 512byte
@@ -947,7 +947,7 @@ unsigned int MMCSDP_Write(mmcsdCtrlInfo *ctrl, const void *ptr, unsigned int blo
    if (status == 0) {
       return 0;
    }
-   
+
    if ((nblks > 1)&&(card->cardType==MMCSD_CARD_SD)){
       cmd.idx = MMC_CMD(12);
       cmd.flags = MMCSD_CMDFLAG_RSP_BUSY | MMCSD_CMDFLAG_TYPE_ABORT;
@@ -1016,7 +1016,7 @@ unsigned int MMCSDP_Read(mmcsdCtrlInfo *ctrl, void *ptr, unsigned int block,
    }
     /* clean the data cache. */
    if ((unsigned int)ptr&(SOC_CACHELINE_SIZE-1)) {
-      CacheDataCleanBuff((unsigned int)ptr, (512 * nblks));//added by lfl 
+      CacheDataCleanBuff((unsigned int)ptr, (512 * nblks));//added by lfl
    }
    status = hsMmcSdCmdSend(ctrl, &cmd);
    if (status == 0) {
@@ -1045,5 +1045,5 @@ unsigned int MMCSDP_Read(mmcsdCtrlInfo *ctrl, void *ptr, unsigned int block,
 }
 
 /**
- * @} 
+ * @}
  */

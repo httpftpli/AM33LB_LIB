@@ -34,6 +34,8 @@
 #undef LCD_24BIT_888RGB
 #endif
 
+extern void __lcd_back_ligth_ctr(unsigned char val);
+
 //void LCDModuleClkConfig(void);
 void LCDRasterEOFIntEnable(void);
 void LCDRasterEOFIntDisable(void);
@@ -195,10 +197,7 @@ void isr_lcd(unsigned int num) {
  * @see 
  */
 void LCDBackLightCtr(unsigned char lightpwm) {
-   unsigned int addr = modulelist[UART_LCDBACKLIGHT_MODULE].baseAddr;
-   unsigned char buf[8] = {0xbb,0x07,0x00,0x00,0x00,0x00,0x00,0x0d};
-   buf[2] = lightpwm;
-   while(!UARTSendNoBlock(UART_LCDBACKLIGHT_MODULE,buf,sizeof buf));
+   __lcd_back_ligth_ctr(lightpwm);
 }
 
 /**

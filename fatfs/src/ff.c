@@ -954,7 +954,7 @@ FRESULT remove_chain (
 #if _USE_ERASE
 			if (ecl + 1 == nxt) {	/* Is next cluster contiguous? */
 				ecl = nxt;
-			} else {				/* End of contiguous clusters */ 
+			} else {				/* End of contiguous clusters */
 				rt[0] = clust2sect(fs, scl);					/* Start sector */
 				rt[1] = clust2sect(fs, ecl) + fs->csize - 1;	/* End sector */
 				disk_ioctl(fs->drv, CTRL_ERASE_SECTOR, rt);		/* Erase the block */
@@ -2121,7 +2121,7 @@ FRESULT chk_mounted (	/* FR_OK(0): successful, !=0: any error occurred */
 		}
 	}
 	//--------------------------------------------------------------
-	
+
 	if (fmt == 1) {						/* Not an FAT-VBR, the physical drive can be partitioned */
 		/* Check the partition listed in the partition table */
 		pi = LD2PT(vol);
@@ -2724,7 +2724,7 @@ FRESULT f_close (
 		FATFS *fs = fp->fs;;
 		res = validate(fp);
 		if (res == FR_OK) {
-			res = dec_lock(fp->lockid);	
+			res = dec_lock(fp->lockid);
 			unlock_fs(fs, FR_OK);
 		}
 #else
@@ -2823,7 +2823,7 @@ FRESULT f_getcwd (
 				res = dir_read(&dj);
 				if (res != FR_OK) break;
 				if (ccl == ld_clust(dj.fs, dj.dir)) break;	/* Found the entry */
-				res = dir_next(&dj, 0);	
+				res = dir_next(&dj, 0);
 			} while (res == FR_OK);
 			if (res == FR_NO_FILE) res = FR_INT_ERR;/* It cannot be 'not found'. */
 			if (res != FR_OK) break;
@@ -3956,7 +3956,7 @@ FRESULT f_fdiskEx (
 	if (stat & STA_PROTECT) return FR_WRITE_PROTECTED;
 	if (disk_ioctl(pdrv, GET_SECTOR_COUNT, &sz_disk)) return FR_DISK_ERR;
 
-	
+
 	/* Create partition table */
 	mem_set(buf, 0, _MAX_SS);
         p = buf + MBR_Table;
@@ -3992,6 +3992,18 @@ FRESULT f_fdiskEx (
 #endif /* _MULTI_PARTITION == 2 */
 #endif /* _USE_MKFS && !_FS_READONLY */
 
+
+unsigned long long f_getvolsize(
+	const TCHAR *path	/* Pointer to the logical drive number (root dir) */
+)
+{
+    FRESULT res;
+    FATFS *pfs;
+	/* Get drive number */
+    res = chk_mounted(&path, &pfs, 0);
+    if (res!=FR_OK) return 0;
+    return pfs->n_fatent*pfs->csize*SS(pfs);
+}
 
 
 
