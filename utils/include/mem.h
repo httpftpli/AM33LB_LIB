@@ -6,6 +6,11 @@
 #include <wchar.h>
 
 
+
+#define MEM_ALIGN_SIZE(size) (((size) + MEM_ALIGNMENT - 1) & ~(MEM_ALIGNMENT-1))
+
+
+
 extern void memset16(void *s,unsigned short val,unsigned int n);
 extern void memset32(void *s,unsigned int val, unsigned int n);
 extern BOOL memis(void *mem,unsigned char dat,unsigned int memlen);

@@ -180,11 +180,11 @@ BOOL RTCSetBcd(unsigned short year, unsigned char month,
 BOOL RTCSetHex(unsigned short year, unsigned char month,
              unsigned char  day, unsigned char hour,
              unsigned char minute, unsigned char second){
-    mdAssert(month<13);
-    mdAssert(day<32);
-    mdAssert(hour<25);
-    mdAssert(minute<61);
-    mdAssert(second<61);
+    ASSERT(month<13);
+    ASSERT(day<32);
+    ASSERT(hour<25);
+    ASSERT(minute<61);
+    ASSERT(second<61);
     year = hex2bcd_byte(year%100);
     month = hex2bcd_byte(month);
     day = hex2bcd_byte(day);

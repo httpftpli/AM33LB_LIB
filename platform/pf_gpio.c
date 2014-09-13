@@ -94,8 +94,8 @@ void isr_Gpio(unsigned int intnum){
  */
 void GPIORegistHandler(unsigned char modulOfGpio,unsigned bitOfGpio,
                        void (*gpiohandler)()){
-   mdAssert(modulOfGpio<4);
-   mdAssert(bitOfGpio<32);
+   ASSERT(modulOfGpio<4);
+   ASSERT(bitOfGpio<32);
    handler[modulOfGpio][bitOfGpio] = gpiohandler;
 }
 
@@ -116,8 +116,8 @@ void GPIORegistHandler(unsigned char modulOfGpio,unsigned bitOfGpio,
  * @see
  */
 void GPIOClearHandler(unsigned char modulOfGpio, unsigned bitOfGpio){
-   mdAssert(modulOfGpio<4);
-   mdAssert(bitOfGpio<32);
+   ASSERT(modulOfGpio<4);
+   ASSERT(bitOfGpio<32);
    handler[modulOfGpio][bitOfGpio] = (GPIOIntHandler)0;
 }
 

@@ -55,7 +55,7 @@ void hsMmcSdInit(mmcsdCtrlInfo *ctrl)
     /* Bus power on */
     status = HSMMCSDBusPower(baseaddr, HS_MMCSD_BUS_POWER_ON);
    
-    mdAssert(status ==0 );
+    ASSERT(status ==0 );
 
     /* Set the initialization frequency */  
     HSMMCSDBusFreqSet(baseaddr, ctrl->ipClk, 400000, 0);

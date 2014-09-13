@@ -43,7 +43,7 @@ ECAPHANDLERS   ecaphandlers[NUMBER_OF_ECAP] = {NULL,NULL,NULL};
  * @see 
  */
 void ECAPregisterHandler(unsigned int ecapindex,void (*ecaphandler)(unsigned int time)){
-   mdAssert(ecapindex<NUMBER_OF_ECAP);
+   ASSERT(ecapindex<NUMBER_OF_ECAP);
    ecaphandlers[ecapindex] = ecaphandler;
 }
 

@@ -46,7 +46,7 @@ FRESULT f_copy(const TCHAR *scrpath,const TCHAR * despath, void *workbuf,unsigne
       return res;
    }
    unsigned int ss = SS(desfile.fs);
-   mdAssert(0==sz_workbuf%ss);
+   ASSERT(0==sz_workbuf%ss);
    unsigned int rb,wb;
    while (1) {
       res = f_read(&scrfile, workbuf, sz_workbuf, &rb);

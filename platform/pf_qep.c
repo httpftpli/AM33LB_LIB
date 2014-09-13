@@ -48,7 +48,7 @@ static void (*qephandler[3])(unsigned int flag);
  */
 void QEPSetPosFactor(unsigned int factor) {
    positionFactor = factor;
-   mdAssert(positionFactor != 0);
+   ASSERT(positionFactor != 0);
 }
 
 
@@ -169,7 +169,7 @@ void  QEPSetStrobe(unsigned int moduleId,bool strobePluseRevers,bool interrupt){
  */
 void QEPSetPos(unsigned int moduleID, unsigned int pos, unsigned int setEvent) {
    unsigned int baseAddr = modulelist[moduleID].baseAddr;
-   mdAssert(positionFactor != 0);
+   ASSERT(positionFactor != 0);
    HWREG(baseAddr + EQEP_QPOSINIT) = POSORIGIN + pos / positionFactor;
    unsigned short ctrl = HWREGH(baseAddr + EQEP_QEPCTL);
    if (setEvent & QEP_SETPOS_IMMED) {
@@ -241,7 +241,7 @@ static int QEPCalcuLatchVelocity(unsigned int moduleId) {
  */
 void QEPSetPosCompare(unsigned int moduleId, int compare) {
    unsigned int baseAddr = modulelist[moduleId].baseAddr;
-   mdAssert(positionFactor != 0);
+   ASSERT(positionFactor != 0);
    HWREG(baseAddr + EQEP_QPOSCMP) = compare / positionFactor + POSORIGIN;
 }
 
@@ -331,7 +331,7 @@ void QEPVelocityDetectStart(unsigned int moduleId, unsigned int timeResolution_u
    unsigned int inFreq = modulelist[moduleId].moduleClk->iClk[0]->clockSpeedHz;
    unitTime = timeResolution_us;
    unsigned long long tick = inFreq / 1000000 * timeResolution_us;
-   mdAssert(tick <= 0xffffffff);
+   ASSERT(tick <= 0xffffffff);
    oldpos[index] = (HWREG(baseAddr + EQEP_QPOSCNT) - POSORIGIN);
    HWREG(baseAddr + EQEP_QUPRD) = (unsigned int)tick;
    //capture latch mode :Latch on unit time out ;eQEP unit timer enable

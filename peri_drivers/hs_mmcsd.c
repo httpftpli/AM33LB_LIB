@@ -175,11 +175,11 @@ void HSMMCSDSystemConfig(unsigned int baseAddr, unsigned int config)
 
 void  HSMMCSDBusDDRSet(unsigned int baseAddr,unsigned int ddr){
    unsigned int div = ((HWREG(baseAddr + MMCHS_SYSCTL) & MMCHS_SYSCTL_CLKD))>>MMCHS_SYSCTL_CLKD_SHIFT;
-   mdAssert(div%2==0);
+   ASSERT(div%2==0);
    unsigned int hspeed = ((HWREG(baseAddr + MMCHS_HCTL)) & MMCHS_HCTL_HSPE);
 //when HSPE set cmd and data output at the falling edge of the SD Clock
 //ddr feature should not set the HSPE;
-   mdAssert(hspeed == 0);
+   ASSERT(hspeed == 0);
    HWREG(baseAddr + MMCHS_CON) |= (!!(ddr)) << MMCHS_CON_DDR_SHIFT;
 }
 
@@ -235,7 +235,7 @@ void HSMMCSDBusWidthSet(unsigned int baseAddr, unsigned int width)
  *
  **/
 void HSMMCSDBusWidthSetDdr(unsigned int membase, unsigned short busWidth,char isddr) {
-   mdAssert((busWidth==8)||(busWidth==4)||(busWidth==1));
+   ASSERT((busWidth==8)||(busWidth==4)||(busWidth==1));
    if (isddr) {
       HSMMCSDBusDDRSet(membase, 1) ;
    }
@@ -442,7 +442,7 @@ void HSMMCSDBusFreqSet(unsigned int baseAddr, unsigned int freq_in,
 
     /* First enable the internal clocks */
     status = HSMMCSDIntClock(baseAddr, HS_MMCSD_INTCLOCK_ON);
-    mdAssert(status != -1);
+    ASSERT(status != -1);
     if (bypass == 0)
     {
         /* Calculate and program the divisor */
@@ -453,7 +453,7 @@ void HSMMCSDBusFreqSet(unsigned int baseAddr, unsigned int freq_in,
 		/* Do not cross the required freq */
 		while((freq_in/clkd) > freq_out)
 		{
-                     mdAssert(clkd!=1023);
+                     ASSERT(clkd!=1023);
                      clkd++;
 		}
 
@@ -462,7 +462,7 @@ void HSMMCSDBusFreqSet(unsigned int baseAddr, unsigned int freq_in,
 
         /* Wait for the interface clock stabilization */
         status = HSMMCSDIsIntClockStable(baseAddr, 0xFFFF);
-        mdAssert(status == 1);
+        ASSERT(status == 1);
         /* Enable clock to the card */
         HWREG(baseAddr + MMCHS_SYSCTL) |= MMCHS_SYSCTL_CEN;
     }

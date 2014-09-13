@@ -150,9 +150,9 @@ unsigned int EDMARequestXferArray(unsigned int trigMode,
    unsigned int synctype ,paramid,chtype;
    volatile EDMA3CCPaRAMEntry *paramSet;
 
-   mdAssert(handleIndex < 64);
+   ASSERT(handleIndex < 64);
    //scrAddr and destAddr shoud 4bit allign;
-   mdAssert((scrAddr&0x3 == 0) && (dstAddr&0x3 == 0));
+   ASSERT((scrAddr&0x3 == 0) && (dstAddr&0x3 == 0));
      
    if (EDMA3_0_NUM_TC == ++evtqueue) {
       evtqueue = 0;
@@ -231,9 +231,9 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
 
    unsigned int paramid,chtype;
 
-   mdAssert(handlerIndex < 64);
+   ASSERT(handlerIndex < 64);
    //scrAddr and destAddr shoud 4bit allign;
-   mdAssert((scrAddr&0x3 == 0) && (dstAddr&0x3 == 0));
+   ASSERT((scrAddr&0x3 == 0) && (dstAddr&0x3 == 0));
    
    if (EDMA3_0_NUM_TC==++evtqueue) {
       evtqueue = 0;
@@ -321,11 +321,11 @@ unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
    unsigned int paramid, chtype;
    volatile EDMA3CCPaRAMEntry *paramSet;
    
-   mdAssert(handlerIndex < 64);
+   ASSERT(handlerIndex < 64);
    //entryAddr should 5bit allign;
-   mdAssert((entryAddr&0x1fUL) == 0);
-   mdAssert((entryBitWidth == 8) || (entryBitWidth == 16) || (entryBitWidth == 32));
-   mdAssert(blkSize%(entryBitWidth/8)==0);
+   ASSERT((entryAddr&0x1fUL) == 0);
+   ASSERT((entryBitWidth == 8) || (entryBitWidth == 16) || (entryBitWidth == 32));
+   ASSERT(blkSize%(entryBitWidth/8)==0);
 
    if (EDMA3_0_NUM_TC == ++evtqueue) {
       evtqueue = 0;

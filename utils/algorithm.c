@@ -2,19 +2,20 @@
  *  \file   algorithm.c
  *
  *  \brief
- *  \author  lfl  
+ *  \author  lfl
  *  \addtogroup Algorithm
  *  \# include "misc.h"
  *  各种通用算法，MD5散列，排序，队列等
  *   @{
- *   
+ *
  */
 
 
 
 #include "type.h"
 #include "algorithm.h"
-#include "string.h" 
+#include "string.h"
+#include "list.h"
 
 void bubbleSortAscend(int *buf, unsigned int nNum) {
    int j, k;
@@ -34,6 +35,40 @@ void bubbleSortAscend(int *buf, unsigned int nNum) {
    }
 }
 
+
+
+
+void list_insert_sort(struct list_head *list,  int (*cmp)(const struct list_head *, const struct list_head *)) {
+    struct list_head *literal, *n,*literal1,*temp;
+    list_for_each_safe(literal, n, list) {
+        if (cmp(literal, n) <= 0) {
+            continue;
+        }
+        temp = literal->prev;
+        list_del(literal);
+        list_for_each(literal1, list) {
+            if (cmp(literal, literal1) >= 0) {
+                list_add(literal, literal1);
+                break;
+            }
+        }
+        if (n == list) {
+            break;
+        }
+    }
+}
+
+void list_sort_insert(struct list_head *new, struct list_head *list,int (*cmp)(const struct list_head *, const struct list_head *)){
+     struct list_head *literal, *n;
+     list_for_each_safe(literal, n, list){
+         if (cmp(literal,new)&&(!cmp(n,new)|| n==list)) {
+             list_add(new,literal);
+             break;
+         }
+     }
+}
+
+
 int sum(int *buf,unsigned int nNum){
    unsigned int sum = 0;
    for (int i=0;i<nNum;i++) {
@@ -48,16 +83,16 @@ int sum(int *buf,unsigned int nNum){
 /**
  * @brief 初始化环形队列
  * @param [in] queue  队列指针
- * @param [in] buf    缓冲区指针     
- * @param [in] sizeOfItem 
- * @param [in] nItem  缓冲区item个数  
- * @return  NONE         
+ * @param [in] buf    缓冲区指针
+ * @param [in] sizeOfItem
+ * @param [in] nItem  缓冲区item个数
+ * @return  NONE
  * @date    2013/5/10
- * @note 
+ * @note
  */
 void ringBufInit(RINGBUF *ringBuf, void * buf, unsigned int sizeOfItem,unsigned int nItem)
 {
-	ringBuf->writeIndex = 0;	
+	ringBuf->writeIndex = 0;
 	ringBuf->readIndex  = 0;
 	ringBuf->sizeOfItem = sizeOfItem;
 	ringBuf->nItem  =  nItem+1;
@@ -86,18 +121,18 @@ BOOL isRingBufEmpty(RINGBUF *ringBuf){
 
 
 /**
- * @brief 入队 
- *  
- * 通过数据拷贝入队，入队时把参数 \b item 
- * 指向的内容拷贝到缓冲队列  
+ * @brief 入队
+ *
+ * 通过数据拷贝入队，入队时把参数 \b item
+ * 指向的内容拷贝到缓冲队列
  * @param [in] ringBuf
- * @param [in] item 
- * @return 
- * - FALSE   失败，因为当前fifo满 
- * - TRUE    成功 
- * @date    2013/5/10 
+ * @param [in] item
+ * @return
+ * - FALSE   失败，因为当前fifo满
+ * - TRUE    成功
+ * @date    2013/5/10
  */
-BOOL ringBufPush(RINGBUF *ringBuf, void *item) {	
+BOOL ringBufPush(RINGBUF *ringBuf, void *item) {
 
 	if(isRingBufFull(ringBuf))
        return FALSE;
@@ -110,15 +145,15 @@ BOOL ringBufPush(RINGBUF *ringBuf, void *item) {
 
 
 /**
- * @brief 出队 
- *  
- * 通过数据拷贝出队 
+ * @brief 出队
+ *
+ * 通过数据拷贝出队
  * @param [in]  ringBuf
- * @param [out]  item  item缓冲区 
- * @return 
- * - FALSE   失败，因为队列空 
- * - TRUE    成功 
- * @date    2013/5/10 
+ * @param [out]  item  item缓冲区
+ * @return
+ * - FALSE   失败，因为队列空
+ * - TRUE    成功
+ * @date    2013/5/10
  */
 BOOL ringBufPop(RINGBUF * ringBuf, void * item)
 {
@@ -134,11 +169,11 @@ BOOL ringBufPop(RINGBUF * ringBuf, void * item)
 
 /**
  * @brief 读队列头，但不出队
- * @param [in] ringBuf 
+ * @param [in] ringBuf
  * @param [out] item 返回item的指针
- * @return 
- * - FALSE   失败，因为队列空 
- * - TRUE    成功  
+ * @return
+ * - FALSE   失败，因为队列空
+ * - TRUE    成功
  * @date    2013/5/10
 
  */
@@ -158,7 +193,7 @@ void ringBufClear(RINGBUF * ringBuf){
 
 
 
-static const  unsigned int CRC16Table_IBM[256] = {   
+static const  unsigned int CRC16Table_IBM[256] = {
     0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
     0xC601, 0x06C0, 0x0780, 0xC741, 0x0500, 0xC5C1, 0xC481, 0x0440,
     0xCC01, 0x0CC0, 0x0D80, 0xCD41, 0x0F00, 0xCFC1, 0xCE81, 0x0E40,
@@ -229,7 +264,7 @@ static const  unsigned int CRC16Table_MD[256] = {
    0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0,
 };
 
-
+#if 0
 static const unsigned short CRC16Table_CCITT[256] =
 {
    0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
@@ -264,20 +299,20 @@ static const unsigned short CRC16Table_CCITT[256] =
    0x6b46, 0x7acf, 0x4854, 0x59dd, 0x2d62, 0x3ceb, 0x0e70, 0x1ff9,
    0xf78f, 0xe606, 0xd49d, 0xc514, 0xb1ab, 0xa022, 0x92b9, 0x8330,
    0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
-}; 
-
+};
+#endif
 
 
 /**
  * @brief CRC校验  CRC16/IBM
  * @param [in] dataIn 数据首地址
- * @param [in] length   数据长度,以字节为单位 
- * @return   CRC校验值         
- * @date    2013/7/4 
+ * @param [in] length   数据长度,以字节为单位
+ * @return   CRC校验值
+ * @date    2013/7/4
  * @see  crc16_CCITT
  */
 unsigned short  crc16_IBM(void* dataIn, int length)
-{  
+{
     unsigned short result  = 0;
     unsigned short tableNo = 0;
     unsigned char *data = (unsigned char *)dataIn;
@@ -286,17 +321,17 @@ unsigned short  crc16_IBM(void* dataIn, int length)
         tableNo = ((result & 0xff) ^ (data[i] & 0xff));
         result  = ((result >> 8) & 0xff) ^ CRC16Table_IBM[tableNo];
     }
-    return result;  
+    return result;
 }
 
 
 /**
  * @brief CRC校验  CRC16/MD
  * @param [in] dataIn 数据首地址
- * @param [in] length   数据长度,以字节为单位 
- * @return   CRC校验值         
- * @date    2013/7/4 
- * @see 
+ * @param [in] length   数据长度,以字节为单位
+ * @return   CRC校验值
+ * @date    2013/7/4
+ * @see
  */
 uint16 crc16_MD(void *date, uint16 len) {
    unsigned char  byte;
@@ -342,7 +377,7 @@ uint16 crc16_MD(void *date, uint16 len) {
 	a += I(b,c,d) + x + ac; \
 	a = ROTATE_LEFT(a,s); \
 	a += b; \
-}                                            
+}
 
 
 
@@ -358,7 +393,7 @@ static void MD5Encode(unsigned char *output,unsigned int *input,unsigned int len
 	unsigned int i = 0,j = 0;
 	while(j < len)
 	{
-		output[j] = input[i] & 0xFF;  
+		output[j] = input[i] & 0xFF;
 		output[j+1] = (input[i] >> 8) & 0xFF;
 		output[j+2] = (input[i] >> 16) & 0xFF;
 		output[j+3] = (input[i] >> 24) & 0xFF;
@@ -376,7 +411,7 @@ static void MD5Decode(unsigned int *output,unsigned char *input,unsigned int len
 			(input[j+2] << 16) |
 			(input[j+3] << 24);
 		i++;
-		j+=4; 
+		j+=4;
 	}
 }
 
@@ -468,14 +503,14 @@ static void MD5Transform(unsigned int state[4],unsigned char block[64])
 
 /**
  * @brief MD5散列初始化
- * @param [in] MD5_CTX context 
- * @return  none         
+ * @param [in] MD5_CTX context
+ * @return  none
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void MD5Init(MD5_CTX *context)
 {
@@ -491,15 +526,15 @@ void MD5Init(MD5_CTX *context)
 /**
  * @brief MD5散列更新
  * @param [in] MD5_CTX context
- * @param [in] unsigned char *input 数据首地址          
- * @param [in] unsigned int inputlen 数据长度 
- * @return  none         
+ * @param [in] unsigned char *input 数据首地址
+ * @param [in] unsigned int inputlen 数据长度
+ * @return  none
  * @date   2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void MD5Update(MD5_CTX *context,unsigned char *input,unsigned int inputlen)
 {
@@ -517,8 +552,8 @@ void MD5Update(MD5_CTX *context,unsigned char *input,unsigned int inputlen)
 		MD5Transform(context->state,context->buffer);
 		for(i = partlen;i+64 <= inputlen;i+=64)
 			MD5Transform(context->state,&input[i]);
-		index = 0;        
-	}  
+		index = 0;
+	}
 	else
 	{
 		i = 0;
@@ -530,16 +565,16 @@ void MD5Update(MD5_CTX *context,unsigned char *input,unsigned int inputlen)
 
 /**
  * @brief MD5结束,生成32位散列值
- * @param [in] MD5_CTX *context 
- * @param [in] unsigned char digest[16] 
+ * @param [in] MD5_CTX *context
+ * @param [in] unsigned char digest[16]
  *        生成的128位MD5散列值
- * @return none          
+ * @return none
  * @date   2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void MD5Final(MD5_CTX *context,unsigned char digest[16])
 {

@@ -1,6 +1,10 @@
 #ifndef __PF__DCAN__H__
 #define __PF__DCAN__H__
 
+
+
+#include <stdbool.h>
+
 /*
 ** Values that can be passed to 'CANInit' API as 'mode'
 */
@@ -25,16 +29,18 @@ typedef struct {
 }G_CAN;
 
 
-#if 0
+#if 1
 typedef struct {
-	unsigned int id:29;
+	unsigned int id:29;    //MSB first send ,
 	unsigned int dir:1;
-	unsigned int xtd:1;							//??????¡À¨º??,0=¡À¨º¡Á???,1=??????
+	unsigned int xtd:1;	//1:extend frame ,statand frame
 	unsigned int dlc;
 	unsigned int data[2];
+        //if data[0] = 0x01234567 ,data[1] = 0x89abcdef £¬
+        //then CAN data sequence is ¡°0x67 0x45,0x23,0x01,0xef,0xcd,0xab,0x89¡±
 }CAN_FRAME;
-#endif
 
+#else
 typedef struct
 {
 	uint32 Command:13;						//?¨¹????
@@ -45,11 +51,12 @@ typedef struct
 	uint32 dlc;								//??????????
 	uint32 data[2];
 }CAN_FRAME;
+#endif
 
 extern volatile G_CAN g_can[2];
 
 extern void DCANInit(unsigned int moduleId,unsigned int mode,unsigned int bitRate);
 extern unsigned int CANSend_noblock(unsigned int moduleId,CAN_FRAME *frame);
-extern BOOL CANSendFinishGetClr(unsigned int moduleId);
+extern bool CANSendFinishGetClr(unsigned int moduleId);
 extern void CANRegistRcvedHandler(void (*handler)(unsigned int index,CAN_FRAME *frame));
 #endif

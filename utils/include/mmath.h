@@ -11,6 +11,7 @@
 #define DIVUP(A,B)  ((A)+(B)-1)/(B)
 
 #define NARRAY(array) (sizeof((array))/sizeof((array[0])))
+#define lenthof(array) NARRAY(array)
 
 #define BIT(x) (1 << x)
 

@@ -23,8 +23,8 @@
 
 
 static void GPMCConfigCS(unsigned int baseAddr,unsigned char cs,unsigned int bankBaseAddr,unsigned int bitOfAddrLine){
-   mdAssert(cs < 7);
-   mdAssert((bankBaseAddr & 0x00ffffff)==0);
+   ASSERT(cs < 7);
+   ASSERT((bankBaseAddr & 0x00ffffff)==0);
    if (bitOfAddrLine < 24) bitOfAddrLine = 24;
    unsigned int basea = (bankBaseAddr & 0x3fffffff)>>24;
    unsigned char maskaddr = 0;
@@ -41,7 +41,7 @@ static void GPMCConfigCS(unsigned int baseAddr,unsigned char cs,unsigned int ban
 
 
 static void GPMCEnableCS(unsigned int baseAddr,unsigned char cs,BOOL enable){
-   mdAssert(cs<7);
+   ASSERT(cs<7);
    unsigned int val = HWREG(baseAddr + GPMC_CONFIG7(cs));
    val |= (!!enable)<<6;
    HWREG(baseAddr + GPMC_CONFIG7(cs)) = val;

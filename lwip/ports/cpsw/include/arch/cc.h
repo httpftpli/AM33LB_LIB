@@ -100,15 +100,9 @@ extern u8_t memp_memory_PBUF_POOL_base[] __attribute__ ((aligned (SOC_CACHELINE_
 
 #ifdef DEBUG
 extern void __error__(char *pcFilename, unsigned long ulLine);
-#define LWIP_PLATFORM_ASSERT(expr)      \
-{                                       \
-    if(!(expr))                         \
-    {                                   \
-        __error__(__FILE__, __LINE__);  \
-    }                                   \
-}
+#define LWIP_PLATFORM_ASSERT(message)     mdAssert(message, 0)
 #else
-#define LWIP_PLATFORM_ASSERT(expr)
+#define LWIP_PLATFORM_ASSERT(message)
 #endif
 
 #endif /* __CC_H__ */
