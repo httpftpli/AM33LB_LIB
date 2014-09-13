@@ -68,6 +68,10 @@
 #define KEY_OIL220	65
 #define KEY_BAK		66
 
+#define KEY_F7      67
+#define KEY_F8      68
+#define KEY_F9      69
+
 #define KEY_NO		0xff
 
 

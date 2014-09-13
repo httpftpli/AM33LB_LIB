@@ -2,6 +2,7 @@
 #ifndef  _PF_EEPROM_H_
 #define  _PF_EEPROM_H_
 #include "type.h"
+#include  <stdbool.h>
 
 
 
@@ -16,12 +17,16 @@ extern unsigned char  spiFmromRdStatReg(void);
 
 extern BOOL spiFlashRead(unsigned int addr,void *buf,unsigned int szbuf);
 extern BOOL spiFlashWren(void);
-extern BOOL spiFlashWrite(unsigned int addr,void *buf,unsigned int szbuf);
+//extern BOOL spiFlashWrite(unsigned int addr,void *prebuf,unsigned int prebuflen,void *buf,unsigned int szbuf);
 extern BOOL spiFlashSwitch256PageSize(void);
 extern unsigned char spiFlashReadStatus(void);
+extern bool spiFlashIsBusy(void);
+extern bool spiFlashChipErase_block(void);
+extern void spiFlashReadId(void *buf,unsigned int len);
+extern bool spiFlashPageWrite(unsigned int addr,void *buf,unsigned int szbuf);
 
 
- 
-#endif /* _PF_EEPROM_H_ */ 
+
+#endif /* _PF_EEPROM_H_ */
 
 
