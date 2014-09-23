@@ -15,6 +15,7 @@
 #include "pf_platform_cfg.h"
 #include "type.h"
 #include "pf_lcd.h"
+#include "pf_uart.h"
 #include "mmcsd_proto.h"
 #include "string.h"
 #include "delay.h"
@@ -500,6 +501,14 @@ void simulateTouch(unsigned short x,unsigned short y){
    g_ts.x = x;
    g_ts.y = y;
    atomicSet(&g_touched);
+}
+
+
+void keyLedSet(unsigned short val){
+    unsigned char buf[] = {0xbb,0x08,0x00,0x00,0x00,0x00,0x00,0x0d};
+    buf[2] = (unsigned char)val;
+    buf[3] = (unsigned char)(val>>8);
+    while(!UARTSendNoBlock(UART_LCDBACKLIGHT_MODULE,buf,sizeof buf));
 }
 
 

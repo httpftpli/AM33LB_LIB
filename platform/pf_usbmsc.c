@@ -252,12 +252,18 @@ void usbMscInit(){
 
 void usbMscProcess() {
    USBHCDMain(USB_INSTANCE_FOR_USBDISK, g_ulMSCInstance);
+   static bool mounted = false;
    switch (g_usbMscState) {
    case USBMSC_NO_DEVICE:
-      break;
+       if (mounted) {
+           mounted = false;
+           f_mount(FatFS_Drive_Index, NULL);
+       }
+       break; 
    case USBMSC_DEVICE_ENUM:
       if (USBHMSCDriveReady(g_ulMSCInstance) == 0) {
          f_mount(FatFS_Drive_Index, &g_sFatFs);
+         mounted = true;
          g_usbMscState = USBMSC_DEVICE_READY;
       }
       break;

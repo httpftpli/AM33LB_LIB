@@ -81,6 +81,7 @@ extern __weak  void isr_tsc(unsigned int intnum);
 extern __weak  void isr_uart_for_keyboard(unsigned int intnum);
 extern __weak  void isr_mcspi(unsigned int intnum);
 extern __weak  void isr_dmtimer(unsigned int num);
+extern __weak  void isr_uart_for_9bit(unsigned int intNum);
 
 
 #ifdef AM335X_ADC_TSC
@@ -116,7 +117,7 @@ MODULE modulelist[128] = {
 [MODULE_ID_UART0] =  { .index = 1, .baseAddr = SOC_UART_0_REGS, .INTNum = { SYS_INT_UART0INT, 0, 0 }, .INTPriority = { 0, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &uart0ModClock },
 [MODULE_ID_UART1] =  { .index = 1, .baseAddr = SOC_UART_1_REGS, .INTNum = { SYS_INT_UART1INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART1, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &uart1ModClock },
 [MODULE_ID_UART2] =  { .index = 1, .baseAddr = SOC_UART_2_REGS, .INTNum = { SYS_INT_UART2INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART2, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &uart2ModClock },
-[MODULE_ID_UART3] =  { .index = 1, .baseAddr = SOC_UART_3_REGS, .INTNum = { SYS_INT_UART3INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART3, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &uart3ModClock },
+[MODULE_ID_UART3] =  { .index = 1, .baseAddr = SOC_UART_3_REGS, .INTNum = { SYS_INT_UART3INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART3, 0, 0 }, .isr = { isr_uart_for_9bit, 0, 0 }, .moduleClk = &uart3ModClock },
 [MODULE_ID_UART4] =  { .index = 1, .baseAddr = SOC_UART_4_REGS, .INTNum = { SYS_INT_UART4INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART4, 0, 0 }, .isr = { IS_TSC, 0, 0 }, .moduleClk = &uart4ModClock },
 [MODULE_ID_UART5] =  { .index = 1, .baseAddr = SOC_UART_5_REGS, .INTNum = { SYS_INT_UART5INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART5, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &uart5ModClock },
 [MODULE_ID_TIMER0] = { .index = 0, .baseAddr = SOC_DMTIMER_0_REGS, .INTNum = { SYS_INT_TINT0, 0, 0 }, .INTPriority = { INT_PRIORITY_TIMER0, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &timer0ModClock },
