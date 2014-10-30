@@ -23,6 +23,8 @@
 #include "pf_dmtimer.h"
 #include "pf_beep.h"
 #include "debug.h"
+#include "pf_timertick.h"
+#include "mmath.h"
 
 #define INTNUMBER   SYS_INT_TINT2
 
@@ -45,6 +47,8 @@ volatile  SOFTTIMER softtimer[16];
 unsigned int softtimerenable;
 
 
+static void taskpool_init(void);
+static void taskdelay_walk();
 
 static unsigned int timerFindFree() {
     for (int i = 0; i < sizeof(softtimer) / sizeof(softtimer[0]); i++) {
@@ -59,6 +63,7 @@ static unsigned int timerFindFree() {
 static void dmtimertimetickhandler(unsigned int tc, unsigned int intFlag) {
     if (intFlag & DMTIMER_INT_FLAG_OVF) {
         tick++;
+        taskdelay_walk();
         if (NULL != timertickhandle) {
             timertickhandle(tick);
         }
@@ -192,6 +197,7 @@ void TimerTickConfigure(unsigned int moduleId) {
     }
     dmtimerRegistHandler(moduleId, dmtimertimetickhandler);
     moduleIntConfigure(moduleId);
+    taskpool_init();
 }
 
 
@@ -260,6 +266,72 @@ void delayus(unsigned int uSec) {
         timerend +=  cnt;
     }
     while (TimerTickTimeGet() != timerend);
+}
+
+
+
+static struct list_head tasklet_head,tasklet_head_free;
+static TASKLET taskpool[100];
+
+
+
+static void taskpool_init(void){
+    INIT_LIST_HEAD(&tasklet_head);
+    INIT_LIST_HEAD(&tasklet_head_free);
+    for (int i=0;i<lenthof(taskpool);i++) {
+        taskpool[i].fun = NULL;
+        taskpool[i].delay = 0;
+        taskpool[i].list.prev = &(taskpool[i].list);
+        taskpool[i].list.next = &(taskpool[i].list);
+    }
+    for (int i=0;i<lenthof(taskpool);i++) {
+        list_add(&taskpool[i].list,&tasklet_head_free);
+    }
+}
+
+
+bool taskdelaydo(unsigned int delay,void (*fun)(void)){
+    struct list_head *literal;
+    struct list_head *insert = &tasklet_head;
+    IntMasterIRQDisable();
+    if (list_empty(&tasklet_head_free)) {
+        IntMasterIRQEnable();
+        return  false;
+    }
+    delay = TimerTickGet()+delay;
+    list_for_each(literal, &tasklet_head) {
+        TASKLET *task = list_entry(literal,TASKLET,list);
+        insert = &(task->list);
+        if (delay <= task->delay){
+            insert = insert->prev;
+            break;
+        }
+    }
+    TASKLET *taskfree = list_first_entry(&tasklet_head_free, TASKLET, list);
+    taskfree->delay = delay;
+    taskfree->fun = fun;
+    list_move(&taskfree->list, insert);
+    IntMasterIRQEnable();
+    return true;
+}
+
+
+static void taskdelay_walk(){
+   struct list_head *p,*n;
+   list_for_each_safe(p,n,&tasklet_head){
+       TASKLET *task = list_entry(p,TASKLET,list);
+       if (task->delay<=TimerTickGet()) {
+           list_del(p);
+           list_add(p,&tasklet_head_free);
+           if(task->fun!=NULL){
+               (task->fun)();
+           }
+           task->fun = NULL;
+           task->delay = 0;
+       }else{
+           break;
+       }
+   }
 }
 
 //! @}
