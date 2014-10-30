@@ -46,6 +46,9 @@ extern "C"
             for(unsigned int TIMENAME=TimerTickGet();\
                 TimerTickGet()<=(time+TIMENAME);\
                 )
+#define everytimedo(TIMENAME,time)\
+                static unsigned int TIMENAME=0;\
+                for(;TIMENAME<=TimerTickGet();TIMENAME=TimerTickGet()+time )
 
 
 //#define DEFINE_TASKLET(NAME) \

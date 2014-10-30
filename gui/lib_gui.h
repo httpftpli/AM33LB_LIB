@@ -202,6 +202,8 @@ typedef unsigned int COLOR;
 #define C_BLACK             RGB(0,0,0)
 #define C_WHITE             RGB(0xff,0xff,0xff)
 #define C_TRANSPARENT       RGBA(0,0,0,0)
+#define C_GRAY				RGB(0x80,0x80,0x80)
+#define C_DARKGRAY          RGB(0xA9,0xA9,0xA9)
 
 #if LCD_PIX_SIZE==2
 #define color2Lcd(C) ((COLORB(C)&0xf8)<<8|(COLORG(C)&0xfc)<<3|(COLORR(C)>>3))

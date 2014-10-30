@@ -446,7 +446,7 @@ BOOL TouchCalibrate(BOOL  force) {
         tsCalibrationTemp.matrix.Fn = F;
 
         int tempx = tsCalibrationTemp.x[3];
-        int tempy = tsCalibrationTemp.x[3];
+        int tempy = tsCalibrationTemp.y[3];
         ts_linear(&tsCalibrationTemp, &tempx, &tempy);
         int xtol = tempx - tsCalibrationTemp.xfb[3];
         int ytol = tempy - tsCalibrationTemp.yfb[3];
