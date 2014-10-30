@@ -15,9 +15,9 @@
 #include "list.h"
 
 typedef struct {
-   void (*fun)(void);
-   unsigned int delay;
-   struct list_head list;
+    void (*fun)(void);
+    unsigned int delay;
+    struct list_head list;
 }TASKLET;
 
 
@@ -28,7 +28,7 @@ extern "C"
 #endif
 
     extern void TimerTickConfigure();
-    extern void TimerTickPeriodSet(unsigned int moduleId,unsigned int microsecond);
+    extern void TimerTickPeriodSet(unsigned int moduleId, unsigned int microsecond);
     extern void TimerTickRegistHandler(void (*pfnHandler)(unsigned int tick));
     extern void TimerTickStart(void);
     extern void TimerTickStop(void);
@@ -38,8 +38,9 @@ extern "C"
     extern int StartTimer(unsigned int mSec);
     extern unsigned int IsTimerElapsed(unsigned int timerindex);
     extern void  StopTimer(unsigned int timerindex);
-    extern bool taskdelaydo(unsigned int delay,void (*fun)(void));
-
+#if USE_TASK_DELAYDO == 1
+    extern bool taskdelaydo(unsigned int delay, void (*fun)(void));
+#endif
 
 
 #define withintimedo(TIMENAME,time) \
@@ -58,6 +59,7 @@ extern "C"
 #endif
 
 #endif
+
 
 
 
