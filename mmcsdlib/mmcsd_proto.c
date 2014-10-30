@@ -21,6 +21,7 @@
 #include "mmath.h"
 #include "mmcsd_proto_hooks.h"
 #include "module.h"
+#include "debug.h"
 
 
 extern void hsMmcSdBusWidthSet(mmcsdCtrlInfo *ctrl, unsigned char buswidth, BOOL ddr);
@@ -977,6 +978,8 @@ unsigned int MMCSDP_Read(mmcsdCtrlInfo *ctrl, void *ptr, unsigned int block,
    unsigned int status = 0;
    unsigned int address;
    mmcsdCmd cmd;
+
+   ASSERT(nblks>0);
 
    /*
     * Address is in blks for high cap cards and in actual bytes

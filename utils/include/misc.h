@@ -2,7 +2,10 @@
 #define __misc__h___
 
 
-
+#define everydiffdo(TYPE,MARK,val)\
+            static TYPE __old ## MARK = 0;\
+            for (TYPE MARK = val; MARK!=__old ## MARK;\
+              __old ## MARK=MARK)
 
 extern unsigned char bcd2hex_2(unsigned char byte);
 

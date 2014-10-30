@@ -19,6 +19,86 @@
 #define USB_USE_CPPI41DMA          0
 
 
+//define peripheral to use
+
+#ifndef  MODULE_USE_EDMA
+#define  MODULE_USE_EDMA ==  1
+#endif
+
+#ifndef  MODULE_USE_ECAP
+#define  MODULE_USE_ECAP ==  1
+#endif
+
+#ifndef MODULE_USE_EPWM
+#define MODULE_USE_EPWM ==  1
+#endif
+
+#ifndef MODULE_USE_GPIO
+#define  MODULE_USE_GPIO ==  1
+#endif
+
+#ifndef MODULE_USE_EQEP
+#define  MODULE_USE_EQEP ==  1
+#endif
+
+#ifndef MODULE_USE_DCAN
+#define  MODULE_USE_DCAN ==  1
+#endif
+
+#ifndef MODULE_USE_ADCTSC
+#define  MODULE_USE_ADCTSC ==  1
+#endif
+
+#ifndef MODULE_USE_UART0
+#define  MODULE_USE_UART0 ==  1
+#endif
+
+#ifndef MODULE_USE_UART1
+#define  MODULE_USE_UART1 ==  1
+#endif
+
+#ifndef MODULE_USE_UART2
+#define  MODULE_USE_UART2 ==  1
+#endif
+
+#ifndef MODULE_USE_UART3
+#define  MODULE_USE_UART3 ==  1
+#endif
+
+#ifndef MODULE_USE_UART4
+#define  MODULE_USE_UART4 ==  1
+#endif
+
+#ifndef  MODULE_USE_UART5
+#define  MODULE_USE_UART5 ==  1
+#endif
+
+#ifndef  MODULE_USE_TIMER
+#define  MODULE_USE_TIMER ==  1
+#endif
+
+#ifndef  MODULE_USE_GPMC
+#define  MODULE_USE_GPMC ==  1
+#endif
+
+#ifndef  MODULE_USE_I2C
+#define  MODULE_USE_I2C ==  1
+#endif
+
+#ifndef  MODULE_USE_SPI
+#define  MODULE_USE_SPI ==  1
+#endif
+
+#ifndef  MODULE_USE_3GPSW
+#define  MODULE_USE_3GPSW ==  1
+#endif
+
+
+
+
+
+
+
 //bellow config interrupt priority
 #ifndef INT_PRIORITY_MAX
 #define INT_PRIORITY_MAX          (0x7f)
