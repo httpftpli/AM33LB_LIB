@@ -81,6 +81,7 @@ extern __weak  void isr_tsc(unsigned int intnum);
 extern __weak  void isr_uart_for_keyboard(unsigned int intnum);
 extern __weak  void isr_mcspi(unsigned int intnum);
 extern __weak  void isr_dmtimer(unsigned int num);
+extern __weak  void isr_uart_for_9bit(unsigned int intNum);
 
 
 #ifdef AM335X_ADC_TSC

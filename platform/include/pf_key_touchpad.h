@@ -8,7 +8,7 @@
 #define MSG_TYPE_TOUCH  2
 #define MSG_TYPE_KEYRESET 4
 
-#define KEY_0        	0  	
+#define KEY_0        	0
 #define KEY_1        	1
 #define KEY_2        	2
 #define KEY_3        	3
@@ -40,7 +40,7 @@
 #define KEY_F4		27
 #define KEY_F5		28
 #define KEY_F6		29
-#define KEY_CE		30		
+#define KEY_CE		30
 #define KEY_POP		31
 
 #define KEY_USB		32
@@ -132,6 +132,7 @@ extern void registTouchHandler(void handler());
 extern BOOL TouchCalibrate(BOOL force);
 extern void ts_linear(TS_CALIBRATION *cal,  int *x,  int *y);
 extern void simulateTouch(unsigned short x,unsigned short y);
+extern void keyLedSet(unsigned short val);
 
 #endif
 
