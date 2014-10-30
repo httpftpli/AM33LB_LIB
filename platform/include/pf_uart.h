@@ -3,6 +3,7 @@
 
 #include "uart_irda_cir.h"
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef void (*UARTRCVHANDLER)(void *rcvBuf,unsigned int bufLen);
 
