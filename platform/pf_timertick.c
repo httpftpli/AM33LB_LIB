@@ -33,10 +33,10 @@
 #endif
 
 
-#if USE_TASK_DELAYDO == 1
+
 static unsigned int tick = 0;
 static void (*timertickhandle)(unsigned int tick) = NULL;
-#endif
+
 
 typedef struct __softtimer {
     unsigned int tick;
@@ -66,7 +66,9 @@ static unsigned int timerFindFree() {
 static void dmtimertimetickhandler(unsigned int tc, unsigned int intFlag) {
     if (intFlag & DMTIMER_INT_FLAG_OVF) {
         tick++;
+#if USE_TASK_DELAYDO == 1
         taskdelay_walk();
+#endif
         if (NULL != timertickhandle) {
             timertickhandle(tick);
         }
