@@ -9,15 +9,12 @@
 #define APP_RUN_SECTOR_SIZE           (32*1024*2)  //65M BYTE    UNIT:SECTOR
 #define APP1_RUN_SECTOR       771
 #define APP2_RUN_SECTOR       (APP1_RUN_SECTOR+APP_RUN_SECTOR_SIZE)
-#define APP_BAK_FLAG_SECTOR   (APP2_RUN_SECTOR+APP_RUN_SECTOR_SIZE)
-#define APP_DESC_SECTOR       (APP_BAK_FLAG_SECTOR+2)   //APP_BAK_FLAG_SECTOR size 1K
-#define APP_BAK_BEGIN_SECTOR  (APP_DESC_SECTOR+ 4)      //APP_DESC_SECTOR size 2K
-#define APP_BAK_SECTOR_SIZE            (129*1024*2)   //total bak size 128M BYTE   UNIT:SECTOR
-#define APP_MAIN_BAK_MAX_SIZE          (32*1024*2)    //main app max size   UNIT:SECTOR
-#define APP_DEV_BAK_SECTOR_SIZE        (2*1024*2)    //dev app max size    UNIT:SECTOR
-#define USER_SECTOR   (APP_BAK_BEGIN_SECTOR + APP_BAK_SECTOR_SIZE)
-#define USER_SECTOR_SIZE      (128*1024*2)        //UNIT:SECTOR
-#define MAX_APP_FILE_SIZE      (64*1024*1024)
+#define APP_BAK_SECTOR   (APP2_RUN_SECTOR+APP_RUN_SECTOR_SIZE)
+#define APP_BAK_MAX_SIZE      (128*1024*2)  //APP bak size  UNIT:SECTOR
+
+#define USER_SECTOR   (APP_BAK_SECTOR + APP_BAK_MAX_SIZE)
+#define USER_SECTOR_SIZE      (64*1024*2)     //USER_SECTOR  UNIT:SECTOR
+
 
 #define APP_ENTRY             0x80000000
 #define NUM_OF_APPSECTION     8
@@ -28,7 +25,7 @@
 #define BOOTLOADER_BEGIN_SECTOR   256
 #define BOOTLOADER_ENTRY          0x402f0400
 #define FS_BEGIN_SECTOR           (USER_SECTOR+USER_SECTOR_SIZE)
-#define FIRST_PARTITION_SIZE      (256*1024) //in sector
+#define FIRST_PARTITION_SIZE      (128*1024*2) //in sector
 
 
 
@@ -61,6 +58,7 @@ typedef struct {
 typedef struct
 {
     unsigned int magic;
+    unsigned int packSize;
     unsigned short numOfAppsec;
     unsigned short secflag;
     unsigned int descriptOffset; //描述文字偏移，相对于APPHEADER
@@ -75,7 +73,7 @@ typedef enum{BURN_OK=0,BURN_PARAM_ERROR,BURN_FILE_CHECKSUM_ERROR, BURN_FILE_ERRO
 BURN_RET;
 
 extern void reboot();
-extern BURN_RET  burnAppFormBuf(void *appBuf,unsigned int appLen,unsigned short burnSegFlag,void *workbuf,unsigned int workbuflen);
+extern BURN_RET  burnAppFormBuf(void *appBuf,unsigned int appLen );
 extern BURN_RET  burnBootFormBuf(void *bootBuf,unsigned int bootLen);
 extern bool burnRunAPP();
 

@@ -182,7 +182,7 @@ const tGUI_SIF_APIList GUI_SIF_APIList_Prop = {
 *
 *       GUI_SIF_CreateFont
 */
-void GUI_SIF_CreateFont(const void * pFontData, GUI_FONT * pFont, const GUI_SIF_TYPE * pFontType) {
+BOOL GUI_SIF_CreateFont(const void * pFontData, GUI_FONT * pFont, const GUI_SIF_TYPE * pFontType) {
   const U8 * pSrc = (const U8 *)pFontData;
   U32 ID;
   pFont->YSize = 0;
@@ -191,7 +191,7 @@ void GUI_SIF_CreateFont(const void * pFontData, GUI_FONT * pFont, const GUI_SIF_
   /* Check ID */
   ID = GUI__Read32((void const **)&pSrc);
   if (ID != 0x50495547) { /* 'GUIP' */
-    return ;
+    return FALSE;
   }
   /* Read properties of the font */
   pFont->YSize    = GUI__Read16((void const **)&pSrc);
