@@ -60,7 +60,7 @@
 #define MODULE_ID_DCAN0_1     SYS_INT_DCAN0_INT1                     
 #define MODULE_ID_DCAN0_2     SYS_INT_DCAN0_PARITY                  
 #define MODULE_ID_DCAN1_0     SYS_INT_DCAN1_INT0                  
-#define MODULE_ID_DCAN1       SYS_INT_DCAN1_INT1                     
+#define MODULE_ID_DCAN1       SYS_INT_DCAN1_INT0                     
 #define MODULE_ID_DCAN1_2     SYS_INT_DCAN1_PARITY                   
 #define MODULE_ID_ePWM0_TZ       SYS_INT_ePWM0_TZINT                    
 #define MODULE_ID_ePWM1_TZ       SYS_INT_ePWM1_TZINT                    

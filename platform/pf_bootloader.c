@@ -33,60 +33,34 @@ const unsigned char ProgramTable[256] =
 
 
 
-static unsigned int  appsecindex2imageaddr(unsigned int index) {
-    unsigned int addr;
-    if (index == 0) {
-        addr = APP_BAK_BEGIN_SECTOR;
-    } else {
-        addr = APP_BAK_BEGIN_SECTOR
-               + APP_MAIN_BAK_MAX_SIZE + (index - 1) * APP_DEV_BAK_SECTOR_SIZE;
-    }
-    return addr * 512;
-}
-
-
 static void appdecrypt(void *dat, unsigned int len) {
     unsigned int *dattemp = (unsigned int *)dat;
     unsigned int *crypttemp = (unsigned int *)ProgramTable;
     for (int i = 0; i < len / 256; i++) {
         for (int j = 0; j < 64; j++) {
-            dattemp[i*64+j] ^= crypttemp[j];
+            dattemp[i * 64 + j] ^= crypttemp[j];
         }
     }
 }
 
 
 //before call this func ,caller should prepare 512 aligned 3K BYTE buf for data process
-BURN_RET  burnAppFormBuf(void *appBuf, unsigned int appLen,
-                         unsigned short appSegBitMap, void *workbuf,
-                         unsigned int workbuflen) {
+BURN_RET  burnAppFormBuf(void *appBuf, unsigned int appLen) {
     unsigned int ret;
-    unsigned char appsectag[16];
-    APPHEADER *dheader = (APPHEADER *)workbuf;
-    APPSETCTION *dsection =  (APPSETCTION *)((unsigned char *)workbuf + sizeof(APPHEADER));
     APPHEADER *sheader = (APPHEADER *)appBuf;
     APPSETCTION *ssection = (APPSETCTION *)((unsigned char *)appBuf + sizeof(APPHEADER));
-    char *desc = (char *)workbuf + 1024;
-    if (appBuf == NULL || appLen == 0 || appSegBitMap == 0
-        || (unsigned int)appBuf % 512 != 0 || (unsigned int)workbuf % 512 != 0
-        || workbuflen != 1024 * 3) {
+    if (appBuf == NULL || appLen == 0 || appLen % 512 != 0 || (unsigned int)appBuf % 512 != 0
+        || appLen > APP_BAK_MAX_SIZE*512) {
         return BURN_PARAM_ERROR;
     }
-
-    ret = MMCSDP_Read(mmcsdctr, dheader, APP_BAK_FLAG_SECTOR, 2); //read 1k
-    if (false == ret) {
-        return BURN_DES_ERROR;
-    }
-
-    ret = MMCSDP_Read(mmcsdctr, desc, APP_DESC_SECTOR, 4); //read 2k descption
-    if (false == ret) {
-        return BURN_DES_ERROR;
-    }
-
     if (sheader->magic != APP_MAGIC_OK) {
         return BURN_SRC_ERROR;
     }
-    if (sheader->numOfAppsec == 0 || sheader->numOfAppsec > 16) {
+    if (sheader->packSize!=appLen) {
+        return BURN_SRC_ERROR;
+    }
+    //appbuf not include main app
+    if ((sheader->secflag & 0x01) == 0) {
         return BURN_SRC_ERROR;
     }
     //check imageSize 512 byte allign
@@ -96,101 +70,52 @@ BURN_RET  burnAppFormBuf(void *appBuf, unsigned int appLen,
         }
     }
 
-    appSegBitMap &= sheader->secflag;
-    if (appSegBitMap == 0)  return BURN_SRC_ERROR;
+    //decypt app data
+    //unsigned char *addr = (unsigned char *)appBuf + sheader->dataOffset;
+    //appdecrypt(addr, appLen - sheader->dataOffset);
 
-    //appsegflag bitmap to number series
-    for (int i = 0, j = 0; i < sheader->numOfAppsec; i++) {
-        if (sheader->secflag & (1 << i)) {
-            appsectag[i] = j++;
-        } else {
-            appsectag[i] = 0;
-        }
-    }
     //clear the magic
-    dheader->magic = APP_MAGIC_NO;
-    ret = MMCSDP_Write(mmcsdctr, dheader, APP_BAK_FLAG_SECTOR, 1);
+    sheader->magic = APP_MAGIC_NO;
+    //write app pack to nand
+    ret = MMCSDP_Write(mmcsdctr, sheader, APP_BAK_SECTOR, appLen/512);
     if (false == ret) {
         return BURN_DES_ERROR;
     }
-    dheader->descriptOffset = APP_DESC_SECTOR * 512;
-    dheader->dataOffset = APP_BAK_BEGIN_SECTOR * 512;
-
-    //burn data
-    for (unsigned int i = 0; i < sheader->numOfAppsec; i++) {
-        if (appSegBitMap & 1 << i) {
-            //set dsection
-            memcpy(dsection + i, ssection + appsectag[i], sizeof dsection[i]);
-            dsection[i].imageaddr = appsecindex2imageaddr(i)- dheader->dataOffset;
-            dsection[i].imageCheck = APP_MAGIC_OK;
-            dsection[i].descriptOffset = APP_DESC_SECTOR * 512 + 2048 / 16 * i;
-
-            if (i == 0 && dsection[i].imageSize > APP_MAIN_BAK_MAX_SIZE * 512) return BURN_SRC_ERROR;
-            if (i != 0 && dsection[i].imageSize > APP_DEV_BAK_SECTOR_SIZE * 512) return BURN_SRC_ERROR;
-            //copy image version descipt
-            strncpy(desc + 2048 / 16 * i, (char *)sheader
-                    + sheader->descriptOffset + ssection[i].descriptOffset
-                    , 2048 / 16);
-            desc[2048 / 16 * i + 2048 / 16 - 1] = 0;
-            //decryption
-            unsigned char *addr = (unsigned char *)appBuf +
-                                  sheader->dataOffset +
-                                  ssection[appsectag[i]].imageaddr;
-            appdecrypt(addr, ssection[appsectag[i]].imageSize);
-            ret = MMCSDP_Write(mmcsdctr, addr, (dsection[i].imageaddr+ dheader->dataOffset)/512, dsection[i].imageSize / 512);
-            if (false == ret) {
-                return BURN_DES_ERROR;
-            }
-        }
-    }
-
-    ret =  MMCSDP_Write(mmcsdctr, desc, APP_DESC_SECTOR, 4); //write descript
+    sheader->magic = APP_MAGIC_OK;
+    ret =  MMCSDP_Write(mmcsdctr, sheader, APP_BAK_SECTOR,1); //write MAGIC
     if (false == ret) {
         return BURN_DES_ERROR;
     }
-    //flag the magic
-    dheader->magic = APP_MAGIC_OK;
-    dheader->secflag |= appSegBitMap;
-    unsigned int j= 0;
-    for (int i=0;i<16;i++) {
-        if ((appSegBitMap & 1<<i)!=0) j++;
-    }
-    dheader->numOfAppsec = j;
-    ret =  MMCSDP_Write(mmcsdctr, dheader, APP_BAK_FLAG_SECTOR, 2); //modify app heard
-    if (false == ret) {
-        return BURN_DES_ERROR;
-    }
-    //if(!burnRunAPP()) return BURN_DES_ERROR;
     return BURN_OK;
 }
 
 
-bool burnRunAPP(void *workbuf,unsigned int len) {
+bool burnRunAPP() {
     unsigned int ret;
     unsigned char buf[512];
     APPHEADER *header = (APPHEADER *)buf;
     APPSETCTION *section =  (APPSETCTION *)(buf + sizeof(APPHEADER));
-    ASSERT(len%512==0);
-    ret = MMCSDP_Read(mmcsdctr, buf, APP_BAK_FLAG_SECTOR, 1);
+    ret = MMCSDP_Read(mmcsdctr, buf, APP_BAK_SECTOR, 1);
     if (ret == 0) {
         return false;
     }
     if (header->magic != APP_MAGIC_OK || section->imageCheck != APP_MAGIC_OK
-        ||(header->secflag&0x01)==0) {
+        || (header->secflag & 0x01) == 0) {
         return false;
     }
-    unsigned int sappaddr = header->dataOffset + section->imageaddr ;
-    unsigned int appsize = section->imageSize ;
-    if (appsize >= APP_RUN_SECTOR_SIZE*512) {
+    unsigned int sappaddr = header->dataOffset + section->imageaddr+APP_BAK_SECTOR*512;
+    unsigned int appsize = section->imageSize;
+    if (appsize >= APP_RUN_SECTOR_SIZE * 512) {
         return false;
     }
+
     ret = MMCSDP_Read(mmcsdctr, buf, APP_RUN_FLAG_SECTOR, 1);
     if (ret == 0) {
         return false;
     }
     RUNAPPHEAD *runheader = (RUNAPPHEAD *)buf;
     unsigned char diimage = !runheader->iimage;
-    unsigned int  dappaddr = (diimage == 0 ? APP1_RUN_SECTOR : APP2_RUN_SECTOR)*512;
+    unsigned int  dappaddr = (diimage == 0 ? APP1_RUN_SECTOR : APP2_RUN_SECTOR) * 512;
     runheader->image[diimage].imageaddr =  dappaddr;
     runheader->image[diimage].imagelen =  appsize;
     //set des image tag to APP_MAGIC_NO
@@ -204,6 +129,7 @@ bool burnRunAPP(void *workbuf,unsigned int len) {
         if (ret == 0) {
             return false;
         }
+        appdecrypt(buf, 512);
         ret = MMCSDP_Write(mmcsdctr, buf, dappaddr / 512 + i, 1);
         if (ret == 0) {
             return false;

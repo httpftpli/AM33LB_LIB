@@ -56,18 +56,12 @@ void isr_Gpio(unsigned int intnum){
    unsigned int index = modulelist[intnum].index;
    unsigned int baseaddr = modulelist[intnum].baseAddr;
    unsigned int irq = HWREG(baseaddr + GPIO_IRQSTATUS(0));
-   unsigned char irqbyte;
-   unsigned char irqpin;
-   for (int i=0;i<4;i++) {
-      irqbyte = *(unsigned char *)(&irq+i);
-      if (irqbyte==0) {
-         continue;
-      }else{
-         irqpin = i<<3+unMapTbl[irqbyte];
+   for (int i=0;i<32;i++) {;
+      if (irq & 1<<i) {
          if (handler != NULL) {
-            handler[index][irqpin]();
+            handler[index][i]();
          }
-         HWREG(baseaddr + GPIO_IRQSTATUS(0)) = 1<<irqpin ;//clear irq;
+         HWREG(baseaddr + GPIO_IRQSTATUS(0)) = 1<<i ;//clear irq;
       }
    }
 }
@@ -217,8 +211,8 @@ void GPIOPinTogle(unsigned int moduleId, unsigned int pinNumber) {
 }
 
 /**
- * \brief  This API set the GPIO PIN interrrupt 
- *  
+ * \brief  This API set the GPIO PIN interrrupt
+ *
  *         Whenever the selected event occurs on that GPIO pin and if interrupt
  *         generation is enabled for that pin, the GPIO module will send an
  *         interrupt to CPU.
@@ -232,7 +226,7 @@ void GPIOPinTogle(unsigned int moduleId, unsigned int pinNumber) {
  * 'pinNumber' can take one of the following values:
  * (0 <= pinNumber <= 31)\n
  *
- * 'eventType' can take one of the following values: 
+ * 'eventType' can take one of the following values:
  * - GPIO_INT_TYPE_LEVEL_LOW - interrupt request on occurence of a LOW level
  *   (logic 0) on the input GPIO pin\n
  * - GPIO_INT_TYPE_LEVEL_HIGH - interrupt request on occurence of a HIGH level
@@ -248,7 +242,7 @@ void GPIOPinTogle(unsigned int moduleId, unsigned int pinNumber) {
  *
  * \return  None
  */
- 
+
 void GPIOPinIntEnable(unsigned int moduleId,unsigned int pinNumber,unsigned int intTrigFlag){
     ASSERT(pinNumber<32);
     unsigned int baseAdd = modulelist[moduleId].baseAddr;

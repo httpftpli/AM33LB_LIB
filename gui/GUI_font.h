@@ -809,7 +809,7 @@ void  GUI_DispNextLine(void);
 *
 **********************************************************************
 */
-void GUI_SIF_CreateFont(void * pFontData, GUI_FONT * pFont, const GUI_SIF_TYPE * pFontType);
+BOOL GUI_SIF_CreateFont(void * pFontData, GUI_FONT * pFont, const GUI_SIF_TYPE * pFontType);
 void GUI_SIF_DeleteFont(GUI_FONT * pFont);
 
 /*********************************************************************

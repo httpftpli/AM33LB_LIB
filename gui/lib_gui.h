@@ -288,7 +288,7 @@ const GUI_FONT   * GUI_SetFont(const GUI_FONT   * pNewFont);
 *
 **********************************************************************
 */
-void GUI_SIF_CreateFont(const void * pFontData, GUI_FONT * pFont, const GUI_SIF_TYPE * pFontType);
+BOOL GUI_SIF_CreateFont(const void * pFontData, GUI_FONT * pFont, const GUI_SIF_TYPE * pFontType);
 void GUI_SIF_DeleteFont(GUI_FONT * pFont);
 
 

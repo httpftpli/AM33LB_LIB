@@ -50,7 +50,9 @@ static unsigned int loadFont(const TCHAR * filepath,  GUI_FONT  *font) {
       f_close(&fontfile);
       return -1;
    }
-   GUI_SIF_CreateFont(font->p.pFontData,font, GUI_SIF_TYPE_PROP); 
+   if(!GUI_SIF_CreateFont(font->p.pFontData,font, GUI_SIF_TYPE_PROP)){
+       return -1; 
+   }
    f_close(&fontfile);
    return filesize;
 }
