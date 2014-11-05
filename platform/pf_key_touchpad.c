@@ -511,6 +511,16 @@ void keyLedSet(unsigned short val){
     while(!UARTSendNoBlock(UART_LCDBACKLIGHT_MODULE,buf,sizeof buf));
 }
 
+void keyLedSet1(unsigned char iled,unsigned char func,unsigned short ontime_ms,unsigned short offtime_ms){
+    if(iled>=16) return;
+    unsigned char buf[8] = {0xbb,0x09, 0,0,0,0,0,0x0d};
+    buf[2] = func<<4|iled;
+    buf[3] = (unsigned char )ontime_ms;
+    buf[4] = (unsigned char )(ontime_ms>>8);
+    buf[5] = (unsigned char )offtime_ms;
+    buf[6] = (unsigned char )(offtime_ms>>8);
+    while(!UARTSendNoBlock(UART_LCDBACKLIGHT_MODULE,buf,sizeof buf));
+}
 
 //! @}
 
