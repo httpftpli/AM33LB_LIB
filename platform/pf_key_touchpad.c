@@ -65,45 +65,6 @@
 #define KEYSCANCODE_POP   0x0205
 
 #else //protcal waji yujie
-
-#define KEYSCANCODE_0		20
-#define KEYSCANCODE_1		8
-#define KEYSCANCODE_2		9
-#define KEYSCANCODE_3		10
-#define KEYSCANCODE_4		11
-#define KEYSCANCODE_5		12
-#define KEYSCANCODE_6		16
-#define KEYSCANCODE_7		17
-#define KEYSCANCODE_8		18
-#define KEYSCANCODE_9		19
-#define KEYSCANCODE_DOT	   50
-#define KEYSCANCODE_ZF		51
-#define KEYSCANCODE_A		24
-#define KEYSCANCODE_B		26
-#define KEYSCANCODE_C		52
-#define KEYSCANCODE_D		53
-#define KEYSCANCODE_E		54
-#define KEYSCANCODE_F		55
-#define KEYSCANCODE_F1		0
-#define KEYSCANCODE_F2		1
-#define KEYSCANCODE_F3		2
-#define KEYSCANCODE_F4		3
-#define KEYSCANCODE_F5		4
-#define KEYSCANCODE_F6		5
-#define KEYSCANCODE_RIGHT	29
-#define KEYSCANCODE_LEFT	27
-#define KEYSCANCODE_UP		25
-#define KEYSCANCODE_DOWN	21
-#define KEYSCANCODE_QUK	28
-#define KEYSCANCODE_ESC	32
-#define KEYSCANCODE_ENTER	33
-#define KEYSCANCODE_PU		35
-#define KEYSCANCODE_PD		36
-#define KEYSCANCODE_USB	56
-#define KEYSCANCODE_MEM	30
-#define KEYSCANCODE_CE		14
-#define KEYSCANCODE_POP	31
-
 #endif
 
 
@@ -142,127 +103,6 @@ TS_CALIBRATION tsCalibration = {.magic= 0,};
 void (*keyhandler)(int keycode) = NULL;
 void (*touchhandler)(void) = NULL;
 
-unsigned int keyCode(unsigned int scancode) {
-   unsigned int key;
-   switch (scancode) {
-   case KEYSCANCODE_0 :
-      key =  KEY_0;
-      break;
-   case KEYSCANCODE_1 :
-      key =   KEY_1;
-      break;
-   case KEYSCANCODE_2 :
-      key =   KEY_2;
-      break;
-   case KEYSCANCODE_3 :
-      key =   KEY_3;
-      break;
-   case KEYSCANCODE_4  :
-      key =   KEY_4;
-      break;
-   case KEYSCANCODE_5  :
-      key =   KEY_5;
-      break;
-   case KEYSCANCODE_6  :
-      key =   KEY_6;
-      break;
-   case KEYSCANCODE_7 :
-      key =   KEY_7;
-      break;
-   case KEYSCANCODE_8 :
-      key =   KEY_8;
-      break;
-   case KEYSCANCODE_9 :
-      key =   KEY_9;
-      break;
-   case KEYSCANCODE_DOT:
-      key =   KEY_POINT;
-      break;
-   case KEYSCANCODE_ZF :
-      key =   KEY_ZF;
-      break;
-   case KEYSCANCODE_A  :
-      key =   KEY_A;
-      break;
-   case KEYSCANCODE_B :
-      key =   KEY_B;
-      break;
-   case KEYSCANCODE_C  :
-      key =   KEY_C;
-      break;
-   case KEYSCANCODE_D :
-      key =   KEY_D;
-      break;
-   case KEYSCANCODE_E :
-      key =   KEY_E;
-      break;
-   case KEYSCANCODE_F :
-      key =  KEY_F;
-      break;
-   case KEYSCANCODE_F1:
-      key =   KEY_F1;
-      break;
-   case KEYSCANCODE_F2 :
-      key =   KEY_F2;
-      break;
-   case KEYSCANCODE_F3 :
-      key =   KEY_F3;
-      break;
-   case KEYSCANCODE_F4 :
-      key =  KEY_F4;
-      break;
-   case KEYSCANCODE_F5 :
-      key = KEY_F5;
-      break;
-   case KEYSCANCODE_F6:
-      key = KEY_F6;
-      break;
-   case KEYSCANCODE_RIGHT:
-      key =   KEY_RIGHT;
-      break;
-   case KEYSCANCODE_LEFT :
-      key =   KEY_LEFT;
-      break;
-   case KEYSCANCODE_UP :
-      key = KEY_UP;
-      break;
-   case KEYSCANCODE_DOWN:
-      key =   KEY_DOWN;
-      break;
-   case KEYSCANCODE_QUK :
-      key =   KEY_QUK;
-      break;
-   case KEYSCANCODE_ESC :
-      key =   KEY_ESC;
-      break;
-   case KEYSCANCODE_ENTER:
-      key =   KEY_OK;
-      break;
-   case KEYSCANCODE_PU :
-      key =   KEY_PU;
-      break;
-   case KEYSCANCODE_PD :
-      key =   KEY_PD;
-      break;
-   case KEYSCANCODE_USB:
-      key =   KEY_USB;
-      break;
-   case KEYSCANCODE_CE :
-      key =   KEY_CE;
-      break;
-   case KEYSCANCODE_MEM :
-      key =   KEY_MEM;
-      break;
-   case KEYSCANCODE_POP :
-      key =   KEY_POP;
-      break;
-   default:
-      key =   KEY_NO;
-      break;
-   }
-   return key;
-}
-
 #define SAMPLES       8
 #define CALIBRATION_POINT_OFFSET  20
 
@@ -299,7 +139,13 @@ BOOL isKeyTouchEvent(KEYTOUCHMSG *msg){
  * 注册的回调函数可用于处理全局快捷键
  */
 void registKeyHandler(void handler(int keycode)){
-  keyhandler = handler;
+    keyhandler = handler;
+}
+
+
+unsigned char (*keyscancode2key)(int keyscancode) = NULL;
+void registKeyMap(unsigned char scancodeToKey(int keyscancode)){
+    keyscancode2key  = scancodeToKey;
 }
 
 /**
@@ -521,6 +367,7 @@ void keyLedSet1(unsigned char iled,unsigned char func,unsigned short ontime_ms,u
     buf[6] = (unsigned char )(offtime_ms>>8);
     while(!UARTSendNoBlock(UART_LCDBACKLIGHT_MODULE,buf,sizeof buf));
 }
+
 
 //! @}
 

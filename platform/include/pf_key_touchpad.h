@@ -117,6 +117,8 @@ typedef struct {
    MATRIX  matrix;
 } TS_CALIBRATION;
 
+
+extern unsigned char  (*keyscancode2key)(int keyscancode);
 extern KEYTOUCHMSG keyTouchpadMsg;
 extern atomic g_keyPushed;
 extern atomic g_keyRest;
