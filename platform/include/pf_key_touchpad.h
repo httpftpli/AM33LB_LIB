@@ -133,6 +133,6 @@ extern BOOL TouchCalibrate(BOOL force);
 extern void ts_linear(TS_CALIBRATION *cal,  int *x,  int *y);
 extern void simulateTouch(unsigned short x,unsigned short y);
 extern void keyLedSet(unsigned short val);
-
+extern void keyLedSet1(unsigned char iled,unsigned char func,unsigned short ontime_ms,unsigned short offtime_ms);
 #endif
 
