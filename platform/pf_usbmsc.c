@@ -1,4 +1,4 @@
-#include "platform.h"
+#include "pf_platform.h"
 #include "pf_platform_cfg.h"
 #include "usblib.h"
 #include "usbhost.h"
@@ -20,7 +20,7 @@
 unsigned int g_ulMSCInstance = 0;
 
 //*****************************************************************************
-// Current FAT fs 
+// Current FAT fs
 //*****************************************************************************
 static FATFS g_sFatFs;
 
@@ -134,7 +134,7 @@ void USBHCDEvents(void *pvData)
     }
 }
 
-#if USB_USE_CPPI41DMA  
+#if USB_USE_CPPI41DMA
 
 endpointInfo epInfo[]=
 {
@@ -143,13 +143,13 @@ endpointInfo epInfo[]=
 		CPDMA_DIR_RX,
 		CPDMA_MODE_SET_TRANSPARENT,
 	},
-	
+
 	{
 		USB_EP_TO_INDEX(USB_EP_1),
 		CPDMA_DIR_TX,
 		CPDMA_MODE_SET_GRNDIS,
 	},
-	
+
 	{
 		USB_EP_TO_INDEX(USB_EP_2),
 		CPDMA_DIR_RX,
@@ -237,7 +237,7 @@ void usbMscInit(){
     // to be active high and does not enable the power fault.
     //
     USBHCDPowerConfigInit(USB_INSTANCE_FOR_USBDISK, USBHCD_VBUS_AUTO_HIGH);
-	
+
 #if USB_USE_CPPI41DMA
 	Cppi41DmaInit(USB_INSTANCE_FOR_USBDISK, epInfo, NUMBER_OF_ENDPOINTS);
 #endif
@@ -259,7 +259,7 @@ void usbMscProcess() {
            mounted = false;
            f_mount(FatFS_Drive_Index, NULL);
        }
-       break; 
+       break;
    case USBMSC_DEVICE_ENUM:
       if (USBHMSCDriveReady(g_ulMSCInstance) == 0) {
          f_mount(FatFS_Drive_Index, &g_sFatFs);

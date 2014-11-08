@@ -10,7 +10,7 @@
 #include "interrupt.h"
 #include "dmtimer.h"
 #include "perf.h"
-#include "platform.h"
+#include "pf_platform.h"
 
 /******************************************************************************
 **                      INTERNAL MACRO DEFINITIONS
@@ -30,7 +30,7 @@ static volatile unsigned int flagIsr = 1;
 ** This function sets up timer for performance measurement
 */
 void SysPerfTimerSetup(void)
-{   
+{
     /* This function will enable clocks for the DMTimer7 instance */
     DMTimer7ModuleClkConfig();
 
@@ -39,13 +39,13 @@ void SysPerfTimerSetup(void)
 }
 
 /*
-** Configures the performance timer to start or stop timer 
+** Configures the performance timer to start or stop timer
 ** @param  flag   '0', stop the timer and read the value
 **                non-zero value to start timer
 ** /NOTE  This function shouldnot be called when SysStartTimer, SysStopTimer,
 **        SysIsTimerElapsed or Sysdelay functionality is in use and vice Versa.
 **             Maximim Duration is 171 Sec.
-** 
+**
 */
 unsigned int SysPerfTimerConfig(unsigned int flag)
 {

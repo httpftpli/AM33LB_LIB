@@ -1,6 +1,6 @@
 #include "pf_platform_cfg.h"
 #include "interrupt.h"
-#include "platform.h"
+#include "pf_platform.h"
 #include "module.h"
 
 

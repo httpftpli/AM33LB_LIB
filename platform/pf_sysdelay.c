@@ -41,7 +41,7 @@
 */
 
 #include "soc_AM335x.h"
-#include "platform.h"
+#include "pf_platform.h"
 #include "interrupt.h"
 #include "dmtimer.h"
 #include "delay.h"
@@ -50,16 +50,16 @@
 **                      INTERNAL MACRO DEFINITIONS
 *******************************************************************************/
 #define TIMER_INITIAL_COUNT             (0xFFFFA23Fu)
-/* The Input clock is selected as 24MHz. So for 1ms set the count to 0x5DC0. 
- *If the input clock is changed to different source this value has to be updated 
- *accordingly.	
+/* The Input clock is selected as 24MHz. So for 1ms set the count to 0x5DC0.
+ *If the input clock is changed to different source this value has to be updated
+ *accordingly.
 */
-#define TIMER_1MS_COUNT                 (0x5DC0u) 
+#define TIMER_1MS_COUNT                 (0x5DC0u)
 #define TIMER_OVERFLOW                  (0xFFFFFFFFu)
 
 /* If delay using interrupts is desire define this. If polling is desired,
    undefine this */
-#define DELAY_USE_INTERRUPTS            1  
+#define DELAY_USE_INTERRUPTS            1
 
 /******************************************************************************
 **                      INTERNAL FUNCTION PROTOTYPES
