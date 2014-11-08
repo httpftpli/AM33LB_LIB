@@ -1,8 +1,8 @@
 /**
  * \file   pl_lcd.h
  *
- * \brief   
- *        
+ * \brief
+ *
  */
 
 
@@ -82,15 +82,17 @@ typedef struct _S_LcdCtrl
     void             *frameaddr[2];		//显存首地址指针
 	uint32           framesize[2];		//显存字节数
 	unsigned int 	 frame_num;			//display buffer number
-	uint32           activeframe;	    //当前显示的显存	
+	uint32           activeframe;	    //当前显示的显存
     uint32           contexFrame;   //当前操作的显存
     unsigned int     pixsize;           //sizeof pix
 	tFB_BITFIELD     red;
     tFB_BITFIELD     green;
     tFB_BITFIELD     blue;
-   	tFB_BITFIELD     stransp;			     
+   	tFB_BITFIELD     stransp;
 } tLCDCTRL;
 
+
+extern void * fb;
 extern tLCDCTRL lcdCtrl;
 extern void LCDBackLightON(unsigned char lightpwm);
 extern void LCDBackLightOFF(void);
@@ -105,17 +107,22 @@ extern void * LCDFrameBufferAddrGet(int num);
 extern unsigned int  LCDFrameBufferCurGet(void);
 extern void LCDFrameBufferCurSet(unsigned int num);
 extern void LCDSwapFb(void);
-extern void LCDSwapContex(void);
+extern void LCDSwapContex( );
 extern const  tLCD_PANEL *LCDTftInfoGet(void);
 extern void LCDFbClear(unsigned int color);
 extern void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, unsigned short width,
                   unsigned short height, unsigned int color_f, unsigned int color_b);
+extern void renderLocalBegin(void *localfb,bool swapContex);
+extern void renderLocalEnd(void *localfb, bool swapFb);
+
+
+
 #if LCD_PIX_SIZE==2
-#define FrameBuffer(X)  ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
-#define FrameBuffer2D(X,Y) ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
+#define FrameBuffer(X)  ((unsigned short*)fb)[X]  // ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
+#define  FrameBuffer2D(X,Y) ((unsigned short*)fb)[Y*lcdCtrl.panel->width+X] //((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
 #elif LCD_PIX_SIZE==4
-#define FrameBuffer(X)  ((unsigned int *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
-#define FrameBuffer2D(X,Y) ((unsigned int *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
+#define FrameBuffer(X)  ((unsigned int*)fb)[X]   //((unsigned int *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
+#define FrameBuffer2D(X,Y) ((unsigned int*)fb)[Y*lcdCtrl.panel->width+X] //((unsigned int *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
 #else
 #error
 #endif
@@ -126,8 +133,8 @@ extern void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, uns
 /**
  * @brief  写一个像素点
  * @param [in] x
- * @param [in] y           
- * @param [in] color 
+ * @param [in] y
+ * @param [in] color
  * @return none
 
  */

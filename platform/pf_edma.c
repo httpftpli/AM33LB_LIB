@@ -1,12 +1,12 @@
 /**
  * \file  edma.c
  *
- * \brief Platform related APIs for EDMA 
- * @addtogroup EDMA 
- * @brief EDMA 
- *  
- * \#include  "pf_edma.h" 
- * @{ 
+ * \brief Platform related APIs for EDMA
+ * @addtogroup EDMA
+ * @brief EDMA
+ *
+ * \#include  "pf_edma.h"
+ * @{
  */
 
 
@@ -16,7 +16,7 @@
 #include "hw_types.h"
 #include "edma.h"
 #include "interrupt.h"
-//#include "platform.h"
+//#include "pf_platform.h"
 #include "debug.h"
 #include "pf_edma.h"
 
@@ -128,7 +128,7 @@ void isr_Edma3CCError(unsigned int intnum) {
    }
 }
 
-   
+
 
 
 unsigned int EDMARegisterHandler(unsigned int handlerIndex, void (*handler)(unsigned int tcc, unsigned int status)){
@@ -153,7 +153,7 @@ unsigned int EDMARequestXferArray(unsigned int trigMode,
    ASSERT(handleIndex < 64);
    //scrAddr and destAddr shoud 4bit allign;
    ASSERT((scrAddr&0x3 == 0) && (dstAddr&0x3 == 0));
-     
+
    if (EDMA3_0_NUM_TC == ++evtqueue) {
       evtqueue = 0;
    }
@@ -165,10 +165,10 @@ unsigned int EDMARequestXferArray(unsigned int trigMode,
       chtype = EDMA3_CHANNEL_TYPE_DMA;
       paramid  = chNum;
    }
-    
+
    EDMA3MapChToEvtQ(EDMA_INST_BASE,chtype,chNum,evtqueue);
-   
-   paramSet = (EDMA3CCPaRAMEntry *)(EDMA_INST_BASE + EDMA3CC_OPT(paramid)); 
+
+   paramSet = (EDMA3CCPaRAMEntry *)(EDMA_INST_BASE + EDMA3CC_OPT(paramid));
 
    if (bytenumber <= 0xffff){
       synctype = 0;
@@ -183,20 +183,20 @@ unsigned int EDMARequestXferArray(unsigned int trigMode,
    if (EDMA3_TRIG_MODE_IMMEDIATE == trigMode) {
       EDMA3DisableTransfer(EDMA_INST_BASE, chNum, EDMA3_TRIG_MODE_IMMEDIATE);
    }
-  
+
    paramSet->srcAddr    = (unsigned int)scrAddr;
    paramSet->dstAddr   = dstAddr;
    if (0==synctype) {
-       paramSet->aCnt      = bytenumber; 
+       paramSet->aCnt      = bytenumber;
        paramSet->bCnt      = 1;
-       paramSet->cCnt      = 1; 
+       paramSet->cCnt      = 1;
        paramSet->opt       = (handleIndex<<12)|(2 << 8)|(1<<20)|(1<<3); // set STATIC BIT,A SYNC
        paramSet->srcBIdx   = 0;
        paramSet->destBIdx   = 0;
    }else{
-      paramSet->aCnt       = 1024 ; 
+      paramSet->aCnt       = 1024 ;
       paramSet->bCnt       = bytenumber/1024;
-      paramSet->cCnt       = 1; 
+      paramSet->cCnt       = 1;
       paramSet->opt        = (handleIndex<<12)|(2 << 8)|(1<<20)|(1<<3)|(1<<2); //set STATIC BIT, A-B SYNC,ENABLE INT,32BIT WIDTH
       paramSet->srcBIdx    = 1024;
       paramSet->destBIdx   = 1024;
@@ -204,19 +204,19 @@ unsigned int EDMARequestXferArray(unsigned int trigMode,
 
    paramSet->srcCIdx    = 0;
    paramSet->destCIdx   = 0;
-  
+
    paramSet->bCntReload = 0x0;
    paramSet->linkAddr   = 0xffff;
 
    EDMA3EnableTransfer(EDMA_INST_BASE, chNum, trigMode);
-   
+
    if (EDMA3_TRIG_MODE_IMMEDIATE == trigMode) {
       EDMA3SetQdmaTrigWord(EDMA_INST_BASE,chNum,0);
       paramSet->opt  = paramSet->opt; //trig qdma
    }
    return 1;
 }
-   
+
 unsigned int EDMARequestXfer2D( unsigned int trigMode,
                            unsigned int chNum,
                            unsigned int scrAddr,
@@ -234,7 +234,7 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
    ASSERT(handlerIndex < 64);
    //scrAddr and destAddr shoud 4bit allign;
    ASSERT((scrAddr&0x3 == 0) && (dstAddr&0x3 == 0));
-   
+
    if (EDMA3_0_NUM_TC==++evtqueue) {
       evtqueue = 0;
    }
@@ -258,13 +258,13 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
 
    paramSet->srcAddr    = (unsigned int)scrAddr;
    paramSet->dstAddr   = dstAddr;
-   
-   paramSet->aCnt       = bnOfRow ; 
+
+   paramSet->aCnt       = bnOfRow ;
    paramSet->bCnt       = numOfColum;
-   paramSet->cCnt       = 1; 
+   paramSet->cCnt       = 1;
    paramSet->opt        = (handlerIndex<<12)|(2 << 8)|(1<<20)|(1<<3)|(1<<2); //set STATIC BIT, A-B SYNC,32BIT WIDTH
-   
-   
+
+
    paramSet->srcBIdx    = bnOfScrRow;
    paramSet->srcCIdx    = 0;
    paramSet->destBIdx   = bnOfDstRow;
@@ -284,30 +284,30 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
 
 
 /**
- * @brief 
+ * @brief
  *        在某个固定地址缓冲区和一连续的内存区域间传送数据
  * @param [in] trigMode DMA触发方式
  * -- EDMA3_TRIG_MODE_MANUAL    手动触发
  * -- EDMA3_TRIG_MODE_EVENT     事件出发
- * -- EDMA3_TRIG_MODE_IMMEDIATE  立即出发 
- * @param [in] chNum   DMA通道号 \b EDMA3_CHA_XXX 
+ * -- EDMA3_TRIG_MODE_IMMEDIATE  立即出发
+ * @param [in] chNum   DMA通道号 \b EDMA3_CHA_XXX
  * @param [in] entryAddr 固定地址缓冲区的地址
  * @param [in] bufAddr   连续的内存区地址
- * @param [in] rwFlag   读写标识 
+ * @param [in] rwFlag   读写标识
  * -- 1 读 
  * -- 0 写 
  * @param [in] entryBitWidth 固定缓冲区位宽
  * @param [in] blkSize 每次传送的字节数
  * @param [in] nblks 传送的次数
- * @param [in] handlerIndex 
+ * @param [in] handlerIndex
  *        数据传送完成后执行的回调函数索引
- * @return  总是 1        
+ * @return  总是 1
  * @date    2013/6/19
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
                                             unsigned int chNum,
@@ -320,7 +320,7 @@ unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
                                             unsigned int handlerIndex) {
    unsigned int paramid, chtype;
    volatile EDMA3CCPaRAMEntry *paramSet;
-   
+
    ASSERT(handlerIndex < 64);
    //entryAddr should 5bit allign;
    ASSERT((entryAddr&0x1fUL) == 0);
@@ -350,7 +350,7 @@ unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
 
    paramSet->srcAddr    = rwFlag ? entryAddr : bufAddr;
    paramSet->dstAddr    = rwFlag ? bufAddr:  entryAddr;
-   
+
    unsigned int nbyte = entryBitWidth / 8;
    paramSet->aCnt       = nbyte;
    paramSet->bCnt       = (unsigned short)blkSize / nbyte;
@@ -380,7 +380,7 @@ unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
 
 
 /**
- *  \brief    This function maps the crossbar events. 
+ *  \brief    This function maps the crossbar events.
  *
  *  \param    baseAdd         It is the Control Module Address.
  *
@@ -401,10 +401,10 @@ unsigned int EDMA3CrossBarChannelMap(unsigned int baseAdd, unsigned int crossBar
     /* offset of the TPCC_MUX to be configured */
     offset = Channel / 4;
 
-    /* 
+    /*
     ** Each TPCC_MUX register has four event mux which can be used for
     ** cross bar mapping.Thus "select" variable is used to select,
-    ** which of the event mux out of four,for a given TPCC_MUX register 
+    ** which of the event mux out of four,for a given TPCC_MUX register
     ** to be used.
     */
     select = Channel - offset * 4;
@@ -430,7 +430,7 @@ unsigned int EDMA3CrossBarChannelMap(unsigned int baseAdd, unsigned int crossBar
          default:
          break;
     }
-    
+
     /* 'n' specifies the offset of the event mux */
     HWREG(baseAdd + TPCC_MUX(offset)) &= ~(crossBarEvent << n);
 
@@ -440,10 +440,10 @@ unsigned int EDMA3CrossBarChannelMap(unsigned int baseAdd, unsigned int crossBar
 }
 
 
- /**  
- * \brief  This API returns a unique number which identifies itself  
- *         with the EDMA IP in AM335x SoC.  
- * \param  None  
+ /**
+ * \brief  This API returns a unique number which identifies itself
+ *         with the EDMA IP in AM335x SoC.
+ * \param  None
  * \return This returns a number '2' which is unique to EDMA IP in AM335x.
  */
 unsigned int EDMAVersionGet(void)
@@ -645,12 +645,12 @@ void EDMAModuleClkConfig(void)
            CM_PER_TPTC2_CLKCTRL_STBYST_SHIFT) !=
            (HWREG(SOC_CM_PER_REGS + CM_PER_TPTC2_CLKCTRL) &
             CM_PER_TPTC2_CLKCTRL_STBYST));
-    
+
 }
 
 
 /**
- * @} 
+ * @}
  */
 
 

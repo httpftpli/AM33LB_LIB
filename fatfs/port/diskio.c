@@ -15,7 +15,7 @@
 #include "debug.h"
 #include "hw_types.h"
 #include "rtc.h"
-#include "platform.h"
+#include "pf_platform.h"
 #include "soc_AM335x.h"
 #include "usblib.h"
 #include "usbmsc.h"

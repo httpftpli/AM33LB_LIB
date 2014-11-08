@@ -1,14 +1,14 @@
 /**
  * \file   watchdog.c
  *
- * \brief  This file contains functions which configure clock for watchdog 
+ * \brief  This file contains functions which configure clock for watchdog
  *         timer.
  */
 
 
 #include "soc_AM335x.h"
 #include "hw_types.h"
-#include "platform.h"
+#include "pf_platform.h"
 #include "hw_cm_per.h"
 #include "hw_cm_wkup.h"
 #include "hw_cm_dpll.h"
@@ -23,10 +23,10 @@
 void WatchdogTimer1ModuleClkConfig(void)
 {
     /* Select 32kHz clock from 32K clock divider for WDT1 */
-    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_WDT1_CLK) = 
+    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_WDT1_CLK) =
                                     CM_DPLL_CLKSEL_WDT1_CLK_CLKSEL_SEL2;
-   
-    while((HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_WDT1_CLK) & 
+
+    while((HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_WDT1_CLK) &
     CM_DPLL_CLKSEL_WDT1_CLK_CLKSEL) != CM_DPLL_CLKSEL_WDT1_CLK_CLKSEL_SEL2);
 
     /* Configuration of L4_PER bus */
@@ -63,32 +63,32 @@ void WatchdogTimer1ModuleClkConfig(void)
                                 CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
 
     /* Configuration for L4_WKUP bus */
-    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL) = 
-                             CM_WKUP_CLKSTCTRL_CLKTRCTRL_SW_WKUP;        
+    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL) =
+                             CM_WKUP_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
 
-    while((HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL) & 
+    while((HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL) &
            CM_WKUP_CLKSTCTRL_CLKTRCTRL) != CM_WKUP_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
 
-    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CONTROL_CLKCTRL) = 
+    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CONTROL_CLKCTRL) =
                                       CM_WKUP_CONTROL_CLKCTRL_MODULEMODE_ENABLE;
 
-    while((HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CONTROL_CLKCTRL) & 
+    while((HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CONTROL_CLKCTRL) &
      CM_WKUP_CONTROL_CLKCTRL_MODULEMODE) != CM_WKUP_CONTROL_CLKCTRL_MODULEMODE_ENABLE);
 
-    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_DEBUGSS_CLKCTRL) |= 
+    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_DEBUGSS_CLKCTRL) |=
                                     CM_WKUP_DEBUGSS_CLKCTRL_MODULEMODE_ENABLE;
-    
-    while((HWREG(SOC_CM_WKUP_REGS + CM_WKUP_DEBUGSS_CLKCTRL) & 
+
+    while((HWREG(SOC_CM_WKUP_REGS + CM_WKUP_DEBUGSS_CLKCTRL) &
       CM_WKUP_DEBUGSS_CLKCTRL_MODULEMODE) != CM_WKUP_DEBUGSS_CLKCTRL_MODULEMODE_ENABLE);
 
-    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_WDT1_CLKCTRL) = 
+    HWREG(SOC_CM_WKUP_REGS + CM_WKUP_WDT1_CLKCTRL) =
                                    CM_WKUP_WDT1_CLKCTRL_MODULEMODE_ENABLE;
 
-    while((HWREG(SOC_CM_WKUP_REGS + CM_WKUP_WDT1_CLKCTRL) & 
+    while((HWREG(SOC_CM_WKUP_REGS + CM_WKUP_WDT1_CLKCTRL) &
            CM_WKUP_WDT1_CLKCTRL_MODULEMODE) != CM_WKUP_WDT1_CLKCTRL_MODULEMODE_ENABLE);
 
-    while(!(HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL) & 
-           (CM_WKUP_CLKSTCTRL_CLKACTIVITY_L4_WKUP_GCLK | 
+    while(!(HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CLKSTCTRL) &
+           (CM_WKUP_CLKSTCTRL_CLKACTIVITY_L4_WKUP_GCLK |
             CM_WKUP_CLKSTCTRL_CLKACTIVITY_WDT1_GCLK)));
 
     while(!(HWREG(SOC_CM_WKUP_REGS + CM_WKUP_L4WKUP_CLKCTRL) & 0x02u));

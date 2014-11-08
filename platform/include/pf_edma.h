@@ -2,6 +2,8 @@
 #define __PF_EDMA__H___
 
 
+#include "edma.h"
+
 typedef struct{
    unsigned int bmQdmaMissError;
    unsigned int bmDmaMissErrorL;

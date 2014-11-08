@@ -11,14 +11,14 @@
 #include "hw_control_AM335x.h"
 #include "hw_usbOtg_AM335x.h"
 #include "hw_types.h"
-#include "platform.h"
+#include "pf_platform.h"
 #include "hw_cm_per.h"
 #include "hw_cm_wkup.h"
 
-/**  
- * \brief  This API returns a unique number which identifies itself  
- *         with the USB IP in AM335x SoC.  
- * \param  None  
+/**
+ * \brief  This API returns a unique number which identifies itself
+ *         with the USB IP in AM335x SoC.
+ * \param  None
  * \return This returns a number '2' which is unique to USB IP in AM335x.
  */
 unsigned int USBVersionGet(void)
@@ -28,7 +28,7 @@ unsigned int USBVersionGet(void)
 
 /**
  * \brief   This function enables USB clocks
- *          
+ *
  * \param   None
  *
  * \return  None.
@@ -36,11 +36,11 @@ unsigned int USBVersionGet(void)
  */
 void USBModuleClkConfig(void)
 {
-	HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CM_CLKDCOLDO_DPLL_PER) |= 
-		(CM_WKUP_CM_CLKDCOLDO_DPLL_PER_DPLL_CLKDCOLDO_GATE_CTRL | 
+	HWREG(SOC_CM_WKUP_REGS + CM_WKUP_CM_CLKDCOLDO_DPLL_PER) |=
+		(CM_WKUP_CM_CLKDCOLDO_DPLL_PER_DPLL_CLKDCOLDO_GATE_CTRL |
 					CM_WKUP_CM_CLKDCOLDO_DPLL_PER_ST_DPLL_CLKDCOLDO);
 
-	
+
 	HWREG(SOC_PRCM_REGS + CM_PER_USB0_CLKCTRL) |=
                              CM_PER_USB0_CLKCTRL_MODULEMODE_ENABLE;
 
@@ -59,10 +59,10 @@ void USBModuleClkConfig(void)
 
 }
 
-/**  
- * \brief  This API  enables the USB Interrupts through subsystem specific wrapper 
+/**
+ * \brief  This API  enables the USB Interrupts through subsystem specific wrapper
  *	       registers
- * \param  Base address 
+ * \param  Base address
  * \return None
  */
 void USBEnableInt(unsigned int ulBase)
@@ -74,20 +74,20 @@ void USBEnableInt(unsigned int ulBase)
 #endif
 }
 
-/**  
- * \brief  This API  Clear  the USB Interrupts through subsystem specific wrapper 
+/**
+ * \brief  This API  Clear  the USB Interrupts through subsystem specific wrapper
  *	       registers
- * \param  Base address 
+ * \param  Base address
  * \return None
  */
 void USBClearInt(unsigned int ulBase)
 {
 
 }
-/**  
+/**
  * \brief  This API  enables the USB Module clock
  *	       registers
- * \param  Base address 
+ * \param  Base address
  * \return None
  */
 void USBModuleClkEnable(unsigned int ulIndex, unsigned int ulBase)
@@ -95,13 +95,13 @@ void USBModuleClkEnable(unsigned int ulIndex, unsigned int ulBase)
 	//
 	//Call the clock enabel API
 	//
-	USBModuleClkConfig();	
+	USBModuleClkConfig();
 }
 
-/**  
+/**
  * \brief  This API Disables the module clock
  *	       registers
- * \param  Base address 
+ * \param  Base address
  * \return None
  */
 void USBModuleClkDisable(unsigned int ulIndex, unsigned int ulBase)

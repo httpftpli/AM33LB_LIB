@@ -16,7 +16,7 @@
 #include "soc_AM335x.h"
 #include "hw_cm_wkup.h"
 #include "hw_cm_per.h"
-#include "platform.h"
+#include "pf_platform.h"
 #include "hw_types.h"
 #include "module.h"
 #include "uart_irda_cir.h"
@@ -275,7 +275,7 @@ void isr_uart_for_keyboard(unsigned int intNum) {
 
 
 void isr_uart_for_9bit(unsigned int intNum) {
-    
+
 }
 
 

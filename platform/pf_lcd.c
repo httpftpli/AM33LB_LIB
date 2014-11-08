@@ -2,11 +2,11 @@
  *  \file   pf_lcd.c
  *
  *  \brief
- *  \author  lfl 
+ *  \author  lfl
  *  \addtogroup LCD
  *  \# include "pf_lcd.h"
- *  @{ 
- *   
+ *  @{
+ *
  */
 
 
@@ -14,20 +14,22 @@
 #include <string.h>
 #include "soc_AM335x.h"
 #include "hw_types.h"
-#include "platform.h"
 #include "hw_cm_per.h"
 #include "hw_cm_wkup.h"
 #include "hw_cm_dpll.h"
 #include "hw_control_AM335x.h"
 #include "interrupt.h"
+#include "cache.h"
 #include "raster.h"
 #include "debug.h"
 #include "pf_platform_cfg.h"
 #include "tft.h"
 #include "pf_lcd.h"
+#include "pf_edma.h"
 #include "gpio_v2.h"
 #include "module.h"
 #include "mem.h"
+#include "lib_gui.h"
 
 
 #ifdef LCD_16BIT_565RGB
@@ -50,7 +52,11 @@ void LCDColorDisplay(void *pDisplayBuf, int lX, int lY, int width, int height, u
 const static  unsigned int palette_32b[PALETTE_SIZE/4] =
 { 0x4000u, 0x0000u, 0x0000u, 0x0000u, 0x0000u, 0x0000u, 0x0000u, 0x0000u };
 
+
 static void *framebuffer = (void *)(0x80000000+DDR_RAM_SIZE-FRAMEBUFFER_SIZE);
+
+void * fb;
+
 
 tLCDCTRL lcdCtrl = {
    .frame_num = 2,
@@ -81,64 +87,64 @@ unsigned int LCDVersionGet(void)
 	HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKSTCTRL) |=CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
 	while((HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKSTCTRL) & CM_PER_L3_CLKSTCTRL_CLKTRCTRL) != CM_PER_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
 
-	HWREG(SOC_PRCM_REGS + CM_PER_L3_INSTR_CLKCTRL) |= 
+	HWREG(SOC_PRCM_REGS + CM_PER_L3_INSTR_CLKCTRL) |=
                              CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE;
 
-    while((HWREG(SOC_PRCM_REGS + CM_PER_L3_INSTR_CLKCTRL) & 
-                               CM_PER_L3_INSTR_CLKCTRL_MODULEMODE) != 
+    while((HWREG(SOC_PRCM_REGS + CM_PER_L3_INSTR_CLKCTRL) &
+                               CM_PER_L3_INSTR_CLKCTRL_MODULEMODE) !=
                                    CM_PER_L3_INSTR_CLKCTRL_MODULEMODE_ENABLE);
 
-    HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKCTRL) |= 
+    HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKCTRL) |=
                              CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE;
 
-    while((HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKCTRL) & 
+    while((HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKCTRL) &
         CM_PER_L3_CLKCTRL_MODULEMODE) != CM_PER_L3_CLKCTRL_MODULEMODE_ENABLE);
 
-    HWREG(SOC_PRCM_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) |= 
+    HWREG(SOC_PRCM_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) |=
                              CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
 
-    while((HWREG(SOC_PRCM_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) & 
-                              CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL) != 
+    while((HWREG(SOC_PRCM_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
+                              CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL) !=
                                 CM_PER_OCPWP_L3_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
 
-    HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKSTCTRL) |= 
+    HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKSTCTRL) |=
                              CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP;
 
-    while((HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKSTCTRL) & 
-                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL) != 
+    while((HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKSTCTRL) &
+                             CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL) !=
                                CM_PER_L4LS_CLKSTCTRL_CLKTRCTRL_SW_WKUP);
 
-    HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKCTRL) |= 
+    HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKCTRL) |=
                              CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE;
 
-    while((HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKCTRL) & 
+    while((HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKCTRL) &
       CM_PER_L4LS_CLKCTRL_MODULEMODE) != CM_PER_L4LS_CLKCTRL_MODULEMODE_ENABLE);
 
-    // lcd pixel clock is derived from peripheral pll   
-    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_LCDC_PIXEL_CLK) = 
+    // lcd pixel clock is derived from peripheral pll
+    HWREG(SOC_CM_DPLL_REGS + CM_DPLL_CLKSEL_LCDC_PIXEL_CLK) =
                              CM_DPLL_CLKSEL_LCDC_PIXEL_CLK_CLKSEL_SEL3;
 
-    HWREG(SOC_PRCM_REGS + CM_PER_LCDC_CLKCTRL) |= 
+    HWREG(SOC_PRCM_REGS + CM_PER_LCDC_CLKCTRL) |=
                              CM_PER_LCDC_CLKCTRL_MODULEMODE_ENABLE;
 //CM_PER_LCDC_CLKSTCTRL
 
     HWREG(SOC_PRCM_REGS + CM_PER_LCDC_CLKSTCTRL) &= CM_PER_LCDC_CLKCTRL_MODULEMODE;
 
-    while((HWREG(SOC_PRCM_REGS + CM_PER_LCDC_CLKCTRL) & 
+    while((HWREG(SOC_PRCM_REGS + CM_PER_LCDC_CLKCTRL) &
       CM_PER_LCDC_CLKCTRL_MODULEMODE) != CM_PER_LCDC_CLKCTRL_MODULEMODE_ENABLE);
 
-    while(!(HWREG(SOC_PRCM_REGS + CM_PER_L3S_CLKSTCTRL) & 
+    while(!(HWREG(SOC_PRCM_REGS + CM_PER_L3S_CLKSTCTRL) &
             CM_PER_L3S_CLKSTCTRL_CLKACTIVITY_L3S_GCLK));
 
-    while(!(HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKSTCTRL) & 
+    while(!(HWREG(SOC_PRCM_REGS + CM_PER_L3_CLKSTCTRL) &
             CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK));
 
-    while(!(HWREG(SOC_PRCM_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) & 
-           (CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L3_GCLK | 
+    while(!(HWREG(SOC_PRCM_REGS + CM_PER_OCPWP_L3_CLKSTCTRL) &
+           (CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L3_GCLK |
             CM_PER_OCPWP_L3_CLKSTCTRL_CLKACTIVITY_OCPWP_L4_GCLK)));
 
-    while(!(HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKSTCTRL) & 
-           (CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_L4LS_GCLK | 
+    while(!(HWREG(SOC_PRCM_REGS + CM_PER_L4LS_CLKSTCTRL) &
+           (CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_L4LS_GCLK |
             CM_PER_L4LS_CLKSTCTRL_CLKACTIVITY_LCDC_GCLK)));
 }*/
 
@@ -167,26 +173,26 @@ void LCDRasterEOFIntDisable(void)
 }
 
 /*
-** For each end of frame interrupt base and ceiling is reconfigured 
+** For each end of frame interrupt base and ceiling is reconfigured
 */
 void isr_lcd(unsigned int num) {
    unsigned int  status;
    status = RasterIntStatus(SOC_LCDC_0_REGS, RASTER_END_OF_FRAME0_INT_STAT | RASTER_END_OF_FRAME1_INT_STAT);
    status = RasterClearGetIntStatus(SOC_LCDC_0_REGS, status);
-  
+
    if (status & RASTER_END_OF_FRAME0_INT_STAT) {
-      RasterDMAFBConfig(SOC_LCDC_0_REGS, (unsigned int)lcdCtrl.frameaddr[lcdCtrl.activeframe], 
+      RasterDMAFBConfig(SOC_LCDC_0_REGS, (unsigned int)lcdCtrl.frameaddr[lcdCtrl.activeframe],
                         (unsigned int)lcdCtrl.frameaddr[lcdCtrl.activeframe] + lcdCtrl.framesize[lcdCtrl.activeframe] - 1, 0);
    }
    if (status & RASTER_END_OF_FRAME1_INT_STAT) {
-      RasterDMAFBConfig(SOC_LCDC_0_REGS, (unsigned int)lcdCtrl.frameaddr[lcdCtrl.activeframe], 
+      RasterDMAFBConfig(SOC_LCDC_0_REGS, (unsigned int)lcdCtrl.frameaddr[lcdCtrl.activeframe],
                         (unsigned int)lcdCtrl.frameaddr[lcdCtrl.activeframe] + lcdCtrl.framesize[lcdCtrl.activeframe] - 1, 1);
    }
 }
 
 /**
  * @brief LCD控制
- * @return   none 
+ * @return   none
  * @param [in] light
  *  LCD light pwm
  * @date    2013/8/8
@@ -194,21 +200,21 @@ void isr_lcd(unsigned int num) {
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void LCDBackLightCtr(unsigned char lightpwm) {
    __lcd_back_ligth_ctr(lightpwm);
 }
 
 /**
- * @brief 开启LCD背光 
- * @return   none        
+ * @brief 开启LCD背光
+ * @return   none
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void LCDBackLightON(unsigned char lightpwm) {
   /*unsigned int addr = modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr;
@@ -222,21 +228,21 @@ void LCDBackLightON(unsigned char lightpwm) {
 
 
 /**
- * @brief 关闭LCD背光 
- * @return   none        
+ * @brief 关闭LCD背光
+ * @return   none
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void LCDBackLightOFF(void)
 {
    /*if (GPIO_DIR_INPUT == GPIODirModeGet(modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr,
                                         GPIO_LCDBACKLIGHT_PIN)){
       GPIODirModeSet(modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr,GPIO_LCDBACKLIGHT_PIN,GPIO_DIR_OUTPUT);
-   }  
+   }
    GPIOPinWrite(modulelist[GPIO_LCDBACKLIGHT_MODULE].baseAddr, GPIO_LCDBACKLIGHT_PIN,1);*/
 
    LCDBackLightCtr(0);
@@ -244,13 +250,13 @@ void LCDBackLightOFF(void)
 
 /**
  * @brief LCD开始显示
- * @return   none        
+ * @return   none
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void LCDRasterStart(void) {
    /* configuring the base ceiling */
@@ -262,13 +268,13 @@ void LCDRasterStart(void) {
 
 /**
  * @brief LCD停止显示
- * @return   none        
+ * @return   none
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void LCDRasterEnd(void){
    RasterDisable(SOC_LCDC_0_REGS);
@@ -278,51 +284,81 @@ void LCDRasterEnd(void){
 
 /**
  * @brief 切换LCD显示的显存
- * @return   none        
+ * @return   none
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void LCDSwapFb(void) {
    if (lcdCtrl.activeframe == 0) lcdCtrl.activeframe = 1;
    else lcdCtrl.activeframe = 0;
 }
-  
+
 
 /**
  * @brief 切换LCD读写的显存
- * @return   none        
+ * @return   none
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
- */ 
+ * @see
+ */
+
 void LCDSwapContex(){
-   if (lcdCtrl.contexFrame == 0) lcdCtrl.contexFrame = 1;
-   else lcdCtrl.contexFrame = 0;
+   lcdCtrl.contexFrame = !lcdCtrl.contexFrame;
+   fb =  lcdCtrl.frameaddr[lcdCtrl.contexFrame];
 }
 
+
+void renderLocalBegin(void *localfb,bool swapContex){
+    ASSERT((unsigned int)localfb%512==0);
+    fb = localfb;
+    if (swapContex) {
+        lcdCtrl.contexFrame = !lcdCtrl.contexFrame;
+    }
+}
+
+
+static void __renderocalend_swapfb(unsigned int tcc,unsigned int status){
+    if (tcc==1) {
+        LCDSwapFb();
+    }
+}
+
+void renderLocalEnd(void *localfb, bool swapFb){
+    ASSERT((unsigned int)localfb%512==0);
+    unsigned int dstAddr = (unsigned int)lcdCtrl.frameaddr[lcdCtrl.contexFrame];
+    CacheDataCleanBuff((unsigned int)localfb, lcdCtrl.framesize[lcdCtrl.contexFrame]);
+    EDMARequestXferArray(EDMA3_TRIG_MODE_QDMA,
+                         1,(unsigned int)localfb,dstAddr,
+                         lcdCtrl.framesize[lcdCtrl.contexFrame],
+                         1);
+    fb =  lcdCtrl.frameaddr[lcdCtrl.contexFrame];
+    if (swapFb) {
+        EDMARegisterHandler(1, __renderocalend_swapfb);
+    }
+}
 
 
 /**
  * @brief LCD模块初始化
- * @return   none        
+ * @return   none
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void LCDRasterInit() {
    MODULE *module = modulelist+MODULE_ID_LCDC;
    unsigned int baseaddr = module->baseAddr;
-   lcdCtrl.baseAddr = baseaddr;       
+   lcdCtrl.baseAddr = baseaddr;
    lcdCtrl.lcd_clk = module->moduleClk->fClk[0]->clockSpeedHz;
    const tLCD_PANEL *panel = lcd_panels + TFT_PANEL;
    lcdCtrl.panel = panel;
@@ -335,12 +371,12 @@ void LCDRasterInit() {
    lcdCtrl.palettesize[1] = 32;
    lcdCtrl.framesize[0] = (unsigned int)(pixsize * width * height);
    lcdCtrl.framesize[1] = (unsigned int)(pixsize * width * height);
-   lcdCtrl.palette[0] = framebuffer; 
+   lcdCtrl.palette[0] = framebuffer;
    lcdCtrl.frameaddr[0] = (void *)((unsigned int)framebuffer + 32);
    lcdCtrl.palette[1] = (void *)((unsigned int)(lcdCtrl.frameaddr[0]) +  lcdCtrl.framesize[0]);
-   lcdCtrl.frameaddr[1] = (void *)((unsigned int)lcdCtrl.palette[1] + 32);   
+   lcdCtrl.frameaddr[1] = (void *)((unsigned int)lcdCtrl.palette[1] + 32);
    lcdCtrl.activeframe = 0;
-  
+
    //init palette and framebuffer
    memcpy(lcdCtrl.palette[0],palette_32b,lcdCtrl.palettesize[0]);
    memcpy(lcdCtrl.palette[1],palette_32b,lcdCtrl.palettesize[1]);
@@ -356,7 +392,7 @@ void LCDRasterInit() {
                    RASTER_BURST_SIZE_16, RASTER_FIFO_THRESHOLD_8,
                    RASTER_BIG_ENDIAN_DISABLE);
 
-   
+
 
 
    /* Configuring modes(ex:tft or stn,color or monochrome etc) for raster controller */
@@ -384,15 +420,16 @@ void LCDRasterInit() {
    RasterVparamConfig(baseaddr, panel->height, panel->vsw, panel->vfp, panel->vbp);
 
    RasterFIFODMADelayConfig(baseaddr, 128);
-   
+
    moduleIntConfigure(MODULE_ID_LCDC);
+   fb = lcdCtrl.frameaddr[0];
 }
 
 
 
 void * LCDFrameBufferAddrGet(int num)
 {
-   
+
   if (num !=0) {
     num = 1;
   }
@@ -402,14 +439,14 @@ void * LCDFrameBufferAddrGet(int num)
 
 
 /**
- * @brief 查询当前显示的显存索引号 
- * @return  索引号  0或者1       
+ * @brief 查询当前显示的显存索引号
+ * @return  索引号  0或者1
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 unsigned int  LCDFrameBufferCurGet(void)
 {
@@ -418,14 +455,14 @@ unsigned int  LCDFrameBufferCurGet(void)
 
 
 /**
- * @brief 查询TFT面板参数 
- * @return  const tLCD_PANEL *       
+ * @brief 查询TFT面板参数
+ * @return  const tLCD_PANEL *
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 const tLCD_PANEL *LCDTftInfoGet(void){
   return lcdCtrl.panel;
@@ -436,28 +473,28 @@ const tLCD_PANEL *LCDTftInfoGet(void){
 
 /**
  * @brief 填充整体屏幕
- * @param [in] color 颜色 ，16色 
- * @return           
+ * @param [in] color 颜色 ，16色
+ * @return
  * @date    2013/8/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void LCDFbClear(unsigned int color){
 #if LCD_PIX_SIZE==2
     memset16(&Pix(0,0),color, LCD_XSize*LCD_YSize);
 #elif LCD_PIX_SIZE==4
     memset32(&Pix(0,0),color, LCD_XSize*LCD_YSize);
-#else 
+#else
 #error
 #endif
 }
 
 
 
-
+extern void drawPix(uint16 x,uint16 y,COLOR color);
 void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, unsigned short width,
                   unsigned short height, unsigned int color_f, unsigned int color_b) {
    unsigned int nbyteperline = (width + 7) / 8;
