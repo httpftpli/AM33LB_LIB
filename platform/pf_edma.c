@@ -152,7 +152,7 @@ unsigned int EDMARequestXferArray(unsigned int trigMode,
 
    ASSERT(handleIndex < 64);
    //scrAddr and destAddr shoud 4bit allign;
-   ASSERT((scrAddr&0x3 == 0) && (dstAddr&0x3 == 0));
+   ASSERT((scrAddr&0x3)==0 && (dstAddr&0x3)==0 );
 
    if (EDMA3_0_NUM_TC == ++evtqueue) {
       evtqueue = 0;

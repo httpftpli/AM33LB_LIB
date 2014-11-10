@@ -333,15 +333,15 @@ static void __renderocalend_swapfb(unsigned int tcc,unsigned int status){
 void renderLocalEnd(void *localfb, bool swapFb){
     ASSERT((unsigned int)localfb%512==0);
     unsigned int dstAddr = (unsigned int)lcdCtrl.frameaddr[lcdCtrl.contexFrame];
+    if (swapFb) {
+        EDMARegisterHandler(1, __renderocalend_swapfb);
+    }
     CacheDataCleanBuff((unsigned int)localfb, lcdCtrl.framesize[lcdCtrl.contexFrame]);
-    EDMARequestXferArray(EDMA3_TRIG_MODE_QDMA,
+    EDMARequestXferArray(EDMA3_TRIG_MODE_IMMEDIATE,
                          1,(unsigned int)localfb,dstAddr,
                          lcdCtrl.framesize[lcdCtrl.contexFrame],
                          1);
     fb =  lcdCtrl.frameaddr[lcdCtrl.contexFrame];
-    if (swapFb) {
-        EDMARegisterHandler(1, __renderocalend_swapfb);
-    }
 }
 
 
