@@ -233,7 +233,7 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
 
    ASSERT(handlerIndex < 64);
    //scrAddr and destAddr shoud 4bit allign;
-   ASSERT((scrAddr&0x3 == 0) && (dstAddr&0x3 == 0));
+   ASSERT((scrAddr&0x3) == 0 && (dstAddr&0x3) == 0);
 
    if (EDMA3_0_NUM_TC==++evtqueue) {
       evtqueue = 0;
@@ -285,22 +285,22 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
 
 /**
  * @brief
- *        在某个固定地址缓冲区和一连续的内存区域间传送数据
+ *        在某个固定地址缓冲区和一连续的内存区域间传送数�?
  * @param [in] trigMode DMA触发方式
  * -- EDMA3_TRIG_MODE_MANUAL    手动触发
  * -- EDMA3_TRIG_MODE_EVENT     事件出发
  * -- EDMA3_TRIG_MODE_IMMEDIATE  立即出发
- * @param [in] chNum   DMA通道号 \b EDMA3_CHA_XXX
+ * @param [in] chNum   DMA通道�?\b EDMA3_CHA_XXX
  * @param [in] entryAddr 固定地址缓冲区的地址
  * @param [in] bufAddr   连续的内存区地址
  * @param [in] rwFlag   读写标识
- * -- 1 读 
- * -- 0 写 
- * @param [in] entryBitWidth 固定缓冲区位宽
- * @param [in] blkSize 每次传送的字节数
+ * -- 1 �?
+ * -- 0 �?
+ * @param [in] entryBitWidth 固定缓冲区位�?
+ * @param [in] blkSize 每次传送的字节�?
  * @param [in] nblks 传送的次数
  * @param [in] handlerIndex
- *        数据传送完成后执行的回调函数索引
+ *        数据传送完成后执行的回调函数索�?
  * @return  总是 1
  * @date    2013/6/19
  * @note
