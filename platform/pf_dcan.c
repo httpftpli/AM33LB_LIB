@@ -307,6 +307,7 @@ void DCANInit(unsigned int moduleId,unsigned int mode,unsigned int bitRate){
    }
    DCANConfigRegWriteAccessControl(baseAdd,DCAN_CONF_REG_WR_ACCESS_ENABLE);
    CANSetBitTiming(baseAdd,clkInFreq,bitRate);
+   DCANAutoBusOnControl(baseAdd, DCAN_AUTO_BUS_ON_ENABLE);
    DCANConfigRegWriteAccessControl(baseAdd,DCAN_CONF_REG_WR_ACCESS_DISABLE);
    CANRxMsgObjectConfig(baseAdd);
    DCANNormalModeSet(baseAdd);
