@@ -277,7 +277,8 @@ void QEPSetPosCompareCurrent(unsigned int moduleId) {
 *     --错误中断，比如正交信号错误等
 *   - QEP_HANDER_FlAG_POSCNT_ERROR --计数器错误
  *  - QEP_HANDER_FlAG_POSCNT_OVERFLOW  --计数器上溢出
- *  - QEP_HANDER_FlAG_POSCNT_UNDERFLOW --计数器下溢出
+*   - QEP_HANDER_FlAG_POSCNT_UNDERFLOW --计数器下溢出
+*   - QEP_HANDER_FlAG_INDEX            --index interrupt
  *
  * @return
  * @date    2013/7/9
@@ -374,6 +375,9 @@ void isr_qep(unsigned intnum) {
    }
    if (stat & 1 << 9){ //strobe
       qephandler[index](QEP_HANDER_FlAG_STROB);
+   }
+   if (stat & 1 << 10){ //strobe
+      qephandler[index](QEP_HANDER_FlAG_INDEX);
    }
 }
 

@@ -11,6 +11,7 @@
 #define QEP_HANDER_FlAG_POSCNT_UNDERFLOW  5
 #define QEP_HANDER_FlAG_STROB             6
 #define QEP_HANDER_FlAG_DIR_CHANGE        7
+#define QEP_HANDER_FlAG_INDEX             8
 
 
 #define QEPINT_ENABLE_FLAG_UNITTIME        1<<11   
