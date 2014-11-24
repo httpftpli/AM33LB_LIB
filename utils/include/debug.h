@@ -2,7 +2,7 @@
 *    @file  debug.h
 *    @author  lfl
 *    @brief  macro for debug output
-*  
+*
 *    该文件中宏用于打印调式信息，可能通过定义宏
 *    DEBUG_ERROR_NOTOUTPUT DEBUG_WARN_NOTOUTPUT
 *    DEBUG_DEBUG_NOTOUTPUT 关闭
@@ -43,7 +43,21 @@
 
 #define ASSERT(assertion)   mdAssert(" ",assertion )
 
-#define STATIC_ASSERT(A)  static_assert(A, #A) 
+#define STATIC_ASSERT(A)  static_assert(A, #A)
+
+#define NOT_IN_IRQ() ASSERT(__not_in_irq())
+
+static inline bool __not_in_irq(){
+    #pragma section="CSTACK"
+    unsigned int __not_in_irq = 0;
+    unsigned int valaddr = (unsigned int)&__not_in_irq;
+    unsigned int cstackb = (unsigned int)__sfb("CSTACK");
+    unsigned int cstacke = (unsigned int)__sfe("CSTACK");
+    if (valaddr>=cstackb && valaddr<=cstacke){
+        return true;
+    }
+    return false;
+}
 
 #endif
 

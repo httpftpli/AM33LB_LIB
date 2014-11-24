@@ -271,14 +271,14 @@ void QEPSetPosCompareCurrent(unsigned int moduleId) {
  * @param [in] moduleId \b MODULE_ID_eQEPX
  * @param [in]  handler 回调函数 \n
  *   handler 的参数 flag:
-*   - QEP_HANDER_FlAG_COMPARE_MATCH --比较中断 见
+*   - QEP_HANDER_FLAG_COMPARE_MATCH --比较中断 见
 *     QEPSetPosCompareCurrent() , QEPSetPosCompare()
-*   - QEP_HANDER_FlAG_PHASE_ERROR
+*   - QEP_HANDER_FLAG_PHASE_ERROR
 *     --错误中断，比如正交信号错误等
-*   - QEP_HANDER_FlAG_POSCNT_ERROR --计数器错误
- *  - QEP_HANDER_FlAG_POSCNT_OVERFLOW  --计数器上溢出
-*   - QEP_HANDER_FlAG_POSCNT_UNDERFLOW --计数器下溢出
-*   - QEP_HANDER_FlAG_INDEX            --index interrupt
+*   - QEP_HANDER_FLAG_POSCNT_ERROR --计数器错误
+ *  - QEP_HANDER_FLAG_POSCNT_OVERFLOW  --计数器上溢出
+*   - QEP_HANDER_FLAG_POSCNT_UNDERFLOW --计数器下溢出
+*   - QEP_HANDER_FLAG_INDEX            --index interrupt
  *
  * @return
  * @date    2013/7/9

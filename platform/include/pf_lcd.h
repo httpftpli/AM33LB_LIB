@@ -118,15 +118,15 @@ extern void renderLocalEnd(void *localfb, bool swapFb);
 
 
 #if LCD_PIX_SIZE==2
-#define FrameBuffer(X)  ((unsigned short*)fb)[X]  // ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
-#define  FrameBuffer2D(X,Y) ((unsigned short*)fb)[Y*lcdCtrl.panel->width+X] //((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
+#define FrameBuffer(X)  (((unsigned short*)fb)[(X)])  // ((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
+#define  FrameBuffer2D(X,Y) (((unsigned short*)fb)[(Y)*lcdCtrl.panel->width+(X)]) //((unsigned short *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
 #elif LCD_PIX_SIZE==4
-#define FrameBuffer(X)  ((unsigned int*)fb)[X]   //((unsigned int *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
-#define FrameBuffer2D(X,Y) ((unsigned int*)fb)[Y*lcdCtrl.panel->width+X] //((unsigned int *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
+#define FrameBuffer(X)  (((unsigned int*)fb)[(X)])   //((unsigned int *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(X)]
+#define FrameBuffer2D(X,Y) (((unsigned int*)fb)[(Y)*lcdCtrl.panel->width+(X)]) //((unsigned int *)(lcdCtrl.frameaddr[lcdCtrl.contexFrame]))[(Y)*lcdCtrl.panel->width+(X)]
 #else
 #error
 #endif
-#define Pix(X,Y) FrameBuffer2D(X,Y)
+#define Pix(X,Y) FrameBuffer2D((X),(Y))
 
 
 
