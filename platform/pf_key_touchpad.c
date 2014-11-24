@@ -13,6 +13,7 @@
 
 #include "pf_key_touchpad.h"
 #include "pf_platform_cfg.h"
+#include "pf_bootloader.h"
 #include "type.h"
 #include "pf_lcd.h"
 #include "pf_uart.h"
@@ -69,7 +70,7 @@
 
 
 #define CALIBRATION_POINT_OFFSET  20
-#define TOUCH_CAL_PARAM_SECTOR  769
+
 
 KEYTOUCHMSG keyTouchpadMsg;
 
