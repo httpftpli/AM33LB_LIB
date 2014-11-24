@@ -5,16 +5,24 @@
 #include <stdbool.h>
 
 
+#define BOOTLOADER_BEGIN_SECTOR      256
+
+#define UID_SAVE_SECTOR              641
+#define INAND_TEST_SECTOR            768
+#define TOUCH_CAL_PARAM_SECTOR       769
+
 #define APP_RUN_FLAG_SECTOR          770
-#define APP_RUN_SECTOR_SIZE           (32*1024*2)  //65M BYTE    UNIT:SECTOR
-#define APP1_RUN_SECTOR       771
+#define APP_RUN_SECTOR_SIZE          (32*1024*2)  //32M BYTE    UNIT:SECTOR
+#define APP1_RUN_SECTOR              771
 #define APP2_RUN_SECTOR       (APP1_RUN_SECTOR+APP_RUN_SECTOR_SIZE)
-#define APP_BAK_SECTOR   (APP2_RUN_SECTOR+APP_RUN_SECTOR_SIZE)
+#define APP_BAK_SECTOR        (APP2_RUN_SECTOR+APP_RUN_SECTOR_SIZE)
 #define APP_BAK_MAX_SIZE      (128*1024*2)  //APP bak size  UNIT:SECTOR
 
 #define USER_SECTOR   (APP_BAK_SECTOR + APP_BAK_MAX_SIZE)
 #define USER_SECTOR_SIZE      (64*1024*2)     //USER_SECTOR  UNIT:SECTOR
 
+#define FS_BEGIN_SECTOR           (USER_SECTOR+USER_SECTOR_SIZE)
+#define FIRST_PARTITION_SIZE      (128*1024*2) //UNIT:SECTOR
 
 #define APP_ENTRY             0x80000000
 #define NUM_OF_APPSECTION     8
@@ -22,10 +30,8 @@
 #define APP_MAGIC_NO          0xaaaa5555
 #define APP_FLAG              0x444e49ed
 
-#define BOOTLOADER_BEGIN_SECTOR   256
+
 #define BOOTLOADER_ENTRY          0x402f0400
-#define FS_BEGIN_SECTOR           (USER_SECTOR+USER_SECTOR_SIZE)
-#define FIRST_PARTITION_SIZE      (128*1024*2) //in sector
 
 
 
