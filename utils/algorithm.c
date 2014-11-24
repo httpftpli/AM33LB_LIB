@@ -17,6 +17,114 @@
 #include "string.h"
 #include "list.h"
 
+void bubbleSortAscend_I32(int *buf, unsigned int nNum) {
+   int j, k;
+   int flag = nNum;
+   unsigned int tmp;
+   while (flag > 0) {
+      k = flag;
+      flag = 0;
+      for (j = 1; j < k; j++){
+         if (buf[j - 1] > buf[j]) {
+            tmp = buf[j-1];
+            buf[j - 1] = buf[j];
+            buf[j] = tmp;
+            flag = j;
+         }
+      }
+   }
+}
+
+void bubbleSortAscend_U32(unsigned int *buf, unsigned int nNum) {
+   int j, k;
+   int flag = nNum;
+   unsigned int tmp;
+   while (flag > 0) {
+      k = flag;
+      flag = 0;
+      for (j = 1; j < k; j++){
+         if (buf[j - 1] > buf[j]) {
+            tmp = buf[j-1];
+            buf[j - 1] = buf[j];
+            buf[j] = tmp;
+            flag = j;
+         }
+      }
+   }
+}
+
+void bubbleSortAscend_I16(short *buf, unsigned int nNum) {
+   int j, k;
+   int flag = nNum;
+   unsigned int tmp;
+   while (flag > 0) {
+      k = flag;
+      flag = 0;
+      for (j = 1; j < k; j++){
+         if (buf[j - 1] > buf[j]) {
+            tmp = buf[j-1];
+            buf[j - 1] = buf[j];
+            buf[j] = tmp;
+            flag = j;
+         }
+      }
+   }
+}
+
+void bubbleSortAscend_U16(unsigned short *buf, unsigned int nNum) {
+   int j, k;
+   int flag = nNum;
+   unsigned int tmp;
+   while (flag > 0) {
+      k = flag;
+      flag = 0;
+      for (j = 1; j < k; j++){
+         if (buf[j - 1] > buf[j]) {
+            tmp = buf[j-1];
+            buf[j - 1] = buf[j];
+            buf[j] = tmp;
+            flag = j;
+         }
+      }
+   }
+}
+
+void bubbleSortAscend_I8(char *buf, unsigned int nNum) {
+   int j, k;
+   int flag = nNum;
+   unsigned int tmp;
+   while (flag > 0) {
+      k = flag;
+      flag = 0;
+      for (j = 1; j < k; j++){
+         if (buf[j - 1] > buf[j]) {
+            tmp = buf[j-1];
+            buf[j - 1] = buf[j];
+            buf[j] = tmp;
+            flag = j;
+         }
+      }
+   }
+}
+
+void bubbleSortAscend_U8(unsigned char *buf, unsigned int nNum) {
+   int j, k;
+   int flag = nNum;
+   unsigned int tmp;
+   while (flag > 0) {
+      k = flag;
+      flag = 0;
+      for (j = 1; j < k; j++){
+         if (buf[j - 1] > buf[j]) {
+            tmp = buf[j-1];
+            buf[j - 1] = buf[j];
+            buf[j] = tmp;
+            flag = j;
+         }
+      }
+   }
+}
+
 void bubbleSortAscend(int *buf, unsigned int nNum) {
    int j, k;
    int flag = nNum;

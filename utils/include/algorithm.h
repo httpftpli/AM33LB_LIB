@@ -3,6 +3,14 @@
 
 #include "stdbool.h"
 
+
+
+extern void bubbleSortAscend_I32(int *buf, unsigned int nNum);
+extern void bubbleSortAscend_U32(unsigned int *buf, unsigned int nNum);
+extern void bubbleSortAscend_I16(short *buf, unsigned int nNum);
+extern void bubbleSortAscend_U16(unsigned short *buf, unsigned int nNum);
+extern void bubbleSortAscend_I8(char *buf, unsigned int nNum);
+extern void bubbleSortAscend_U8(unsigned char *buf, unsigned int nNum);
 extern void bubbleSortAscend(int *buf, unsigned int nNum);
 extern int sum(int *buf,unsigned int nNum);
 
