@@ -249,6 +249,15 @@ unsigned int CANSend_noblock(unsigned int moduleId,CAN_FRAME *frame){
 }
 
 
+bool IsMsgObjFull(unsigned int moduleId){
+ unsigned int addr = modulelist[moduleId].baseAddr;
+ if(DCANFreeMsgObjGet(addr,DCAN_MSGOBF_TX_BEGIN)==-1){
+     return true;
+ }else{
+     return false;
+ } 
+}
+
 
 static void DCANMsgRAMInit(unsigned int instanceNum)
 {

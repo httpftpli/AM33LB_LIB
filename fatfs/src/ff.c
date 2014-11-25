@@ -4002,7 +4002,7 @@ unsigned long long f_getvolsize(
 	/* Get drive number */
     res = chk_mounted(&path, &pfs, 0);
     if (res!=FR_OK) return 0;
-    return pfs->n_fatent*pfs->csize*SS(pfs);
+    return (long long)pfs->n_fatent * pfs->csize * SS(pfs);
 }
 
 

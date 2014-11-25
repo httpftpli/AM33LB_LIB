@@ -141,12 +141,52 @@ void QEPInit(unsigned int moduleId, unsigned int inputmode,unsigned int intFlag)
 void  QEPSetStrobe(unsigned int moduleId,bool strobePluseRevers,bool interrupt){
    unsigned int baseAddr = modulelist[moduleId].baseAddr;
    HWREGH(baseAddr + EQEP_QDECCTL) |= !!strobePluseRevers << 5;
-   HWREGH(baseAddr + EQEP_QPOSCTL) |= 1 << 6;
+   HWREGH(baseAddr + EQEP_QEPCTL) |= 1 << 6;  //select strobe latch type
    if (interrupt) {
        HWREGH(baseAddr + EQEP_QCLR)  |= 1 << 9;
        HWREGH(baseAddr + EQEP_QEINT) |= 1 << 9;
    }else{
        HWREGH(baseAddr + EQEP_QEINT) &= ~(1 << 9);
+   }
+}
+
+
+
+/**
+ * @brief qep 初始化
+ * @param [in] moduleId   \b MODULE_ID_eQEPX
+ * @param [in] flag  
+ * - QEP_INDEX_RISE_LATCH
+ * - QEP_INDEX_FALL_LATCH 
+ * - QEP_INDEX_RISE_INIT_POS
+ * - QEP_INDEX_FALL_INIT_POS
+ * @param [in] indexPluseRevers 
+ * @param [in] interrupt
+ * @return    NONE
+ * @date    2013/7/9
+ * @note
+ * @code
+ * @endcode
+ * @pre
+ *  
+ * @see
+ */
+
+void  QEPSetIndex(unsigned int moduleId, unsigned int flag,bool indexPluseRevers,bool interrupt){
+   unsigned int baseAddr = modulelist[moduleId].baseAddr;
+   HWREGH(baseAddr + EQEP_QDECCTL) |= !!indexPluseRevers << 6;
+   //set index latch edge
+   HWREGH(baseAddr + EQEP_QEPCTL) &= ~(0x03 << 4); 
+   HWREGH(baseAddr + EQEP_QEPCTL) |= ((unsigned char)flag & 0x03) << 4;
+   //set index init position   
+   HWREGH(baseAddr + EQEP_QEPCTL) &= ~(0x03 << 8); 
+   HWREGH(baseAddr + EQEP_QEPCTL) |= ((unsigned char )(flag>>8) & 0x03) << 8;  
+   //set interrupt 
+   if (interrupt) {
+       HWREGH(baseAddr + EQEP_QCLR)  |= 1 << 10;
+       HWREGH(baseAddr + EQEP_QEINT) |= 1 << 10;
+   }else{
+       HWREGH(baseAddr + EQEP_QEINT) &= ~(1 << 10);
    }
 }
 
@@ -362,28 +402,28 @@ void isr_qep(unsigned intnum) {
        return;
    }
    if (stat & 1 << 8) { // compare match event
-      qephandler[index](QEP_HANDER_FLAG_COMPARE_MATCH);
+      qephandler[index](QEP_HANDLER_FLAG_COMPARE_MATCH);
    }
    if (stat & 1 << 2) { //Quadrature phase error
-      qephandler[index](QEP_HANDER_FLAG_PHASE_ERROR);
+      qephandler[index](QEP_HANDLER_FLAG_PHASE_ERROR);
    }
    if (stat & 1 << 3) { //Dir change
-      qephandler[index](QEP_HANDER_FLAG_DIR_CHANGE);
+      qephandler[index](QEP_HANDLER_FLAG_DIR_CHANGE);
    }
    if (stat & 1 << 1) { //Quadrature phase error
-      qephandler[index](QEP_HANDER_FLAG_POSCNT_ERROR);
+      qephandler[index](QEP_HANDLER_FLAG_POSCNT_ERROR);
    }
    if (stat & 1 << 6) { //Position counter overflow
-      qephandler[index](QEP_HANDER_FLAG_POSCNT_OVERFLOW);
+      qephandler[index](QEP_HANDLER_FLAG_POSCNT_OVERFLOW);
    }
    if (stat & 1 << 5) { //Position counter underflow
-      qephandler[index](QEP_HANDER_FLAG_POSCNT_UNDERFLOW);
+      qephandler[index](QEP_HANDLER_FLAG_POSCNT_UNDERFLOW);
    }
    if (stat & 1 << 9){ //strobe
-      qephandler[index](QEP_HANDER_FLAG_STROB);
+      qephandler[index](QEP_HANDLER_FLAG_STROB);
    }
    if (stat & 1 << 10){ //strobe
-      qephandler[index](QEP_HANDER_FLAG_INDEX);
+      qephandler[index](QEP_HANDLER_FLAG_INDEX);
    }
 }
 

@@ -17,6 +17,7 @@
 #define __debug__h___
 
 #include "uartstdio.h"
+#include <stdbool.h>
 
 #ifdef DEBUG_ERROR_NOTOUTPUT
 #define mdAssert(message, assertion)  (void)0

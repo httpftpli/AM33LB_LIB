@@ -1,20 +1,22 @@
 #ifndef _PF_QEP_H_
 #define _PF_QEP_H_
 
+#include <stdbool.h>
+
 #define QEP_INPUT_CLK_100MZ         100000000
 
 
-#define QEP_HANDER_FLAG_COMPARE_MATCH     1
-#define QEP_HANDER_FLAG_PHASE_ERROR       2
-#define QEP_HANDER_FLAG_POSCNT_ERROR      3
-#define QEP_HANDER_FLAG_POSCNT_OVERFLOW   4
-#define QEP_HANDER_FLAG_POSCNT_UNDERFLOW  5
-#define QEP_HANDER_FLAG_STROB             6
-#define QEP_HANDER_FLAG_DIR_CHANGE        7
-#define QEP_HANDER_FLAG_INDEX             8
+#define QEP_HANDLER_FLAG_COMPARE_MATCH     1
+#define QEP_HANDLER_FLAG_PHASE_ERROR       2
+#define QEP_HANDLER_FLAG_POSCNT_ERROR      3
+#define QEP_HANDLER_FLAG_POSCNT_OVERFLOW   4
+#define QEP_HANDLER_FLAG_POSCNT_UNDERFLOW  5
+#define QEP_HANDLER_FLAG_STROB             6
+#define QEP_HANDLER_FLAG_DIR_CHANGE        7
+#define QEP_HANDLER_FLAG_INDEX             8
 
 
-#define QEPINT_ENABLE_FLAG_UNITTIME        1<<11   
+#define QEPINT_ENABLE_FLAG_UNITTIME        1<<11
 #define QEPINT_ENABLE_FLAG_INDEX           1<<10
 #define QEPINT_ENABLE_FLAG_STROB           1<<9
 #define QEPINT_ENABLE_FLAG_POSCOMPARE      1<<8
@@ -38,6 +40,13 @@
 #define QEP_SETPOS_STROBE_WISE            (3<<3)
 
 
+#define QEP_INDEX_RISE_LATCH     1
+#define QEP_INDEX_FALL_LATCH     2
+#define QEP_INDEX_RISE_POS_INIT  2<<8
+#define QEP_INDEX_FALL_POS_INIT  3<<8
+
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -54,10 +63,10 @@ extern unsigned int QEPReadPos(unsigned int moduleId);
 extern unsigned int QEPReadDir(unsigned int moduleId);
 extern int QEPCalcuLatchVelocity(unsigned int moduleId);//pulse*factor/s
 extern void QEPSetPosCompareCurrent(unsigned int moduleId);
-
+extern void  QEPSetIndex(unsigned int moduleId, unsigned int flag,bool indexPluseRevers,bool interrupt);
+extern void  QEPSetStrobe(unsigned int moduleId,bool strobePluseRevers,bool interrupt);
 
 #ifdef __cplusplus
-}
 #endif
 
 #endif
