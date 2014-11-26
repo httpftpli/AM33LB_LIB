@@ -31,6 +31,8 @@
 #define QEP_MODE_UPCOUNT      2
 #define QEP_MODE_DOWNCOUNT    3
 
+#define QEP_SWAP_AB           (1<<8)
+
 #define QEP_SETPOS_IMMED                  (1<<0)
 #define QEP_SETPOS_INDEX_RISEEDGE         (2<<1)
 #define QEP_SETPOS_INDEX_FALLEDGE         (3<<1)

@@ -89,7 +89,8 @@ void QEPSwapQuadInput(unsigned int moduleId) {
  *   正交模式，如果用于正交编码器，选此模式
  * - QEP_MODE_DERECTION 直接计数模式
  * - QEP_MODE_UPCOUNT 向上计数测频模式
- * - QEP_MODE_DOWNCOUNT 向下计数测频模式
+ * - QEP_MODE_DOWNCOUNT 向下计数测频模式 
+ * - QEP_SWAP_AB 
  * @return    NONE
  * @date    2013/7/9
  * @note
@@ -110,7 +111,12 @@ void QEPInit(unsigned int moduleId, unsigned int inputmode,unsigned int intFlag)
    QEPSetInputMode(baseAddr, inputmode);
    //disable position compare syn output
    HWREGH(baseAddr + EQEP_QDECCTL) |= 0 << 13;
-   unitPosition = positionFactor * 2;
+   if (inputmode & QEP_SWAP_AB) {
+       HWREGH(baseAddr + EQEP_QDECCTL) |= 1 << 10;
+   }else{
+       HWREGH(baseAddr + EQEP_QDECCTL) &= ~(1 << 10);
+   }
+   unitPosition = positionFactor * 2; 
    capTimeFactor = 1000 * 1000 * 8 / infreq;
    //Capture Control:enable; clock prescaler:CAPCLK = SYSCLKOUT/128 ;Unit position:QCLK/2
    HWREGH(baseAddr + EQEP_QCAPCTL) = 1 << 15 | 7 << 4 | 1 << 0;
