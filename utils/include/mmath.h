@@ -7,8 +7,8 @@
 #define MAX(A,B)  (((A)>(B))?(A):(B))
 
 #define ABS(A)    (((A)>0 )?(A):(-(A)))
-#define BOUND(A,B)  ((A)+(B)-1)/(B)*(B) 
-#define DIVUP(A,B)  ((A)+(B)-1)/(B)
+#define BOUND(A,B)  (((A)+(B)-1)/(B)*(B)) 
+#define DIVUP(A,B)  (((A)+(B)-1)/(B))
 
 #define NARRAY(array) (sizeof((array))/sizeof((array[0])))
 #define lenthof(array) NARRAY(array)
