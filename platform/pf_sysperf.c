@@ -10,7 +10,6 @@
 #include "interrupt.h"
 #include "dmtimer.h"
 #include "perf.h"
-#include "pf_platform.h"
 
 /******************************************************************************
 **                      INTERNAL MACRO DEFINITIONS

@@ -16,7 +16,6 @@
 #include "hw_types.h"
 #include "edma.h"
 #include "interrupt.h"
-//#include "pf_platform.h"
 #include "debug.h"
 #include "pf_edma.h"
 

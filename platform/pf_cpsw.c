@@ -41,7 +41,6 @@
 #include "soc_AM335x.h"
 #include "hw_control_AM335x.h"
 #include "hw_types.h"
-#include "pf_platform.h"
 #include "hw_cm_per.h"
 
 /******************************************************************************

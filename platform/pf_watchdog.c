@@ -8,7 +8,6 @@
 
 #include "soc_AM335x.h"
 #include "hw_types.h"
-#include "pf_platform.h"
 #include "hw_cm_per.h"
 #include "hw_cm_wkup.h"
 #include "hw_cm_dpll.h"

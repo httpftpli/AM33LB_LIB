@@ -208,5 +208,6 @@ BOOL GUI_SIF_CreateFont(const void * pFontData, GUI_FONT * pFont, const GUI_SIF_
   pFont->pfGetFontInfo  = pFontType->pGetFontInfo;
   pFont->pfIsInFont     = pFontType->pIsInFont;
   pFont->pafEncode      = 0;
+  return TRUE;
 }
 

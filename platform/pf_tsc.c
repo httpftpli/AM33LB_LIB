@@ -10,7 +10,6 @@
 
 #include "soc_AM335x.h"
 #include "hw_types.h"
-#include "pf_platform.h"
 #include "type.h"
 
 #include "tsc_adc.h"

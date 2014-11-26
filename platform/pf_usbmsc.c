@@ -1,4 +1,4 @@
-#include "pf_platform.h"
+//#include "pf_platform.h"
 #include "pf_platform_cfg.h"
 #include "usblib.h"
 #include "usbhost.h"

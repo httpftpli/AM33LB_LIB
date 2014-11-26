@@ -15,13 +15,13 @@
 #include "debug.h"
 #include "hw_types.h"
 #include "rtc.h"
-#include "pf_platform.h"
 #include "soc_AM335x.h"
 #include "usblib.h"
 #include "usbmsc.h"
 #include "usbhost.h"
 #include "usbhmsc.h"
 #include "pf_platform_cfg.h"
+#include "pf_rtc.h"
 #include "misc.h"
 
 #define DRIVER_NUM_MMCSD0	   0

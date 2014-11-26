@@ -11,7 +11,7 @@
 #include "hw_control_AM335x.h"
 #include "hw_usbOtg_AM335x.h"
 #include "hw_types.h"
-#include "pf_platform.h"
+#include "pf_platform_cfg.h"
 #include "hw_cm_per.h"
 #include "hw_cm_wkup.h"
 
