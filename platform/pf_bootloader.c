@@ -33,7 +33,7 @@ const unsigned char ProgramTable[256] =
 
 
 
-static void appdecrypt(void *dat, unsigned int len) {
+void appdecrypt(void *dat, unsigned int len) {
     unsigned int *dattemp = (unsigned int *)dat;
     unsigned int *crypttemp = (unsigned int *)ProgramTable;
     for (int i = 0; i < len / 256; i++) {

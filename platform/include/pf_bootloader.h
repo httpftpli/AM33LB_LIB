@@ -79,6 +79,7 @@ typedef enum{BURN_OK=0,BURN_PARAM_ERROR,BURN_FILE_CHECKSUM_ERROR, BURN_FILE_ERRO
 BURN_RET;
 
 extern void reboot();
+extern void appdecrypt(void *dat, unsigned int len);
 extern BURN_RET  burnAppFormBuf(void *appBuf,unsigned int appLen );
 extern BURN_RET  burnBootFormBuf(void *bootBuf,unsigned int bootLen);
 extern bool burnRunAPP();
