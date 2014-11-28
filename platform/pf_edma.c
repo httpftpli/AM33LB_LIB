@@ -18,6 +18,7 @@
 #include "interrupt.h"
 #include "debug.h"
 #include "pf_edma.h"
+#include "module.h"
 
 
 /* EDMA instance related macros. */
@@ -647,6 +648,17 @@ void EDMAModuleClkConfig(void)
 
 }
 
+
+
+void EDMAInit(){
+   EDMAModuleClkConfig();
+   EDMA3Init(SOC_EDMA30CC_0_REGS);
+   //enable 64 edma interrupt
+   for (int i=0;i<64;i++) {
+      EDMA3EnableEvtIntr(SOC_EDMA30CC_0_REGS,i);
+   }
+   moduleIntConfigure(MODULE_ID_EDMA);
+}
 
 /**
  * @}

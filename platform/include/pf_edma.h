@@ -12,8 +12,7 @@ typedef struct{
 } G_EDMA;
   
 extern volatile  G_EDMA g_Edma;
-
-extern void EDMAModuleClkConfig(void);
+extern void EDMAInit();
 extern void EDMA3AINTCConfigure();
 extern unsigned int EDMARegisterHandler(unsigned int handlerIndex, void (*handler)(unsigned int tcc, unsigned int status));
 unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,

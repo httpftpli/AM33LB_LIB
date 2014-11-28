@@ -324,14 +324,17 @@ void renderLocalBegin(void *localfb,bool swapContex){
 }
 
 
+static bool  swapfb =  false;
+
 static void __renderocalend_swapfb(unsigned int tcc,unsigned int status){
-    if (tcc==1) {
+    if ((tcc==1) && swapfb) {
         LCDSwapFb();
     }
 }
 
 void renderLocalEnd(void *localfb, bool swapFb){
     ASSERT((unsigned int)localfb%512==0);
+    swapfb = swapFb;
     unsigned int dstAddr = (unsigned int)lcdCtrl.frameaddr[lcdCtrl.contexFrame];
     if (swapFb) {
         EDMARegisterHandler(1, __renderocalend_swapfb);
