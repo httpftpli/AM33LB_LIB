@@ -26,6 +26,8 @@
 #include "pf_timertick.h"
 #include "module.h"
 #include <time.h>
+#include "delay.h"
+
 
 
 void isr_RTC(unsigned int intnum) {
@@ -51,6 +53,7 @@ static void RTCAM335XInit(unsigned int calendar,unsigned int time){
     RTC32KClkSourceSelect(SOC_RTC_0_REGS, RTC_INTERNAL_CLK_SRC_SELECT);
     RTC32KClkClockControl(SOC_RTC_0_REGS, RTC_32KCLK_ENABLE);
     RTCEnable(SOC_RTC_0_REGS);
+    delayus(500);
     RTCCalendarSet(SOC_RTC_0_REGS,  calendar);
     RTCTimeSet(SOC_RTC_0_REGS, time);
     RTCRun(SOC_RTC_0_REGS);
