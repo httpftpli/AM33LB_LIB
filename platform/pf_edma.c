@@ -217,14 +217,13 @@ unsigned int EDMARequestXferArray(unsigned int trigMode,
    return 1;
 }
 
+
 unsigned int EDMARequestXfer2D( unsigned int trigMode,
                            unsigned int chNum,
                            unsigned int scrAddr,
                            unsigned int dstAddr,
                            unsigned int bnOfScrRow,
-                           unsigned int numOfScrColum,
                            unsigned int bnOfDstRow,
-                           unsigned int numOfDstColum,
                            unsigned int bnOfRow,
                            unsigned int numOfColum,
                            unsigned int handlerIndex) {
@@ -233,7 +232,7 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
 
    ASSERT(handlerIndex < 64);
    //scrAddr and destAddr shoud 4bit allign;
-   ASSERT((scrAddr&0x3) == 0 && (dstAddr&0x3) == 0);
+   //ASSERT(((scrAddr&0x3) == 0) && ((dstAddr&0x3) == 0));
 
    if (EDMA3_0_NUM_TC==++evtqueue) {
       evtqueue = 0;
@@ -249,7 +248,7 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
 
    EDMA3MapChToEvtQ(EDMA_INST_BASE,chtype,chNum,evtqueue);
 
-   //if QDMA disable the channel to aviod trig when set paRam
+   // QDMA disable the channel to aviod trig when set paRam
    if (EDMA3_TRIG_MODE_IMMEDIATE == trigMode) {
       EDMA3DisableTransfer(EDMA_INST_BASE, chNum, EDMA3_TRIG_MODE_IMMEDIATE);
    }

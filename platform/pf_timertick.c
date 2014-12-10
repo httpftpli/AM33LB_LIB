@@ -182,6 +182,7 @@ unsigned int IsTimerElapsed(unsigned int timerindex) {
  */
 static  unsigned int timerFreq;
 static  unsigned int cnt;
+static bool istimertickinited = false;
 void TimerTickConfigure(unsigned int moduleId) {
     moduleEnable(moduleId);
     unsigned int baseaddr = modulelist[moduleId].baseAddr;
@@ -205,6 +206,7 @@ void TimerTickConfigure(unsigned int moduleId) {
 #if USE_TASK_DELAYDO == 1
     taskpool_init();
 #endif
+    istimertickinited = true;
 }
 
 
@@ -246,6 +248,7 @@ unsigned int TimerTickTimeGet(void) {
 
 
 void Sysdelay(unsigned int mSec) {
+    ASSERT(istimertickinited);
     unsigned int counter = TimerTickGet();
     if (mSec == 0) {
         return;
@@ -266,6 +269,7 @@ void delayus(unsigned int uSec) {
     if (0 == uSec) {
         return;
     }
+    ASSERT(istimertickinited);
     ASSERT(uSec <= 1000);
     unsigned int timernow = TimerTickTimeGet();
     unsigned int timerend = timernow + timerFreq / 1000000 * uSec;

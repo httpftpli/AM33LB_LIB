@@ -114,7 +114,8 @@ extern void LCDDrawMask(const void *buf, unsigned short x, unsigned short y, uns
                   unsigned short height, unsigned int color_f, unsigned int color_b);
 extern void renderLocalBegin(void *localfb,bool swapContex);
 extern void renderLocalEnd(void *localfb, bool swapFb);
-
+extern void renderLocalEndEx(void *localfb, unsigned int x,unsigned int y,unsigned int width,unsigned int height,bool swapFb);
+extern bool waitForRenderLocalEnd(unsigned int timeoutMs);
 
 
 #if LCD_PIX_SIZE==2

@@ -30,6 +30,7 @@
 #include "module.h"
 #include "mem.h"
 #include "lib_gui.h"
+#include "pf_platform.h"
 
 
 #ifdef LCD_16BIT_565RGB
@@ -324,22 +325,26 @@ void renderLocalBegin(void *localfb,bool swapContex){
 }
 
 
-static bool  swapfb =  false;
 
-static void __renderocalend_swapfb(unsigned int tcc,unsigned int status){
+static bool  swapfb =  false;
+static bool  renderlocalcopyend = false;
+static void __renderlocalend_swapfb(unsigned int tcc,unsigned int status){
     if ((tcc==1) && swapfb) {
         LCDSwapFb();
     }
+    renderlocalcopyend = true;
 }
+
 
 void renderLocalEnd(void *localfb, bool swapFb){
     ASSERT((unsigned int)localfb%512==0);
     swapfb = swapFb;
     unsigned int dstAddr = (unsigned int)lcdCtrl.frameaddr[lcdCtrl.contexFrame];
     if (swapFb) {
-        EDMARegisterHandler(1, __renderocalend_swapfb);
+        EDMARegisterHandler(1, __renderlocalend_swapfb);
     }
     CacheDataCleanBuff((unsigned int)localfb, lcdCtrl.framesize[lcdCtrl.contexFrame]);
+    renderlocalcopyend = false;
     EDMARequestXferArray(EDMA3_TRIG_MODE_IMMEDIATE,
                          1,(unsigned int)localfb,dstAddr,
                          lcdCtrl.framesize[lcdCtrl.contexFrame],
@@ -347,6 +352,57 @@ void renderLocalEnd(void *localfb, bool swapFb){
     fb =  lcdCtrl.frameaddr[lcdCtrl.contexFrame];
 }
 
+
+
+void renderLocalEndEx(void *localfb, unsigned int x,unsigned int y,unsigned int width,unsigned int height,bool swapFb){
+    ASSERT((unsigned int)localfb%512==0);
+    swapfb = swapFb;
+    unsigned int dstAddr = (unsigned int)lcdCtrl.frameaddr[lcdCtrl.contexFrame];
+    if (swapFb) {
+        EDMARegisterHandler(1, __renderlocalend_swapfb);
+    }
+    const tLCD_PANEL *panel =  LCDTftInfoGet();
+    unsigned int w = panel->width;
+    uint32 rowbyte = w*lcdCtrl.pixsize;
+
+    uint32 src =  (uint32)&(((char *)localfb)[rowbyte*y+x*lcdCtrl.pixsize]);
+    uint32 des =  (uint32)&(((char *)dstAddr)[rowbyte*y+x*lcdCtrl.pixsize]);
+    CacheDataCleanBuff((unsigned int)localfb, lcdCtrl.framesize[lcdCtrl.contexFrame]);
+    renderlocalcopyend = false;
+    EDMARequestXfer2D(EDMA3_TRIG_MODE_IMMEDIATE,1,src,des ,
+                      rowbyte,rowbyte,width*lcdCtrl.pixsize,height,1);
+
+    fb =  lcdCtrl.frameaddr[lcdCtrl.contexFrame];
+}
+
+
+bool waitForRenderLocalEnd(unsigned int timeoutMs){
+    withintimedo(__rendend_timeout,timeoutMs){
+        if(renderlocalcopyend) return true;
+    }
+    return  false;
+}
+
+
+void lcdFbSave(void *buf,uint32 x,uint32 y,uint32 width,uint32 height){
+    const tLCD_PANEL *panel =  LCDTftInfoGet();
+    unsigned int w = panel->width;
+    uint32 rowbyte = w*lcdCtrl.pixsize;
+    unsigned int fb = (unsigned int)lcdCtrl.frameaddr[lcdCtrl.activeframe];
+    uint32 src =  (uint32)&(((char *)fb)[rowbyte*y+x*lcdCtrl.pixsize]);
+    EDMARequestXfer2D(EDMA3_TRIG_MODE_IMMEDIATE,1,src,(uint32)buf ,
+                      rowbyte,width*lcdCtrl.pixsize,width*lcdCtrl.pixsize,height,2);
+}
+
+void lcdFbRestore(void *buf,uint32 x,uint32 y,uint32 width,uint32 height){
+    const tLCD_PANEL *panel =  LCDTftInfoGet();
+    unsigned int w = panel->width;
+    uint32 rowbyte = w*lcdCtrl.pixsize;
+    unsigned int fb = (unsigned int)lcdCtrl.frameaddr[lcdCtrl.activeframe];
+    uint32 des =  (uint32)&(((char *)fb)[rowbyte*y+x*lcdCtrl.pixsize]);
+    EDMARequestXfer2D(EDMA3_TRIG_MODE_IMMEDIATE,1,(uint32)buf,des ,
+                      width*lcdCtrl.pixsize,rowbyte,width*lcdCtrl.pixsize,height,2);
+}
 
 /**
  * @brief LCDÄ£¿é³õÊ¼»¯
