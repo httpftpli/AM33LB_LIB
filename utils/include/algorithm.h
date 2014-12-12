@@ -2,6 +2,7 @@
 #define __ALGORITHM__H__
 
 #include "stdbool.h"
+#include "list.h"
 
 
 
@@ -13,33 +14,35 @@ extern void bubbleSortAscend_I8(char *buf, unsigned int nNum);
 extern void bubbleSortAscend_U8(unsigned char *buf, unsigned int nNum);
 extern void bubbleSortAscend(int *buf, unsigned int nNum);
 extern int sum(int *buf,unsigned int nNum);
+extern void list_sort_insert(struct list_head *new ,struct list_head *list
+              ,int (*cmp)(const struct list_head *, const struct list_head *));
 
 
 /**
- * @brief FIFI 环形队列 
- *  
+ * @brief FIFI 环形队列
+ *
  * 一个没有加锁的环形队列，一读一写环形队列
- * @date    2013/5/10 
+ * @date    2013/5/10
  */
 typedef struct tagfilo {
     unsigned long writeIndex;   /** < @brief 写下标  */
     unsigned long readIndex;    /** < @brief 写下标  */
 	unsigned char sizeOfItem;
-    unsigned long nItem;        /** < @brief item总个数 */  
+    unsigned long nItem;        /** < @brief item总个数 */
 	unsigned long nAvaItem;		/** < @brief 记录当前fifi中的item个数*/
     void *        buf;        /** < @brief  缓冲区指针 */
 }RINGBUF;
 
 
 /**
- * @brief MD5散列结构体 
- * @date    2013/5/10 
+ * @brief MD5散列结构体
+ * @date    2013/5/10
  */
 typedef struct
 {
 	unsigned int count[2];
 	unsigned int state[4];
-	unsigned char buffer[64];   
+	unsigned char buffer[64];
 }MD5_CTX;
 
 
