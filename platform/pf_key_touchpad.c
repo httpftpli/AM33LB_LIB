@@ -131,14 +131,6 @@ BOOL isKeyTouchEvent(KEYTOUCHMSG *msg){
 
 
 
-/**
- * @brief 注册特定按键的中断回调函数
- * @param [in] handler 回调函数
- * @return NONE
- * @date    2013/7/8
- * @note
- * 注册的回调函数可用于处理全局快捷键
- */
 void registKeyHandler(void handler(int keycode)){
     keyhandler = handler;
 }
@@ -149,14 +141,7 @@ void registKeyMap(unsigned char scancodeToKey(int keyscancode)){
     keyscancode2key  = scancodeToKey;
 }
 
-/**
- * @brief 注册触摸屏的回调中断回调函数，用于全局快捷触摸功能，在没有键盘的时候当快捷键使用
- * @param [in] handler 回调函数
- * @return NONE
- * @date    2013/7/8
- * @note
- * 注册的回调函数可用于处理全局快捷键
- */
+
 void registTouchHandler(void handler()){
   touchhandler = handler;
 }
@@ -169,28 +154,6 @@ void  ts_linear(TS_CALIBRATION *cal,  int *x,  int *y) {
 }
 
 
-/**
- * @brief 触摸屏校准
- *        ,该函数只校准一次，如果校准不成功函数返回FALSE,需重新调用该函数
- * @param force
- *         - FALSE --
- *         当前触摸参数有效时读取当前校准参数
- *         \n
- *         - TRUE --
- *           不管当前校准参数有没有效，都强制重新校准，如果校准成功保存当前参数
- *           \n
- * @return
- * - TRUE 成功 \n
- * - FALSE 失败 \n
- *
- * @date    2013/5/31
- * @note
- * 该函数会修改显存
- * @code
- * @endcode
- * @pre
- * @see
- */
 
 BOOL TouchCalibrate(BOOL  force) {
 #define CALIBRATION_SUCCESS   0x55555555
@@ -333,10 +296,10 @@ BOOL TouchCalibrate(BOOL  force) {
 
 
 /**
- * @brief 软件触发触摸
- * @param [in] unsigned short x  校准以后的x坐标
- * @param [in] unsigned short y  校准以后的y坐标
- * @return none
+ * @brief 
+ * @param [in] unsigned short x 
+ * @param [in] unsigned short y 
+ * @return none 
  * @date    2013/8/8
  * @note
  * @code

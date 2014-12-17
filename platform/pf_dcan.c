@@ -205,28 +205,6 @@ BOOL CANSendFinishGetClr(unsigned int moduleId) {
 
 
 
-/**
- * @brief CAN总线发送数据 
- *  CAN总线发送数据，不等待从机应答，发送之前查询前一次发送是不是完成，
- *  如果前一次发送没有收到应答，该函数返回 \b
- *  CAN_SEND_PRE_SENDING 不进行新的发送
- * @param [in] baseAddr CAN控制器地址
- * @param [in] frame    CAN_FRAME 结构体 
- * @return   \b CAN_SEND_PRE_SENDING \b CAN_SEND_OK 
- *  CAN_SEND_OK - 成功发送 ，CAN_SEND_PRE_SENDING -
- *  前一次没有应答
- * @date    2013/5/7
- * @note
- * 示例代码如下：
- * @code
- * 
- * @endcode
- *
- * @pre
- *
- * @see 
- */
-
 unsigned int CANSend_noblock(unsigned int moduleId,CAN_FRAME *frame){
     unsigned int baseAddr = modulelist[moduleId].baseAddr;
     unsigned int msgNum; 

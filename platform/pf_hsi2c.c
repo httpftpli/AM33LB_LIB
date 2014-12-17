@@ -30,12 +30,13 @@
 
 
 /**
- * @brief I2C初始化
- * @param [in] I2C的moduleId \b MODULE_ID_I2CX
- * @param [in] i2cClkFreq   I2C总线频率
- * @param [in] slaveAddr
- *        slaveAddr缓冲区，当I2C控制器作为从机时使用，不作为从机时时可为NULL
- * @param [in] szSlave  从机地址个数，当szSlave最大为4
+ * @brief I2C init
+ * @param [in] I2C moduleId \b MODULE_ID_I2CX
+ * @param [in] i2cClkFreq   I2C bus frequency 
+ * @param [in] slaveAddr slaveAddr buf when I2C work as 
+ *        slaveAddr. when work as master ,the value should be
+ *        NULL
+ * @param [in] szSlave  number of slaveAdd (szSlave<=4 )
  * @return    NONE
  * @date    2013/5/29
  * @note
@@ -71,11 +72,11 @@ void I2CInit(unsigned int moduleId,unsigned int i2cClkFreq,
 
 
 /**
- * @brief 主机向从机写数据
- * @param [in] baseAddr I2C控制器基地址 \b SOC_I2C_X_REGS
- * @param [in] addr  从机地址
- * @param [in] buf   缓冲区地址
- * @param [in] szWrite 数据长度
+ * @brief I2C master send date to slave
+ * @param [in] baseAddr I2C baseaddr \b SOC_I2C_X_REGS
+ * @param [in] addr  slave addr
+ * @param [in] buf   
+ * @param [in] szWrite  byte of buf to be send
  * @return  BOOL
  * @date    2013/7/8
  * @note
@@ -122,18 +123,20 @@ BOOL I2CMasterWrite(unsigned baseAddr,unsigned short addr,const void *buf,unsign
 
 
 /**
- * @brief 主机向从机写数据，本函数阻塞执行，
- * @param [in] baseAddr I2C控制器基地址 \b SOC_I2C_X_REGS
- * @param [in] slaveAddr  从机地址
- * @param [in] w1buf   缓冲区1地址
- * @param [in] szWrite 数据长度1
- * @param [in] w2buf 缓冲区2地址
- * @param [in] szW2 数据长度2
+ * @brief master send data to slave
+ * @param [in] baseAddr I2C baseaddr \b SOC_I2C_X_REGS
+ * @param [in] slaveAddr  slave address
+ * @param [in] w1buf   buf1 addr
+ * @param [in] szWrite byte of w1buf
+ * @param [in] w2buf  buf2 addr
+ * @param [in] szW2  byte of w2buf
  * @return  BOOL
  * @date    2013/7/8
- * @note
- * 该函数连续写2次数据，方便操作像eeprom
- * 这样的器件，先写入字节地址，再写入数据
+ * @note 
+ * this function will block cpu. the funtion write data to slave
+ * 2 times continuously .the purpose of the funtion is to 
+ * convenient eeprom devide operation that send eeprom address 
+ * first then data sencond 
  * @code
  * @endcode
  * @pre
@@ -206,11 +209,11 @@ NEXT:
 
 
 /**
- * @brief 主机向从机读数据
- * @param [in] baseAddr I2C控制器基地址 \b SOC_I2C_X_REGS
- * @param [in] slaveAddr  从机地址
- * @param [out] buf 读缓冲区
- * @param [in] szRead 读长度
+ * @brief master read date from slave
+ * @param [in] baseAddr  I2C base address \b SOC_I2C_X_REGS
+ * @param [in] slaveAddr  I2C slave address
+ * @param [out] buf 
+ * @param [in] szRead 
  * @return  BOOL
  * @date    2013/7/8
  * @note
@@ -251,18 +254,16 @@ BOOL I2CMasterRead(unsigned int baseAddr,unsigned short slaveAddr,void *buf,unsi
 }
 
 /**
- * @brief 主机向从机先写入数据，再读 ，本函数阻塞执行
- * @param [in] baseAddr I2C控制器基地址 \b SOC_I2C_X_REGS
- * @param [in] slaveAddr  从机地址
- * @param [in] writeBuf   写入缓冲区地址
- * @param [in] szWrite 写入长度
- * @param [out] readBuf 读缓冲区
- * @param [in] szRead 读长度
+ * @brief 
+ * @param [in] baseAddr  \b SOC_I2C_X_REGS
+ * @param [in] slaveAddr  
+ * @param [in] writeBuf   
+ * @param [in] szWrite 
+ * @param [out] readBuf 
+ * @param [in] szRead 
  * @return  BOOL
  * @date    2013/7/8
- * @note
- * 该函数方便操作像eeprom
- * 这样的器件，先写入字节地址，再在该地址读出数据
+ * @note 
  * @code
  * @endcode
  * @pre

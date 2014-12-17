@@ -50,7 +50,7 @@
 
 static inline bool __not_in_irq(){
     #pragma section="CSTACK"
-    unsigned int __not_in_irq = 0;
+    unsigned int __not_in_irq;
     unsigned int valaddr = (unsigned int)&__not_in_irq;
     unsigned int cstackb = (unsigned int)__sfb("CSTACK");
     unsigned int cstacke = (unsigned int)__sfe("CSTACK");

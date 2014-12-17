@@ -16,7 +16,7 @@
 
 typedef struct {
     void (*fun)(void);
-    unsigned int delay;
+    unsigned long long delay;
     struct list_head list;
 }TASKLET;
 
@@ -29,10 +29,11 @@ extern "C"
 
     extern void TimerTickConfigure();
     extern void TimerTickPeriodSet(unsigned int moduleId, unsigned int microsecond);
-    extern void TimerTickRegistHandler(void (*pfnHandler)(unsigned int tick));
+    extern void TimerTickRegistHandler(void (*pfnHandler)(unsigned long long tick));
     extern void TimerTickStart(void);
     extern void TimerTickStop(void);
     extern unsigned int TimerTickGet(void);
+    extern unsigned long long TimerTickGet64(void);
     extern unsigned int TimerTickTimeGet(void);
     extern void Sysdelay(unsigned int mSec);
     extern int StartTimer(unsigned int mSec);

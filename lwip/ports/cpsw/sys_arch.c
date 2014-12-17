@@ -86,6 +86,7 @@ sys_arch_unprotect(sys_prot_t lev)
 
 
 extern unsigned int TimerTickGet();
+extern unsigned long long TimerTickGet64(void);
 u32_t sys_now(void){
     return (u32_t) TimerTickGet();
 }
