@@ -352,6 +352,10 @@
 #define ASCII_FONT20_IN_SOURCE     1
 #endif
 
+#ifndef ASCII_FIX_FONT24_IN_SOURCE 
+#define ASCII_FIX_FONT24_IN_SOURCE  0
+#endif
+
 
 #define UCS16_CODEC  1
 #define ASCII_CODEC  2

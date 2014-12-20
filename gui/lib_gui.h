@@ -110,7 +110,7 @@ struct GUI_CONTEXT {
   LCD_RECT       ClipRect;
 /* Variables in GUICHAR module */
   const GUI_FONT     * pAFont;
- 
+
   I16P LBorder;
   I16P DispPosX, DispPosY;
   I16P DrawPosX, DrawPosY;
@@ -134,7 +134,7 @@ typedef struct GUI_CONTEXT GUI_CONTEXT;
 *
 **********************************************************************
 */
- 
+
 GUI_COLOR GUI_GetBkColor     (void);
 GUI_COLOR GUI_GetColor       (void);
 int       GUI_GetBkColorIndex(void);
@@ -209,8 +209,8 @@ typedef unsigned int COLOR;
 #define color2Lcd(C) ((COLORB(C)&0xf8)<<8|(COLORG(C)&0xfc)<<3|(COLORR(C)>>3))
 #elif LCD_PIX_SIZE==4
 #define color2Lcd(C) (C)
-#else 
-#error 
+#else
+#error
 #endif
 
 
@@ -223,19 +223,23 @@ typedef unsigned int COLOR;
 
 
 #define ALIGN_LEFT_UP         ALIGN_LEFT<<4 | ALIGN_LEFT
-#define ALIGN_LEFT_MIDDLE     ALIGN_MIDDLE<<4 | ALIGN_LEFT		
+#define ALIGN_LEFT_MIDDLE     ALIGN_MIDDLE<<4 | ALIGN_LEFT
 #define ALIGN_MIDDLE_UP	      ALIGN_LEFT<<4 | ALIGN_MIDDLE
-#define ALIGN_MIDDLE_MIDDLE	  ALIGN_MIDDLE<<4 | ALIGN_MIDDLE			
+#define ALIGN_MIDDLE_MIDDLE	  ALIGN_MIDDLE<<4 | ALIGN_MIDDLE
 #define ALIGN_RIGHT_UP	      ALIGN_LEFT<<4 | ALIGN_RIGHT
-#define ALIGN_RIGHT_MIDDLE	  ALIGN_MIDDLE<<4 | ALIGN_RIGHT				
+#define ALIGN_RIGHT_MIDDLE	  ALIGN_MIDDLE<<4 | ALIGN_RIGHT
 
 
-extern GUI_FONT *fonts[4];
+extern GUI_FONT *fonts[8];
 
 #define FONT_ASCII_16 fonts[0]
 #define FONT_ASCII_20 fonts[1]
 #define FONT_16 fonts[2]
 #define FONT_20 fonts[3]
+
+#if (ASCII_FIX_FONT24_IN_SOURCE == 1)
+#define FONT_ASCII_FIX_24 fonts[4]
+#endif
 
 extern GUI_CONTEXT GUI_Context;
 extern unsigned int g_fontFlag;
@@ -599,4 +603,5 @@ static inline  unsigned int GUI__Read32(const void **pdat){
 #endif   /* ifdef GUI_H */
 
 /*************************** End of file ****************************/
-	 	 			 		    	 				 	  			   	 	 	 	 	 	  	  	      	   		 	 	 		  		  	 		 	  	  			     			       	   	 			  		    	 	     	 				  	 					 	 			   	  	  			 				 		 	 	 			     			 
+
+

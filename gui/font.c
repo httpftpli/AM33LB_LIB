@@ -18,13 +18,16 @@
 
 
 
-extern GUI_FONT GUI_Fontascii_16,GUI_Fontascii_20;
+extern GUI_FONT GUI_Fontascii_16,GUI_Fontascii_20, GUI_FontCourierNew24;
 GUI_FONT font_16,font_20;
 
-GUI_FONT *fonts[4] = {
+GUI_FONT *fonts[8] = {
 #if (ASCII_FONT16_IN_SOURCE==1)
    [0] = &GUI_Fontascii_16,
    [2] = &GUI_Fontascii_16,
+#endif
+#if (ASCII_FIX_FONT24_IN_SOURCE==1)
+   [4] = &GUI_FontCourierNew24,
 #endif
 #if (ASCII_FONT20_IN_SOURCE==1)
    [1] =&GUI_Fontascii_20,
