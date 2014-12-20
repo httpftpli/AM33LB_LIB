@@ -146,7 +146,7 @@ void bubbleSortAscend(int *buf, unsigned int nNum) {
 
 
 
-void list_insert_sort(struct list_head *list,  int (*cmp)(const struct list_head *, const struct list_head *)) {
+/*void list_insert_sort(struct list_head *list,  int (*cmp)(const struct list_head *, const struct list_head *)) {
     struct list_head *literal, *n,*literal1,*temp;
     list_for_each_safe(literal, n, list) {
         if (cmp(literal, n) <= 0) {
@@ -164,12 +164,14 @@ void list_insert_sort(struct list_head *list,  int (*cmp)(const struct list_head
             break;
         }
     }
-}
+}*/
 
-void list_sort_insert(struct list_head *new, struct list_head *list,int (*cmp)(const struct list_head *, const struct list_head *)){
+
+
+void list_sort_insert(struct list_head *new ,struct list_head *list ,int (*cmp)(const struct list_head *, const struct list_head *)){
      struct list_head *literal, *n;
      list_for_each_safe(literal, n, list){
-         if (cmp(literal,new)&&(!cmp(n,new)|| n==list)) {
+         if (cmp(new,literal) || n==list) {
              list_add(new,literal);
              break;
          }

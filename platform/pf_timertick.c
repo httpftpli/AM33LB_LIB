@@ -34,8 +34,8 @@
 
 
 
-static unsigned int tick = 0;
-static void (*timertickhandle)(unsigned int tick) = NULL;
+static unsigned long long tick = 0;
+static void (*timertickhandle)(unsigned long long tick) = NULL;
 
 
 typedef struct __softtimer {
@@ -87,6 +87,10 @@ static void dmtimertimetickhandler(unsigned int tc, unsigned int intFlag) {
  * @see
  */
 unsigned int TimerTickGet(void) {
+    return (unsigned int)tick;
+}
+
+unsigned long long TimerTickGet64(void){
     return tick;
 }
 
@@ -182,6 +186,7 @@ unsigned int IsTimerElapsed(unsigned int timerindex) {
  */
 static  unsigned int timerFreq;
 static  unsigned int cnt;
+static bool istimertickinited = false;
 void TimerTickConfigure(unsigned int moduleId) {
     moduleEnable(moduleId);
     unsigned int baseaddr = modulelist[moduleId].baseAddr;
@@ -205,11 +210,12 @@ void TimerTickConfigure(unsigned int moduleId) {
 #if USE_TASK_DELAYDO == 1
     taskpool_init();
 #endif
+    istimertickinited = true;
 }
 
 
 
-void TimerTickRegistHandler(void (*pfnHandler)(unsigned int tick)) {
+void TimerTickRegistHandler(void (*pfnHandler)(unsigned long long tick)) {
     timertickhandle = pfnHandler;
 }
 
@@ -246,12 +252,13 @@ unsigned int TimerTickTimeGet(void) {
 
 
 void Sysdelay(unsigned int mSec) {
-    unsigned int counter = TimerTickGet();
+    ASSERT(istimertickinited);
+    unsigned long long counter = TimerTickGet64();
     if (mSec == 0) {
         return;
     }
     while (1) {
-        if (TimerTickGet() >= (counter + mSec + 1)) {
+        if (TimerTickGet64() >= (counter + mSec + 1)) {
             break;
         }
     }
@@ -266,6 +273,7 @@ void delayus(unsigned int uSec) {
     if (0 == uSec) {
         return;
     }
+    ASSERT(istimertickinited);
     ASSERT(uSec <= 1000);
     unsigned int timernow = TimerTickTimeGet();
     unsigned int timerend = timernow + timerFreq / 1000000 * uSec;
@@ -304,17 +312,17 @@ bool taskdelaydo(unsigned int delay, void (*fun)(void)) {
         IntMasterIRQEnable();
         return  false;
     }
-    delay = TimerTickGet() + delay;
+    unsigned long long delay64 = TimerTickGet64() + delay;
     list_for_each(literal, &tasklet_head) {
         TASKLET *task = list_entry(literal, TASKLET, list);
         insert = &(task->list);
-        if (delay <= task->delay) {
+        if (delay64 <= task->delay) {
             insert = insert->prev;
             break;
         }
     }
     TASKLET *taskfree = list_first_entry(&tasklet_head_free, TASKLET, list);
-    taskfree->delay = delay;
+    taskfree->delay = delay64;
     taskfree->fun = fun;
     list_move(&taskfree->list, insert);
     IntMasterIRQEnable();
@@ -326,7 +334,7 @@ static void taskdelay_walk() {
     struct list_head *p,*n;
     list_for_each_safe(p, n, &tasklet_head) {
         TASKLET *task = list_entry(p, TASKLET, list);
-        if (task->delay <= TimerTickGet()) {
+        if (task->delay <= TimerTickGet64()) {
             list_del(p);
             list_add(p, &tasklet_head_free);
             if (task->fun != NULL) {
