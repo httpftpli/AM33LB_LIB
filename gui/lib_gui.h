@@ -236,6 +236,7 @@ extern GUI_FONT *fonts[8];
 #define FONT_ASCII_20 fonts[1]
 #define FONT_16 fonts[2]
 #define FONT_20 fonts[3]
+#define FONT_20_C fonts[5]
 
 #if (ASCII_FIX_FONT24_IN_SOURCE == 1)
 #define FONT_ASCII_FIX_24 fonts[4]
