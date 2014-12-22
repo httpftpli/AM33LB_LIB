@@ -237,9 +237,10 @@ extern GUI_FONT *fonts[8];
 #define FONT_16 fonts[2]
 #define FONT_20 fonts[3]
 #define FONT_20_C fonts[5]
+#define FONT_24_C fonts[6]
 
 #if (ASCII_FIX_FONT24_IN_SOURCE == 1)
-#define FONT_ASCII_FIX_24 fonts[4]
+#define FONT_ASCII_FIX_20 fonts[4]
 #endif
 
 extern GUI_CONTEXT GUI_Context;
@@ -604,5 +605,6 @@ static inline  unsigned int GUI__Read32(const void **pdat){
 #endif   /* ifdef GUI_H */
 
 /*************************** End of file ****************************/
+
 
 

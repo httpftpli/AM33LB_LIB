@@ -19,7 +19,7 @@
 
 
 extern GUI_FONT GUI_Fontascii_16,GUI_Fontascii_20, GUI_FontCourierNew24;
-GUI_FONT font_16,font_20,font_20_c;
+GUI_FONT font_16,font_20,font_20_c,font_24_c;
 
 GUI_FONT *fonts[8] = {
 #if (ASCII_FONT16_IN_SOURCE==1)
@@ -85,6 +85,7 @@ unsigned int  initFont(unsigned int addr) {
    fontname[0] = _TEXT("0:/1_16.FNT");
    fontname[1] = _TEXT("0:/1_20.FNT");
    fontname[2] = _TEXT("0:/1_20_C.FNT");
+   fontname[3] = _TEXT("0:/1_24_C.FNT");
    font_16.p.pFontData = (void *) addr;
    unsigned int filesize = loadFont(fontname[0], &font_16);
    if(filesize!=-1L){
@@ -105,6 +106,13 @@ unsigned int  initFont(unsigned int addr) {
        addr += filesize+8;
        fonts[5] = &font_20_c; 
        ret |= 0x10;
+   }
+   font_24_c.p.pFontData = (void *) addr;
+   filesize = loadFont(fontname[3], &font_24_c);
+   if(filesize!=-1L){
+       addr += filesize+8;
+       fonts[6] = &font_24_c; 
+       ret |= 0x20;
    }
    g_fontFlag = ret; 
    return ret;
