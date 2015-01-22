@@ -150,6 +150,7 @@ bool burnRunAPP() {
 
 
 void reboot() {
-    ((void (*)())0x402F0400)();
+    //((void (*)())0x402F0400)();
+    *(unsigned int *)0x44E00F00 |= 0x01;
 }
 
