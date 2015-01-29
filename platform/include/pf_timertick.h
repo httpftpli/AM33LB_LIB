@@ -35,6 +35,7 @@ extern "C"
     extern unsigned int TimerTickGet(void);
     extern unsigned long long TimerTickGet64(void);
     extern unsigned int TimerTickTimeGet(void);
+    extern unsigned long long TimerTickTimeGetUs(void);
     extern void Sysdelay(unsigned int mSec);
     extern int StartTimer(unsigned int mSec);
     extern unsigned int IsTimerElapsed(unsigned int timerindex);
