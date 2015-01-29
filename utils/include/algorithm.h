@@ -3,6 +3,7 @@
 
 #include "stdbool.h"
 #include "list.h"
+#include "type.h"
 
 
 
@@ -54,11 +55,30 @@ extern bool ringBufPop(RINGBUF * ringBuf, void * item);
 extern bool ringBufRead(RINGBUF * ringBuf, void ** item);
 
 extern unsigned short crc16_IBM(void* dataIn, int length);
-extern unsigned short crc16_MD(void *date, unsigned short len);
+extern unsigned short crc16_MD(void *data, unsigned short len);
+
+extern uint32 calculate_crc32(char *p, unsigned int length);
+extern uint32 calculate_crc32_jamcrc(char *p, unsigned int length);
+extern uint32 calculate_crc32_c(char *p, unsigned int length);
+extern uint32 calculate_crc32_d(char *p, unsigned int length);
+extern uint32 calculate_crc32_bzip2(char *p, unsigned int length);
+extern uint32 calculate_crc32_mpeg2(char *p, unsigned int length);
+extern uint32 calculate_crc32_posix(char *p, unsigned int length);
+extern uint32 calculate_crc32_k(char *p, unsigned int length);
+extern uint32 calculate_crc32_q(char *p, unsigned int length);
+extern uint32 calculate_crc32_xfer(char *p, unsigned int length);
 
 extern void MD5Init(MD5_CTX *context);
 extern void MD5Update(MD5_CTX *context,unsigned char *input,unsigned int inputlen);
 extern void MD5Final(MD5_CTX *context,unsigned char digest[16]);
 
 #endif
+
+
+
+
+
+
+
+
 
