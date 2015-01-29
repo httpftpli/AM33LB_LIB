@@ -3,6 +3,7 @@
 
 
 #include "edma.h"
+#include "edma_event.h"
 
 typedef struct{
    unsigned int bmQdmaMissError;
