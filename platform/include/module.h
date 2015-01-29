@@ -135,7 +135,7 @@ extern MODULE modulelist[128];
 
 extern void moduleEnable(unsigned int moduleId);
 extern void moduleIntConfigure(unsigned int moduleID);
-
+extern void moduleDisable(unsigned int moduleId);
 
 
 

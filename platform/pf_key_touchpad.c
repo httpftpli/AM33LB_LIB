@@ -314,10 +314,12 @@ void simulateTouch(unsigned short x,unsigned short y){
 }
 
 
-void keyLedSet(unsigned short val){
+void keyLedSet(unsigned short mask ,unsigned short val){
     unsigned char buf[] = {0xbb,0x08,0x00,0x00,0x00,0x00,0x00,0x0d};
-    buf[2] = (unsigned char)val;
-    buf[3] = (unsigned char)(val>>8);
+    buf[2] = (unsigned char)mask;
+    buf[3] = (unsigned char)(mask>>8);
+    buf[4] = (unsigned char)val;
+    buf[5] = (unsigned char)(val>>8);
     while(!UARTSendNoBlock(UART_LCDBACKLIGHT_MODULE,buf,sizeof buf));
 }
 

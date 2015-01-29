@@ -437,16 +437,12 @@ void enableModule(ModuleClock *moduleClk)
 /**
  * \brief   This API will enable the module
  *
- * \param   moduleId	module id of the module to be disabled
+ * \param   moduleClk	moduleClk of the module to be disabled
  *
  * \return  None.
  *
  **/
-void disableModule(unsigned int moduleId)
-{
-	/*	with clock id get reference to corresponding module clock	*/
-	ModuleClock *moduleClk = ModuleClockList[moduleId];
-	
+void disableModule(ModuleClock *moduleClk){
 	/*	Disable the module by configuring the control register	*/
 	if(NULL != moduleClk->clockCtrlReg)
 	{
@@ -584,7 +580,7 @@ static void disableClock(Clock *clkPtr)
 			-	If the module is disabled, gate (disable) the clocks
 			-	Check whether all the clocks are gated
  *
- * \param   moduleId		Module id of the module
+ * \param   moduleClk		moduleClk of the module
  * \param   isBlockingCall	Variable indicating whether this is a blocking call or not
  *
  * \return  BOOL	Indicates whether the module clock is disabled or not. 
@@ -594,12 +590,10 @@ static void disableClock(Clock *clkPtr)
  *						-	MODULE_AND_CLOCK_DISABLED
  *						-	MODULE_AND_CLOCK_NOT_DISABLED
  **/
-unsigned int disableModuleClock(unsigned int moduleId, tBoolean isBlockingCall)
+unsigned int disableModuleClock(ModuleClock *moduleClk, tBoolean isBlockingCall)
 {
 	unsigned int index = 0;
 	
-	/*	with clock id get reference to corresponding module clock	*/
-	ModuleClock *moduleClk = ModuleClockList[moduleId];
 	
 	/*	Check module idle status	*/
 	/*while(MODULE_IDLE != getModuleState(moduleId))
@@ -611,10 +605,10 @@ unsigned int disableModuleClock(unsigned int moduleId, tBoolean isBlockingCall)
 	}*/
 	
 	/*	Disable Module	*/
-	disableModule(moduleId);
+	disableModule(moduleClk);
 	//asm("	DSB");
 	/*	Check module disabled status	*/
-	while(MODULE_DISABLED != getModuleState(moduleId))
+	while(MODULE_DISABLED != getModuleState(moduleClk))
 	{
 		if(!isBlockingCall)
 		{
@@ -658,7 +652,7 @@ unsigned int disableModuleClock(unsigned int moduleId, tBoolean isBlockingCall)
 /**
  * \brief   This API gets the state of the module.
  *
- * \param   moduleId	Module id of the module
+ * \param   moduleClk	moduleClk  of the module
  *
  * \return  status	Indicates the status of the module
  *						- Module functional
@@ -667,10 +661,9 @@ unsigned int disableModuleClock(unsigned int moduleId, tBoolean isBlockingCall)
  *						- Module disabled
  *
  **/
-unsigned int getModuleState(unsigned int moduleId)
+unsigned int getModuleState(ModuleClock *moduleClk)
 {
-	ModuleClock *moduleClk = ModuleClockList[moduleId];
-	
+    
 	return ((HWREG(moduleClk->moduleStatusReg) & 
 				moduleClk->idleStatusMask) >> 
 				moduleClk->idleStatusShift);		
@@ -789,7 +782,8 @@ BOOL deviceClockDisable(unsigned int moduleDisableList[], unsigned noOfElements)
 	
 	for(index = 0; index < noOfElements; index++)
 	{
-		if(MODULE_AND_CLOCK_DISABLED == disableModuleClock(moduleDisableList[index], true))
+        ModuleClock  *moduleclk =  ModuleClockList[moduleDisableList[index]];
+        if(MODULE_AND_CLOCK_DISABLED == disableModuleClock(moduleclk, true))
 		{
 			status &= SUCCESS;
 		}

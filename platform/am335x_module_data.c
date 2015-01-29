@@ -112,8 +112,9 @@ MODULE modulelist[128] = {
 [MODULE_ID_GPIO1] = { .index = 1, .baseAddr = SOC_GPIO_1_REGS, .INTNum = { SYS_INT_GPIOINT1A, 0, 0 }, .INTPriority = { INT_PRIORITY_GPIO1, 0, 0 }, .isr = { isr_Gpio, 0, 0 }, .moduleClk = &gpio1ModClock },
 [MODULE_ID_GPIO2] = { .index = 2, .baseAddr = SOC_GPIO_2_REGS, .INTNum = { SYS_INT_GPIOINT2A, 0, 0 }, .INTPriority = { INT_PRIORITY_GPIO2, 0, 0 }, .isr = { isr_Gpio, 0, 0 }, .moduleClk = &gpio2ModClock },
 [MODULE_ID_GPIO3] = { .index = 3, .baseAddr = SOC_GPIO_3_REGS, .INTNum = { SYS_INT_GPIOINT3A, 0, 0 }, .INTPriority = { INT_PRIORITY_GPIO3, 0, 0 }, .isr = { isr_Gpio, 0, 0 }, .moduleClk = &gpio3ModClock },
-[MODULE_ID_LCDC]  = { .index = 0, .baseAddr = SOC_LCDC_0_REGS, .INTNum = { SYS_INT_LCDCINT, 0, 0 }, .INTPriority = { INT_PRIORITY_LCD, 0, 0 }, .isr = { isr_lcd, 0, 0 }, .moduleClk = &lcdcModClock },
 #endif
+[MODULE_ID_LCDC]  = { .index = 0, .baseAddr = SOC_LCDC_0_REGS, .INTNum = { SYS_INT_LCDCINT, 0, 0 }, .INTPriority = { INT_PRIORITY_LCD, 0, 0 }, .isr = { isr_lcd, 0, 0 }, .moduleClk = &lcdcModClock },
+
 #if  MODULE_USE_EQEP ==  1
 [MODULE_ID_eQEP0] = { .index = 0, .baseAddr = SOC_EQEP_0_REGS, .INTNum = { SYS_INT_eQEP0INT, 0, 0 }, .INTPriority = { INT_PRIORITY_EQEP0, 0, 0 }, .isr = { isr_qep, 0, 0 }, .moduleClk = &epwmss0ModClock },
 [MODULE_ID_eQEP1] = { .index = 1, .baseAddr = SOC_EQEP_1_REGS, .INTNum = { SYS_INT_eQEP1INT, 0, 0 }, .INTPriority = { INT_PRIORITY_EQEP0, 0, 0 }, .isr = { isr_qep, 0, 0 }, .moduleClk = &epwmss1ModClock },

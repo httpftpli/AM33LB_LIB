@@ -20,8 +20,8 @@
 #include <stdbool.h>
 
 #ifdef DEBUG_ERROR_NOTOUTPUT
-#define mdAssert(message, assertion)  (void)0
-#define mdError(A)   (void)0
+#define mdAssert(message, assertion)  do{if(!(assertion)){while(__LINE__!=0);}}while(0)
+#define mdError(A)    while(1);
 #else
 #define mdAssert(message, assertion)   do{if(!(assertion)){UARTprintf("mdAssert: ("#assertion")   file:%s  line:%d  function:%s\r\n",  __FILE__, __LINE__ ,  __func__ ); while(__LINE__!=0);}}while(0)
 #define mdError(A)    do{UARTprintf("mdError: %s   file:%s  line:%d  function:%s\r\n", A, __FILE__, __LINE__  , __func__ ); while(__LINE__!=0);} while(0)

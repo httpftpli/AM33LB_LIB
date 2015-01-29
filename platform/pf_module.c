@@ -11,6 +11,12 @@ void moduleEnable(unsigned int moduleId){
     enableModuleClock(moduleclk);
 }
 
+void moduleDisable(unsigned int moduleId){
+    MODULE  *module = &modulelist[moduleId];
+    ModuleClock *moduleclk = module->moduleClk;
+    disableModuleClock(moduleclk, false);
+}
+
 
 void moduleIntConfigure(unsigned int moduleID){
    MODULE *module = modulelist+moduleID;
@@ -24,5 +30,5 @@ void moduleIntConfigure(unsigned int moduleID){
       IntRegister(module->INTNum[i],module->isr[i]);
       IntPrioritySet(module->INTNum[i],module->INTPriority[i],AINTC_HOSTINT_ROUTE_IRQ);
       IntSystemEnable(module->INTNum[i]);
-   } 
+   }
 }

@@ -404,6 +404,13 @@ void lcdFbRestore(void *buf,uint32 x,uint32 y,uint32 width,uint32 height){
                       width*lcdCtrl.pixsize,rowbyte,width*lcdCtrl.pixsize,height,2);
 }
 
+
+void LCDReset(){
+     moduleDisable(MODULE_ID_LCDC);
+}
+
+
+
 /**
  * @brief LCDÄ£¿é³õÊ¼»¯
  * @return   none
@@ -483,7 +490,6 @@ void LCDRasterInit() {
    moduleIntConfigure(MODULE_ID_LCDC);
    fb = lcdCtrl.frameaddr[0];
 }
-
 
 
 void * LCDFrameBufferAddrGet(int num)

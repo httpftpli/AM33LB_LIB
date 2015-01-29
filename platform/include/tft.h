@@ -1,7 +1,7 @@
 /**
  * \file   tft.h
  *
- * \brief  This file contains prototype declarations of functions which 
+ * \brief  This file contains prototype declarations of functions which
  *         performs EVM configurations.
  */
 
@@ -39,7 +39,7 @@ static  const tLCD_PANEL lcd_panels[] = {
 		.vfp = 22,
 		.vbp = 23-10,
 		.vsw = 10,
-		.pxl_clk = 33000000,
+		.pxl_clk = 28000000,
 		.invert_pxl_clk = 0,
         },
         [2] = {

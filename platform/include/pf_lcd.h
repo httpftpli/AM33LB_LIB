@@ -103,6 +103,7 @@ extern void LCDRasterEOFIntDisable(void);
 extern void LCDRasterStart(void);
 extern void LCDRasterEnd(void);
 extern void LCDRasterInit();
+extern void LCDReset();
 extern void * LCDFrameBufferAddrGet(int num);
 extern unsigned int  LCDFrameBufferCurGet(void);
 extern void LCDFrameBufferCurSet(unsigned int num);

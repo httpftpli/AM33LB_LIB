@@ -151,7 +151,7 @@ extern "C" {
 #define     CLK_NAME_MAX_SIZE                    (30)
 
 #define     CLK_DOMAIN_CLOCK_GATED               (0x0)
-                                                
+
 #define     CLK_LP_MODE_NORMAL                   (0x0)
 #define     CLK_LP_MODE_BYPASS                   (0x1)
 
@@ -248,14 +248,14 @@ typedef struct {
 
         /**
          * \brief Auto idle register
-         * Register to be written to configure the automatic control of the 
+         * Register to be written to configure the automatic control of the
          * DPLL activity
          */
         unsigned int *autoIdleCtrlReg;
 
         /**
          * \brief Auto idle config value
-         * Value to be written to configure the automatic control of the 
+         * Value to be written to configure the automatic control of the
          * DPLL activity
          */
         unsigned int autoIdleCtrlVal;
@@ -418,7 +418,7 @@ struct genericClock{
 
         /**
          * \brief Divider
-         * Pointer to clock divider 
+         * Pointer to clock divider
          */
         ClockDivider *clkDivider;
 
@@ -605,7 +605,7 @@ typedef struct {
 
 
 /*****************************************************************************
-**                   FUNCTION DECLARATIONS                                   
+**                   FUNCTION DECLARATIONS
 *****************************************************************************/
 
 /*    Clock management API's    */
@@ -617,13 +617,13 @@ BOOL deviceClockDisable(unsigned int moduleDisableList[], unsigned noOfElements)
 
 void enableModule(ModuleClock *moduleClk);
 
-void disableModule(unsigned int moduleId);
+void disableModule(ModuleClock *moduleClk);
 
 void enableModuleClock(ModuleClock *moduleClk);
 
-unsigned int disableModuleClock(unsigned int moduleId, tBoolean isBlockingCall);
+unsigned int disableModuleClock(ModuleClock *moduleClk, tBoolean isBlockingCall);
 
-unsigned int getModuleState(unsigned int moduleId);
+unsigned int getModuleState(ModuleClock *moduleClk);
 
 int getGclockGateState(Clock *clkPtr);
 
