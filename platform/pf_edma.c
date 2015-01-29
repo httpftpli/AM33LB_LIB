@@ -284,23 +284,24 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
 
 /**
  * @brief
- *        在某个固定地址缓冲区和一连续的内存区域间传送数�?
- * @param [in] trigMode DMA触发方式
- * -- EDMA3_TRIG_MODE_MANUAL    手动触发
- * -- EDMA3_TRIG_MODE_EVENT     事件出发
- * -- EDMA3_TRIG_MODE_IMMEDIATE  立即出发
- * @param [in] chNum   DMA通道�?\b EDMA3_CHA_XXX
- * @param [in] entryAddr 固定地址缓冲区的地址
- * @param [in] bufAddr   连续的内存区地址
- * @param [in] rwFlag   读写标识
- * -- 1 �?
- * -- 0 �?
- * @param [in] entryBitWidth 固定缓冲区位�?
- * @param [in] blkSize 每次传送的字节�?
- * @param [in] nblks 传送的次数
- * @param [in] handlerIndex
- *        数据传送完成后执行的回调函数索�?
- * @return  总是 1
+ *        transfer data betwin fix address and consecutive memey
+ *        eara
+ * @param [in] trigMode DMA trig mode
+ * -- EDMA3_TRIG_MODE_MANUAL    manual trig
+ * -- EDMA3_TRIG_MODE_EVENT     event trig 
+ * -- EDMA3_TRIG_MODE_IMMEDIATE  immediate trig
+ * @param [in] chNum   DMA chanel \b EDMA3_CHA_XXX
+ * @param [in] entryAddr fix address
+ * @param [in] bufAddr   consecutive memey first address
+ * @param [in] rwFlag   read or write
+ * -- 1 fix address to consecutive memey
+ * -- 0 consecutive memey to fix address
+ * @param [in] entryBitWidth, should be 8,16,32
+ * @param [in] blkSize    byte number every transfer 
+ * @param [in] nblks  transfer times
+ * @param [in] handlerIndex handler index number when transfer 
+ *        finish
+ * @return  always 1
  * @date    2013/6/19
  * @note
  * @code

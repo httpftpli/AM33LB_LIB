@@ -24,7 +24,10 @@
 #include "pf_key_touchpad.h"
 #include "pf_timertick.h"
 #include <math.h>
+#include "pf_edma.h"
 #include "debug.h"
+#include <string.h>
+#include "cache.h"
 
 
 
@@ -238,16 +241,16 @@ extern void (*keyhandler)(int keycode);
 void isr_uart_for_keyboard(unsigned int intNum) {
     unsigned int baseaddr = modulelist[intNum].baseAddr;
     if (UARTIntPendingStatusGet(baseaddr) == UART_N0_INT_PENDING) return;
-    unsigned int intval =  UARTIntIdentityGet(baseaddr);
+    unsigned int intval = UARTIntIdentityGet(baseaddr);
     if (intval == UART_INTID_RX_THRES_REACH) {
         for (int i = 0; i < 8; i++) {
-            volatile  unsigned char tempval = HWREGB(baseaddr + UART_RHR);
+            volatile unsigned char tempval = HWREGB(baseaddr + UART_RHR);
             ((unsigned char *)&keyTouchpadMsg)[i] = tempval;
             //UARTPutc(tempval);
         }
         if (isKeyTouchEvent(&keyTouchpadMsg)) {
             /*if(keyTouchpadMsg.type & MSG_TYPE_KEY){*/
-            if (keyTouchpadMsg.keycode != 0xff && keyscancode2key != NULL ) {
+            if (keyTouchpadMsg.keycode != 0xff && keyscancode2key != NULL) {
                 g_keycode = keyscancode2key(keyTouchpadMsg.keycode);
                 atomicSet(&g_keyPushed);
                 if (keyhandler != NULL) keyhandler(g_keycode);
@@ -255,7 +258,7 @@ void isr_uart_for_keyboard(unsigned int intNum) {
             if (keyTouchpadMsg.tscval != 0xffffffff) {
                 g_ts.x = g_tsRaw.x = keyTouchpadMsg.tscval & 0xffff;
                 g_ts.y = g_tsRaw.y = keyTouchpadMsg.tscval >> 16;
-                ts_linear(&tsCalibration, (int *)&g_ts.x,  (int *)&g_ts.y);
+                ts_linear(&tsCalibration, (int *)&g_ts.x, (int *)&g_ts.y);
                 atomicSet(&g_touched);
             }
 
@@ -267,7 +270,7 @@ void isr_uart_for_keyboard(unsigned int intNum) {
     if (intval == UART_INTID_CHAR_TIMEOUT) {
         unsigned int val = HWREG(baseaddr + 0x64);
         for (int i = 0; i < val; i++) {
-            volatile  unsigned char tempval1 = HWREGB(baseaddr + UART_RHR);
+            volatile unsigned char tempval1 = HWREGB(baseaddr + UART_RHR);
         }
     }
 }
@@ -376,8 +379,8 @@ static unsigned int UARTDivisorValCompute1(unsigned int moduleClk, unsigned int 
  * @note
  */
 void uartInit(unsigned int moduleId, unsigned int boudRate,
-              unsigned int charLen,  unsigned int parityFlag,
-              unsigned int stopBit,  unsigned int intFlag,
+              unsigned int charLen, unsigned int parityFlag,
+              unsigned int stopBit, unsigned int intFlag,
               unsigned int rxFifoLen, unsigned int txFiloLen) {
     MODULE *module = &modulelist[moduleId];
     moduleEnable(moduleId);
@@ -441,7 +444,7 @@ static void (*aftersend)();
 
 void uartInitFor9Bit(unsigned int moduleId, unsigned int boudRate,
                      unsigned stopBit, unsigned int intFlag, void (*beforSend)(), void (*afterSend)()) {
-    uartInit(moduleId,   boudRate, 8, UART_PARITY_REPR_1,
+    uartInit(moduleId, boudRate, 8, UART_PARITY_REPR_1,
              stopBit, intFlag, 1, 1);
     beforsend = beforSend;
     aftersend = afterSend;
@@ -474,10 +477,93 @@ bool uartRcv9bit(unsigned int moduleId, unsigned short *pdat, unsigned int timeo
             if (pdat != NULL) {
                 *pdat = datatmp;
             }
-            return  true;
+            return true;
         }
     }
 }
+
+
+#pragma data_alignment = 512
+static char uartdmaTxbuf[512];
+#pragma data_alignment = 512
+static char uartdmaRxbuf[512];
+
+void uartInitForDMA(unsigned int moduleId, unsigned int boudRate,unsigned int parityFlag,unsigned int intFlag) {
+    MODULE *module = &modulelist[moduleId];
+    unsigned int baseaddr = module->baseAddr;
+    EDMARequestXferWithBufferEntry(EDMA3_TRIG_MODE_EVENT,
+                                   EDMA3_CHA_UART0_RX,
+                                   baseaddr + UART_RHR,
+                                   (unsigned int)uartdmaRxbuf,
+                                   0, 8, 1, 256, 3);
+
+    moduleEnable(moduleId);
+    /* Performing a module reset. */
+    UARTModuleReset(baseaddr);
+
+    /* Setting the TX and RX FIFO Trigger levels */
+
+    unsigned int fifoConfig = UART_FIFO_CONFIG(UART_TRIG_LVL_GRANULARITY_1,
+                                               UART_TRIG_LVL_GRANULARITY_1,
+                                               1,
+                                               2,
+                                               1,
+                                               1,
+                                               UART_DMA_EN_PATH_SCR,
+                                               UART_DMA_MODE_1_ENABLE);
+
+    /* Configuring the FIFO settings. */
+    UARTFIFOConfig(baseaddr, fifoConfig);
+
+
+    /* Performing Baud Rate settings. */
+    /* Computing the Divisor Value. */
+    unsigned int mode_nX;
+    unsigned int divisorValue = UARTDivisorValCompute1(module->moduleClk->fClk[0]->clockSpeedHz,
+                                                       boudRate, &mode_nX);
+
+    /* Programming the Divisor Latches. */
+    UARTDivisorLatchWrite(baseaddr, divisorValue);
+
+    /* Switching to Configuration Mode B. */
+    UARTRegConfigModeEnable(baseaddr, UART_REG_CONFIG_MODE_B);
+
+    /* Programming the Line Characteristics. */
+    UARTLineCharacConfig(baseaddr, UART_FRAME_WORD_LENGTH_8 | UART_FRAME_NUM_STB_1, parityFlag);
+
+    /* Disabling write access to Divisor Latches. */
+    UARTDivisorLatchDisable(baseaddr);
+
+    /* Disabling Break Control. */
+    UARTBreakCtl(baseaddr, UART_BREAK_COND_DISABLE);
+
+    UARTIntEnable(baseaddr, UART_INT_RHR_CTI);
+    //UARTFIFORegisterWrite(baseaddr, UART_FCR_PROGRAM(rxFifoLen,txFiloLen,0,1,1,1));
+
+    /* Switching to operating mode. */
+    if (13 == mode_nX) {
+        UARTOperatingModeSelect(baseaddr, UART13x_OPER_MODE);
+    } else {
+        UARTOperatingModeSelect(baseaddr, UART16x_OPER_MODE);
+    }
+    moduleIntConfigure(moduleId);
+}
+
+
+
+void uartSendDma(uint32 moduleId, void *buf, uint32 size) {
+    MODULE *module = &modulelist[moduleId];
+    unsigned int baseaddr = module->baseAddr;
+    size = MIN(size, 512);
+    memcpy(uartdmaTxbuf, buf, size);
+    CacheDataCleanBuff((unsigned int)uartdmaTxbuf, 512);
+    EDMARequestXferWithBufferEntry(EDMA3_TRIG_MODE_EVENT,
+                                   EDMA3_CHA_UART0_TX,
+                                   baseaddr + UART_THR,
+                                   (unsigned int)uartdmaTxbuf,
+                                   0, 8, 1, size, 3);
+}
+
 
 
 /****************************** End of file *********************************/
