@@ -206,32 +206,23 @@ int sum(int *buf, unsigned int nNum) {
 
 
 
-
 void ringBufInit(RINGBUF *ringBuf, void *buf, unsigned int sizeOfItem, unsigned int nItem) {
     ringBuf->writeIndex = 0;
     ringBuf->readIndex = 0;
     ringBuf->sizeOfItem = sizeOfItem;
-    ringBuf->nItem = nItem + 1;
+    ringBuf->nItem = nItem;
     ringBuf->buf = buf;
+    ringBuf->empty = true;
+    ringBuf->full = false;
 }
 
 
 BOOL isRingBufFull(RINGBUF *ringBuf) {
-    unsigned int i = ringBuf->writeIndex + 1;
-    if (i == ringBuf->nItem) {
-        i = 0;
-    }
-    if (i == ringBuf->readIndex) {
-        return TRUE;
-    }
-    return FALSE;
+    return ringBuf->full;
 }
 
 BOOL isRingBufEmpty(RINGBUF *ringBuf) {
-    if (ringBuf->writeIndex == ringBuf->readIndex) {
-        return TRUE;
-    }
-    return FALSE;
+    return ringBuf->empty;
 }
 
 
@@ -242,6 +233,10 @@ BOOL ringBufPush(RINGBUF *ringBuf, void *item) {
     memcpy((unsigned char *)(ringBuf->buf) + ((ringBuf->writeIndex) * ringBuf->sizeOfItem)
            , item, ringBuf->sizeOfItem);
     if (++ringBuf->writeIndex == ringBuf->nItem) ringBuf->writeIndex = 0;
+    if (ringBuf->writeIndex==ringBuf->readIndex) {
+        ringBuf->full = true;
+    }
+    ringBuf->empty = false;
     return TRUE;
 }
 
@@ -253,6 +248,10 @@ BOOL ringBufPop(RINGBUF *ringBuf, void *item) {
     }
     memcpy(item, (unsigned char *)ringBuf->buf + ringBuf->readIndex * ringBuf->sizeOfItem, ringBuf->sizeOfItem);
     if (++ringBuf->readIndex == ringBuf->nItem) ringBuf->readIndex = 0;
+    if (ringBuf->writeIndex==ringBuf->readIndex) {
+        ringBuf->empty = true;
+    }
+    ringBuf->full = false;
     return TRUE;
 }
 
@@ -270,6 +269,8 @@ BOOL ringBufRead(RINGBUF *ringBuf, void **item) {
 void ringBufClear(RINGBUF *ringBuf) {
     ringBuf->readIndex = 0;
     ringBuf->writeIndex = 0;
+    ringBuf->empty = true;
+    ringBuf->full = false;
 }
 
 

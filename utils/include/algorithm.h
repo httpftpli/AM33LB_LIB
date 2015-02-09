@@ -30,6 +30,8 @@ typedef struct tagfilo {
     unsigned long readIndex;    /** < @brief 写下标  */
 	unsigned char sizeOfItem;
     unsigned long nItem;        /** < @brief item总个数 */
+    bool full;
+    bool empty;
 	unsigned long nAvaItem;		/** < @brief 记录当前fifi中的item个数*/
     void *        buf;        /** < @brief  缓冲区指针 */
 }RINGBUF;

@@ -252,7 +252,7 @@ unsigned int TimerTickTimeGet(void) {
 
 unsigned long long TimerTickTimeGetUs(void) {
     unsigned int baseaddr = modulelist[TIMER_TIMERTICK].baseAddr;
-    return   TimerTickGet()*1000 + DMTimerCounterGet(baseaddr) - cnt;
+    return   TimerTickGet()*1000 + (DMTimerCounterGet(baseaddr) - cnt)/(timerFreq/1000000);
 }
 
 
