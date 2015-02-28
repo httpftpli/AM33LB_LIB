@@ -11,6 +11,8 @@
 
 
 
+#include "type.h"
+
 /**
  * @brief 2位BCD转HEX 
  * @param [in] byte BCD编码的2位数，比如99 
@@ -60,5 +62,17 @@ unsigned short bcd2hex_4(unsigned short s) {
           | (((s & (0x0f << 4)) >> 4) * 10) | (s & 0x0f);
 }
 
+
+void strToWstr(wchar *wstr,char *str){
+    do {
+        *wstr++ = *str;
+    }while(*str++!=0);
+}
+
+void wtrToStr(char *str,wchar *wstr){
+    do {
+        *str++ = (char)(*wstr);
+    }while(*wstr++!=0);
+}
 
 //! @}

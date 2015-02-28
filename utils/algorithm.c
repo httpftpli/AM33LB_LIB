@@ -232,11 +232,13 @@ BOOL ringBufPush(RINGBUF *ringBuf, void *item) {
     if (isRingBufFull(ringBuf)) return FALSE;
     memcpy((unsigned char *)(ringBuf->buf) + ((ringBuf->writeIndex) * ringBuf->sizeOfItem)
            , item, ringBuf->sizeOfItem);
+    IntMasterIRQDisable();
     if (++ringBuf->writeIndex == ringBuf->nItem) ringBuf->writeIndex = 0;
     if (ringBuf->writeIndex==ringBuf->readIndex) {
         ringBuf->full = true;
     }
     ringBuf->empty = false;
+    IntMasterIRQEnable();
     return TRUE;
 }
 
@@ -246,12 +248,14 @@ BOOL ringBufPop(RINGBUF *ringBuf, void *item) {
     if (isRingBufEmpty(ringBuf)) {
         return FALSE;
     }
+    IntMasterIRQDisable();
     memcpy(item, (unsigned char *)ringBuf->buf + ringBuf->readIndex * ringBuf->sizeOfItem, ringBuf->sizeOfItem);
     if (++ringBuf->readIndex == ringBuf->nItem) ringBuf->readIndex = 0;
     if (ringBuf->writeIndex==ringBuf->readIndex) {
         ringBuf->empty = true;
     }
     ringBuf->full = false;
+    IntMasterIRQEnable();
     return TRUE;
 }
 
@@ -267,10 +271,12 @@ BOOL ringBufRead(RINGBUF *ringBuf, void **item) {
 
 
 void ringBufClear(RINGBUF *ringBuf) {
+    IntMasterIRQDisable();
     ringBuf->readIndex = 0;
     ringBuf->writeIndex = 0;
     ringBuf->empty = true;
     ringBuf->full = false;
+    IntMasterIRQEnable();
 }
 
 
