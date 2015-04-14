@@ -46,12 +46,16 @@ extern "C"
 
 
 #define withintimedo(TIMENAME,time) \
-            for(unsigned int TIMENAME=TimerTickGet();\
-                TimerTickGet()<=(time+TIMENAME);\
+            for(unsigned long long TIMENAME=TimerTickGet64();\
+                TimerTickGet64()<=(time+TIMENAME);\
                 )
 #define everytimedo(TIMENAME,time)\
-                static unsigned int TIMENAME=0;\
-                for(;TIMENAME<=TimerTickGet();TIMENAME=TimerTickGet()+time )
+                static unsigned long long TIMENAME=0;\
+                for(;TIMENAME<=TimerTickGet64();TIMENAME=TimerTickGet64()+time )
+
+#define delaytimedo_once(TIMENAME,time)\
+                static unsigned long long TIMENAME=TimerTickGet64();\
+                for(;TIMENAME+(time) <=TimerTickGet64();TIMENAME=-1ULL) 
 
 
 //#define DEFINE_TASKLET(NAME) \

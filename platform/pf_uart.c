@@ -488,14 +488,15 @@ static char uartdmaTxbuf[512];
 #pragma data_alignment = 512
 static char uartdmaRxbuf[512];
 
-void uartInitForDMA(unsigned int moduleId, unsigned int boudRate,unsigned int parityFlag,unsigned int intFlag) {
+void uartInitForDMA(unsigned int moduleId, unsigned int boudRate,
+                    unsigned int parityFlag,unsigned int intFlag) {
     MODULE *module = &modulelist[moduleId];
     unsigned int baseaddr = module->baseAddr;
-    EDMARequestXferWithBufferEntry(EDMA3_TRIG_MODE_EVENT,
+    /*EDMARequestXferWithBufferEntry(EDMA3_TRIG_MODE_EVENT,
                                    EDMA3_CHA_UART0_RX,
                                    baseaddr + UART_RHR,
                                    (unsigned int)uartdmaRxbuf,
-                                   0, 8, 1, 256, 3);
+                                   0, 8, 1, 256, 3);*/
 
     moduleEnable(moduleId);
     /* Performing a module reset. */
@@ -506,14 +507,24 @@ void uartInitForDMA(unsigned int moduleId, unsigned int boudRate,unsigned int pa
     unsigned int fifoConfig = UART_FIFO_CONFIG(UART_TRIG_LVL_GRANULARITY_1,
                                                UART_TRIG_LVL_GRANULARITY_1,
                                                1,
-                                               2,
+                                               1,
                                                1,
                                                1,
                                                UART_DMA_EN_PATH_SCR,
                                                UART_DMA_MODE_1_ENABLE);
 
-    /* Configuring the FIFO settings. */
+    /*Configuring the FIFO settings. */
     UARTFIFOConfig(baseaddr, fifoConfig);
+
+     /* Enabling DMA Mode 1. */
+    //UARTDMAEnable(baseaddr, UART_DMA_MODE_1_ENABLE);
+
+    UARTTxDMAThresholdControl(baseaddr, UART_TX_DMA_THRESHOLD_REG);
+
+    /* Configuring the Transmit DMA Threshold value. */
+    UARTTxDMAThresholdValConfig(baseaddr, 5);
+
+    UARTDMAEnable(baseaddr, UART_DMA_MODE_1_ENABLE);
 
 
     /* Performing Baud Rate settings. */
@@ -552,16 +563,18 @@ void uartInitForDMA(unsigned int moduleId, unsigned int boudRate,unsigned int pa
 
 
 void uartSendDma(uint32 moduleId, void *buf, uint32 size) {
+    static uint8 temp;
     MODULE *module = &modulelist[moduleId];
     unsigned int baseaddr = module->baseAddr;
     size = MIN(size, 512);
     memcpy(uartdmaTxbuf, buf, size);
     CacheDataCleanBuff((unsigned int)uartdmaTxbuf, 512);
-    EDMARequestXferWithBufferEntry(EDMA3_TRIG_MODE_EVENT,
+    EDMARequestXferWithBufferEntry(EDMA3_TRIG_MODE_MANUAL,
                                    EDMA3_CHA_UART0_TX,
                                    baseaddr + UART_THR,
                                    (unsigned int)uartdmaTxbuf,
-                                   0, 8, 1, size, 3);
+                                   0, 8, 512, size, 3);
+    //CacheDataInvalidateAll();
 }
 
 

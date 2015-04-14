@@ -85,3 +85,4 @@ unsigned int long long  getpartitionfree(const TCHAR* driverpath){
    return (long long)freeclst * fs->csize * SS(fs);
 }
 
+

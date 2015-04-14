@@ -15,6 +15,8 @@ extern void uartInit(unsigned int moduleId, unsigned int boudRate,
 
 extern void uartInitFor9Bit(unsigned int moduleId,unsigned int boudRate,
                      unsigned stopBit, unsigned int intFlag,void (*beforSend)(),void (*afterSend)());
+extern void uartInitForDMA(unsigned int moduleId, unsigned int boudRate,
+                    unsigned int parityFlag,unsigned int intFlag);
 
 extern void UARTRcvRegistHander(UARTRCVHANDLER handler);
 extern void UART0ModuleClkConfig(void);

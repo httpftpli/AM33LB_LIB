@@ -3719,6 +3719,7 @@ USBHCDDeviceDisconnected(unsigned int ulIndex, unsigned int ulInstance)
 //
 //*****************************************************************************
 
+
 void
 USBHCDMain(unsigned int ulIndex, unsigned int ulInstance)
 {
@@ -4059,6 +4060,10 @@ USBHCDMain(unsigned int ulIndex, unsigned int ulInstance)
              g_sUSBHCD[ulIndex].EventInfo.ulInstance = ulIndex;
              g_sUSBHCD[ulIndex].pClassDrivers[g_sUSBHCD[ulIndex].iEventDriver]->pfnIntHandler(
                   &g_sUSBHCD[ulIndex].EventInfo);
+             //add by lfl
+             //USBHCDInit(ulIndex, g_pHCDPool, 128);
+             //add by lfl finish
+
              break;
         }
 
