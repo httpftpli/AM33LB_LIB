@@ -2,11 +2,11 @@
  *  \file   font.c
  *
  *  \brief
- *  \author  lfl 
+ *  \author  lfl
  *  \addtogroup FONT
  *  @brief 字体
  *  @{
- *   
+ *
  */
 
 #include "ff.h"
@@ -15,6 +15,7 @@
 #include "utf8.h"
 #include "mmath.h"
 #include "lib_gui.h"
+#include <string.h>
 
 
 
@@ -55,7 +56,7 @@ static unsigned int loadFont(const TCHAR * filepath,  GUI_FONT  *font) {
    }
    if(!GUI_SIF_CreateFont(font->p.pFontData,font, GUI_SIF_TYPE_PROP)){
        f_close(&fontfile);
-       return -1; 
+       return -1;
    }
    f_close(&fontfile);
    return filesize;
@@ -64,24 +65,24 @@ static unsigned int loadFont(const TCHAR * filepath,  GUI_FONT  *font) {
 
 /**
  * @brief 初始化字体
- * @param [in] addr  存放字库的内存基地址 
- * @return 
+ * @param [in] addr  存放字库的内存基地址
+ * @return
  *         位编码类型，从低到高分别表示fonts的一种字体，如果位为1表示相应字体加载成功
  * @date    2013/5/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
- *  
+ * @see
+ *
  */
 
-unsigned int g_fontFlag = 0x03; 
+unsigned int g_fontFlag = 0x03;
 
 
 unsigned int  initFont(unsigned int addr) {
    unsigned int ret = 0x03;
-   const TCHAR *fontname[3];
+   const TCHAR *fontname[4];
    fontname[0] = _TEXT("0:/1_16.FNT");
    fontname[1] = _TEXT("0:/1_20.FNT");
    fontname[2] = _TEXT("0:/1_20_C.FNT");
@@ -89,7 +90,7 @@ unsigned int  initFont(unsigned int addr) {
    font_16.p.pFontData = (void *) addr;
    unsigned int filesize = loadFont(fontname[0], &font_16);
    if(filesize!=-1L){
-       addr += filesize+8; 
+       addr += filesize+8;
        fonts[2] = &font_16;
        ret |= 0x04;
    }
@@ -97,53 +98,53 @@ unsigned int  initFont(unsigned int addr) {
    filesize = loadFont(fontname[1], &font_20);
    if(filesize!=-1L){
        addr += filesize+8;
-       fonts[3] = &font_20; 
+       fonts[3] = &font_20;
        ret |= 0x08;
    }
    font_20_c.p.pFontData = (void *) addr;
    filesize = loadFont(fontname[2], &font_20_c);
    if(filesize!=-1L){
        addr += filesize+8;
-       fonts[5] = &font_20_c; 
+       fonts[5] = &font_20_c;
        ret |= 0x10;
    }
    font_24_c.p.pFontData = (void *) addr;
    filesize = loadFont(fontname[3], &font_24_c);
    if(filesize!=-1L){
        addr += filesize+8;
-       fonts[6] = &font_24_c; 
+       fonts[6] = &font_24_c;
        ret |= 0x20;
    }
-   g_fontFlag = ret; 
+   g_fontFlag = ret;
    return ret;
 }
 
 /**
- * @brief 获取当前字体高度 
- * @return 字体高度          
+ * @brief 获取当前字体高度
+ * @return 字体高度
  * @date    2013/5/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
- *  
+ * @see
+ *
  */
-char  getCurFontYSize() { 
+char  getCurFontYSize() {
    return GUI_Context.pAFont->YSize;
 }
 
 /**
- * @brief 获取字体高度 
+ * @brief 获取字体高度
  * @param  font 字体结构体指针
- * @return 字体高度          
+ * @return 字体高度
  * @date    2013/5/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
- *  
+ * @see
+ *
  */
 char getFontYSize(GUI_FONT *font){
    return font->YSize;
@@ -160,7 +161,7 @@ int getStringMetricWidthEx_ucs2(const wchar *wcs,unsigned int len){
       width = GUI_Context.pAFont->pfGetCharDistX(*wcs++);
       if (0 == width) {
          width = GUI_Context.pAFont->pfGetCharDistX('?');
-      }      
+      }
       widthtotle += width;
    }
    return widthtotle;
@@ -203,7 +204,7 @@ int getStringMetricWidthEx(const TEXTCHAR *string,unsigned int len){
          width = GUI_Context.pAFont->pfGetCharDistX('?');
       }
 #endif
-      
+
       widthtotle += width;
    }
    return widthtotle;
@@ -213,16 +214,16 @@ int getStringMetricWidthEx(const TEXTCHAR *string,unsigned int len){
 
 /**
  * @brief 获取字符串点阵信息
- * @param [in] string 
+ * @param [in] string
  *        字符串(utf8或者ascii编码,取决于\b
  *        CHARACTER_DIS_CODEC)
- * @return  字符串在屏幕显示的宽度         
+ * @return  字符串在屏幕显示的宽度
  * @date    2013/5/8
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  *    \b CHARACTER_DIS_CODEC
  */
 int getStringMetricWidth(const TEXTCHAR *string){
@@ -238,6 +239,6 @@ int getStringMetricWidth(const TEXTCHAR *string){
 }
 
 //! @}
-//! 
+//!
 
 
