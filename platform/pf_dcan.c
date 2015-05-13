@@ -25,11 +25,13 @@
 
 
 
+
+
 #define DCAN_NUM_OF_MSG_OBJS    (64u)
 #define DCAN_MSGOBF_RX_BEGIN    1
-#define DCAN_MSGOBF_RX_NUMBER   DCAN_NUM_OF_MSG_OBJS/2
+#define DCAN_MSGOBF_RX_NUMBER   24
 #define DCAN_MSGOBF_TX_BEGIN    DCAN_MSGOBF_RX_BEGIN+DCAN_MSGOBF_RX_NUMBER
-#define DCAN_MSGOBF_TX_NUMBER   DCAN_NUM_OF_MSG_OBJS/2
+#define DCAN_MSGOBF_TX_NUMBER   (CAN_NUM_OF_MSG_OBJS-DCAN_MSGOBF_RX_NUMBER)
 
 
 
@@ -208,6 +210,7 @@ BOOL CANSendFinishGetClr(unsigned int moduleId) {
 unsigned int CANSend_noblock(unsigned int moduleId,CAN_FRAME *frame){
     unsigned int baseAddr = modulelist[moduleId].baseAddr;
     unsigned int msgNum; 
+    IntMasterIRQDisable();
     while (DCANIFBusyStatusGet(baseAddr,DCAN_IF_WRITE));
     unsigned int arb = *(unsigned int *)frame;
     arb ^= (1<<29);
@@ -223,6 +226,7 @@ unsigned int CANSend_noblock(unsigned int moduleId,CAN_FRAME *frame){
     DCANCommandRegSet(baseAddr, (DCAN_DAT_A_ACCESS | DCAN_MSG_WRITE | DCAN_TXRQST_ACCESS | 
                                 DCAN_DAT_B_ACCESS | DCAN_ACCESS_CTL_BITS | 
                                 DCAN_ACCESS_ARB_BITS), msgNum, DCAN_IF_WRITE);
+    IntMasterIRQEnable();
     return CAN_SEND_OK;
 }
 

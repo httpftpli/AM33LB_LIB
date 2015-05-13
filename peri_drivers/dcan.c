@@ -666,6 +666,7 @@ unsigned int DCANTxRqstStatusGet(unsigned int baseAdd, unsigned int msgNum)
 
 unsigned int DCANFreeMsgObjGet(unsigned int baseAdd,unsigned int begin)
 {
+    ASSERT (begin%8 ==0);
     unsigned int index = begin;
     unsigned int regNum;
     unsigned int offSet;

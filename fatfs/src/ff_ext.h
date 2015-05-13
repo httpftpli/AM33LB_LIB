@@ -3,11 +3,13 @@
 
 #include "ff.h"
 
-FRESULT f_scandir(char* path , FILINFO*  fileInfo ,unsigned int *nEntrys );
-FRESULT f_copy(const TCHAR *scrpath,const TCHAR * despath,unsigned char *workbuf,unsigned int sz_workbuf);
-FRESULT f_fdiskEx (BYTE pdrv,unsigned int beginLBA,const DWORD szt[],void* work);
-unsigned long long  getpartitionfree(const TCHAR* driverpath);
-unsigned long long f_getvolsize(const TCHAR *path);
+extern FRESULT f_scandir(char* path , FILINFO*  fileInfo ,unsigned int *nEntrys );
+extern FRESULT f_copy(const TCHAR *scrpath,const TCHAR * despath,unsigned char *workbuf,unsigned int sz_workbuf);
+extern FRESULT f_fdiskEx (BYTE pdrv,unsigned int beginLBA,const DWORD szt[],void* work);
+extern unsigned long long  getpartitionfree(const TCHAR* driverpath);
+extern unsigned long long f_getvolsize(const TCHAR *path);
+extern void wpathTowfilename(wchar_t *filename,const wchar_t *path);
+extern bool fileFixNameReplace(wchar_t *name,const wchar *fixname);
 
 #endif
 

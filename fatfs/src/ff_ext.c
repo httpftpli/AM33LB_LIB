@@ -2,6 +2,7 @@
 #include "type.h"
 #include "ff.h"
 #include "debug.h"
+#include "wchar.h"
 
 #if _MAX_SS != 512
 #define	SS(fs)	((fs)->ssize)	/* Variable sector size */
@@ -83,5 +84,29 @@ unsigned int long long  getpartitionfree(const TCHAR* driverpath){
       return 0;
    }
    return (long long)freeclst * fs->csize * SS(fs);
+}
+
+
+void wpathTowfilename(wchar_t *filename, const wchar_t *path){
+    uint32 len = wcslen(path);
+    const wchar_t *point;
+    int i;
+    for(i=0;i<len;i++){
+        if (path[len-i-1]==L'\\'|| path[len-i-1]==L'/'){
+            break ;
+        }
+    }
+    point = path+len-i;
+    wcscpy(filename,point);
+}
+
+bool fileFixNameReplace(wchar_t *name,const wchar *fixname){
+    wchar_t *point = wcsrchr(name,L'.');
+    if (point==NULL) {
+        return false;
+    }else{
+        wcscpy(point,fixname);
+    }
+    return true;
 }
 

@@ -250,6 +250,11 @@ unsigned int TimerTickTimeGet(void) {
     return DMTimerCounterGet(baseaddr);
 }
 
+unsigned long long TimerTickTimeGetUs(void) {
+    unsigned int baseaddr = modulelist[TIMER_TIMERTICK].baseAddr;
+    return   TimerTickGet()*1000 + (DMTimerCounterGet(baseaddr) - cnt)/(timerFreq/1000000);
+}
+
 
 void Sysdelay(unsigned int mSec) {
     ASSERT(istimertickinited);

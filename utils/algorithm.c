@@ -205,8 +205,7 @@ int sum(int *buf, unsigned int nNum) {
 }
 
 
-
-void ringBufInit(RINGBUF *ringBuf, void *buf, unsigned int sizeOfItem, unsigned int nItem) {
+void ringBufInit(RINGBUF *ringBuf, void *buf, unsigned int sizeOfItem, unsigned int nItem, bool threadsafe) {
     ringBuf->writeIndex = 0;
     ringBuf->readIndex = 0;
     ringBuf->sizeOfItem = sizeOfItem;
@@ -214,6 +213,7 @@ void ringBufInit(RINGBUF *ringBuf, void *buf, unsigned int sizeOfItem, unsigned 
     ringBuf->buf = buf;
     ringBuf->empty = true;
     ringBuf->full = false;
+    ringBuf->threadSafe = threadsafe;
 }
 
 
@@ -232,13 +232,17 @@ BOOL ringBufPush(RINGBUF *ringBuf, void *item) {
     if (isRingBufFull(ringBuf)) return FALSE;
     memcpy((unsigned char *)(ringBuf->buf) + ((ringBuf->writeIndex) * ringBuf->sizeOfItem)
            , item, ringBuf->sizeOfItem);
-    IntMasterIRQDisable();
+    if (ringBuf->threadSafe) {
+        IntMasterIRQDisable();
+    }
     if (++ringBuf->writeIndex == ringBuf->nItem) ringBuf->writeIndex = 0;
-    if (ringBuf->writeIndex==ringBuf->readIndex) {
+    if (ringBuf->writeIndex == ringBuf->readIndex) {
         ringBuf->full = true;
     }
     ringBuf->empty = false;
-    IntMasterIRQEnable();
+    if (ringBuf->threadSafe) {
+        IntMasterIRQEnable();
+    }
     return TRUE;
 }
 
@@ -248,15 +252,20 @@ BOOL ringBufPop(RINGBUF *ringBuf, void *item) {
     if (isRingBufEmpty(ringBuf)) {
         return FALSE;
     }
-    IntMasterIRQDisable();
+    if (ringBuf->threadSafe) {
+        IntMasterIRQDisable();
+    }
     memcpy(item, (unsigned char *)ringBuf->buf + ringBuf->readIndex * ringBuf->sizeOfItem, ringBuf->sizeOfItem);
     if (++ringBuf->readIndex == ringBuf->nItem) ringBuf->readIndex = 0;
-    if (ringBuf->writeIndex==ringBuf->readIndex) {
+    if (ringBuf->writeIndex == ringBuf->readIndex) {
         ringBuf->empty = true;
     }
     ringBuf->full = false;
-    IntMasterIRQEnable();
+    if (ringBuf->threadSafe) {
+        IntMasterIRQEnable();
+    }
     return TRUE;
+
 }
 
 
@@ -270,13 +279,35 @@ BOOL ringBufRead(RINGBUF *ringBuf, void **item) {
 }
 
 
+bool ringBufPop_noread(RINGBUF *ringBuf) {
+    if (isRingBufEmpty(ringBuf)) {
+        return 0;
+    }
+    if (ringBuf->threadSafe) {
+        IntMasterIRQDisable();
+    }
+    if (++ringBuf->readIndex == ringBuf->nItem) ringBuf->readIndex = 0;
+    if (ringBuf->writeIndex == ringBuf->readIndex) {
+        ringBuf->empty = true;
+    }
+    ringBuf->full = false;
+    if (ringBuf->threadSafe) {
+        IntMasterIRQEnable();
+    }
+    return 1;
+}
+
 void ringBufClear(RINGBUF *ringBuf) {
-    IntMasterIRQDisable();
+    if (ringBuf->threadSafe) {
+        IntMasterIRQDisable();
+    }
     ringBuf->readIndex = 0;
     ringBuf->writeIndex = 0;
     ringBuf->empty = true;
     ringBuf->full = false;
-    IntMasterIRQEnable();
+    if (ringBuf->threadSafe) {
+        IntMasterIRQEnable();
+    }
 }
 
 
@@ -353,17 +384,16 @@ static const unsigned int CRC16Table_MD[256] = {
 };
 
 
-   //Name   : "CRC-8/CCITT" (new entry) 1-Wire?
-   //Width  : 8
-   //Poly   : 8D
-   //Init   : 00?
-   //RefIn  : False?
-   //RefOut : False?
-   //XorOut : 00?
-   //Check  : D2
+//Name   : "CRC-8/CCITT" (new entry) 1-Wire?
+//Width  : 8
+//Poly   : 8D
+//Init   : 00?
+//RefIn  : False?
+//RefOut : False?
+//XorOut : 00?
+//Check  : D2
 #if 0
-static const unsigned short CRC16Table_CCITT[256] ={
-};
+static const unsigned short CRC16Table_CCITT[256] ={};
 #endif
 
 
@@ -380,97 +410,82 @@ static uint32 crc_tab32D[256];
 static uint32 crc_tab32K[256];
 static uint32 crc_tab32Q[256];
 
-void init_crc32_normal_tab(uint32 *table, uint32 polynom)
-{
-  int i, j;
-  uint32 crc;
+void init_crc32_normal_tab(uint32 *table, uint32 polynom) {
+    int i, j;
+    uint32 crc;
 
-  for (i=0; i<256; i++)
-    {
-	  crc = ((uint32) i) << 24;
+    for (i = 0; i < 256; i++) {
+        crc = ((uint32)i) << 24;
 
-	  for (j=0; j<8; j++)
-        {
-		  if ( crc & 0x80000000L ) crc = ( crc << 1 ) ^ polynom;
-		  else                     crc <<= 1;
+        for (j = 0; j < 8; j++) {
+            if (crc & 0x80000000L) crc = (crc << 1) ^ polynom;
+            else crc <<= 1;
         }
-	  *table++ = crc;
+        *table++ = crc;
     }
 }
 
 
 
-void init_crc32_reflected_tab(uint32 *table, uint32 polynom)
-{
-  int i, j;
-  uint32 crc;
+void init_crc32_reflected_tab(uint32 *table, uint32 polynom) {
+    int i, j;
+    uint32 crc;
 
-  for (i=0; i<256; i++)
-    {
-	  crc = (uint32) i;
+    for (i = 0; i < 256; i++) {
+        crc = (uint32)i;
 
-	  for (j=0; j<8; j++)
-        {
-		  if ( crc & 0x00000001L ) crc = ( crc >> 1 ) ^ polynom;
-		  else                     crc >>= 1;
+        for (j = 0; j < 8; j++) {
+            if (crc & 0x00000001L) crc = (crc >> 1) ^ polynom;
+            else crc >>= 1;
         }
-	  *table++ = crc;
+        *table++ = crc;
     }
 }
 
 
-static uint32 update_crc32_normal( uint32 *table, uint32 crc, char c )
-{
-  uint32 long_c;
+static uint32 update_crc32_normal(uint32 *table, uint32 crc, char c) {
+    uint32 long_c;
 
-  long_c = 0x000000ffL & (uint32) c;
+    long_c = 0x000000ffL & (uint32)c;
 
-  return (crc << 8) ^ table[((crc >> 24) ^ long_c) & 0xff];
+    return(crc << 8) ^ table[((crc >> 24) ^ long_c) & 0xff];
 }
 
-static uint32 update_crc32_reflected( uint32 *table, uint32 crc, char c )
-{
-  uint32 long_c;
+static uint32 update_crc32_reflected(uint32 *table, uint32 crc, char c) {
+    uint32 long_c;
 
-  long_c = 0x000000ffL & (uint32) c;
+    long_c = 0x000000ffL & (uint32)c;
 
-  return (crc >> 8) ^ table[(crc ^ long_c) & 0xff];
+    return(crc >> 8) ^ table[(crc ^ long_c) & 0xff];
 }
 
 
-static uint32 update_crc32_refl( uint32 crc, char c )
-{
-  return update_crc32_reflected(crc_tab32_reflected,crc,c);
+static uint32 update_crc32_refl(uint32 crc, char c) {
+    return update_crc32_reflected(crc_tab32_reflected, crc, c);
 }
 
-static uint32 update_crc32_norm( uint32 crc, char c )
-{
-  return update_crc32_normal(crc_tab32_normal,crc,c);
+static uint32 update_crc32_norm(uint32 crc, char c) {
+    return update_crc32_normal(crc_tab32_normal, crc, c);
 }
 
-static uint32 update_crc32_xfer( uint32 crc, char c )
-{
-  return update_crc32_normal(crc_tabxfer_normal,crc,c);
+static uint32 update_crc32_xfer(uint32 crc, char c) {
+    return update_crc32_normal(crc_tabxfer_normal, crc, c);
 }
 
-static uint32 update_crc32_c( uint32 crc, char c )
-{
-  return update_crc32_reflected(crc_tab32C,crc,c);
+static uint32 update_crc32_c(uint32 crc, char c) {
+    return update_crc32_reflected(crc_tab32C, crc, c);
 }
 
-static uint32 update_crc32_d( uint32 crc, char c )
-{
-  return update_crc32_reflected(crc_tab32D,crc,c);
+static uint32 update_crc32_d(uint32 crc, char c) {
+    return update_crc32_reflected(crc_tab32D, crc, c);
 }
 
-static uint32 update_crc32_k( uint32 crc, char c )
-{
-  return update_crc32_normal(crc_tab32K,crc,c);
+static uint32 update_crc32_k(uint32 crc, char c) {
+    return update_crc32_normal(crc_tab32K, crc, c);
 }
 
-static uint32 update_crc32_q( uint32 crc, char c )
-{
-  return update_crc32_normal(crc_tab32Q,crc,c);
+static uint32 update_crc32_q(uint32 crc, char c) {
+    return update_crc32_normal(crc_tab32Q, crc, c);
 }
 
 
@@ -487,25 +502,23 @@ static bool crc_tab32_reflected_inited = false;
 //   RefOut : True
 //   XorOut : FFFFFFFF
 //   Check  : CBF43926
-uint32 calculate_crc32(char *p, unsigned int length)
-{
-  uint32 crc32;
-  unsigned int i;
+uint32 calculate_crc32(char *p, unsigned int length) {
+    uint32 crc32;
+    unsigned int i;
 
-  crc32 = 0xFFFFFFFFL;
+    crc32 = 0xFFFFFFFFL;
 
-  if(!crc_tab32_reflected_inited) {
-      init_crc32_reflected_tab(crc_tab32_reflected, P_32_REFLECTED);
-      crc_tab32_reflected_inited  = true;
-  }
+    if (!crc_tab32_reflected_inited) {
+        init_crc32_reflected_tab(crc_tab32_reflected, P_32_REFLECTED);
+        crc_tab32_reflected_inited = true;
+    }
 
-  for (i=0; i < length; i++)
-	{
-	  crc32 = update_crc32_refl(crc32,*p++);
-	}
+    for (i = 0; i < length; i++) {
+        crc32 = update_crc32_refl(crc32, *p++);
+    }
 
-  /* One's complement = Xor with FFFFFFFF */
-  return ~crc32;
+    /* One's complement = Xor with FFFFFFFF */
+    return ~crc32;
 }
 
 
@@ -519,24 +532,22 @@ uint32 calculate_crc32(char *p, unsigned int length)
 //   RefOut : True
 //   XorOut : 00000000
 //   Check  : 340BC6D9
-uint32 calculate_crc32_jamcrc(char *p, unsigned int length)
-{
-  uint32 crc32;
-  unsigned int i;
+uint32 calculate_crc32_jamcrc(char *p, unsigned int length) {
+    uint32 crc32;
+    unsigned int i;
 
-  crc32 = 0xFFFFFFFFL;
+    crc32 = 0xFFFFFFFFL;
 
-  if(!crc_tab32_reflected_inited) {
-      init_crc32_reflected_tab(crc_tab32_reflected, P_32_REFLECTED);
-      crc_tab32_reflected_inited  = true;
-  }
+    if (!crc_tab32_reflected_inited) {
+        init_crc32_reflected_tab(crc_tab32_reflected, P_32_REFLECTED);
+        crc_tab32_reflected_inited = true;
+    }
 
-  for (i=0; i < length; i++)
-	{
-	  crc32 = update_crc32_refl(crc32,*p++);
-	}
+    for (i = 0; i < length; i++) {
+        crc32 = update_crc32_refl(crc32, *p++);
+    }
 
-  return crc32;
+    return crc32;
 }
 
 
@@ -554,23 +565,21 @@ static bool crc_tab32c_inited = false;
 //   XorOut : FFFFFFFF
 //   Check  : E3069283
 
-uint32 calculate_crc32_c(char *p, unsigned int length)
-{
-  uint32 crc32;
-  unsigned int i;
+uint32 calculate_crc32_c(char *p, unsigned int length) {
+    uint32 crc32;
+    unsigned int i;
 
-  crc32 = 0xFFFFFFFFL;
-  if (!crc_tab32c_inited) {
-      crc_tab32c_inited = true;
-      init_crc32_reflected_tab(crc_tab32C, P_32C);
-  }
-  for (i = 0; i < length; i++)
-	{
-	  crc32 = update_crc32_c(crc32,*p++);
-	}
+    crc32 = 0xFFFFFFFFL;
+    if (!crc_tab32c_inited) {
+        crc_tab32c_inited = true;
+        init_crc32_reflected_tab(crc_tab32C, P_32C);
+    }
+    for (i = 0; i < length; i++) {
+        crc32 = update_crc32_c(crc32, *p++);
+    }
 
-  /* One's complement = Xor with FFFFFFFF */
-  return ~crc32;
+    /* One's complement = Xor with FFFFFFFF */
+    return ~crc32;
 }
 
 
@@ -585,24 +594,22 @@ static bool crc_tab32d_inited = false;
 //   RefOut : True
 //   XorOut : FFFFFFFF
 //   Check  : 87315576
-uint32 calculate_crc32_d(char *p, unsigned int length)
-{
-  uint32 crc32;
-  unsigned int i;
+uint32 calculate_crc32_d(char *p, unsigned int length) {
+    uint32 crc32;
+    unsigned int i;
 
-  crc32 = 0xFFFFFFFFL;
+    crc32 = 0xFFFFFFFFL;
 
-  if (!crc_tab32d_inited) {
-      crc_tab32d_inited = true;
-      init_crc32_reflected_tab(crc_tab32D, P_32D);
-  }
-  for (i=0; i < length; i++)
-	{
-	  crc32 = update_crc32_d(crc32,*p++);
-	}
+    if (!crc_tab32d_inited) {
+        crc_tab32d_inited = true;
+        init_crc32_reflected_tab(crc_tab32D, P_32D);
+    }
+    for (i = 0; i < length; i++) {
+        crc32 = update_crc32_d(crc32, *p++);
+    }
 
-  /* One's complement = Xor with FFFFFFFF */
-  return ~crc32;
+    /* One's complement = Xor with FFFFFFFF */
+    return ~crc32;
 }
 
 
@@ -618,24 +625,22 @@ static bool crc_tab32_normal_inited = false;
 //   RefOut : False
 //   XorOut : FFFFFFFF
 //   Check  : FC891918
-uint32 calculate_crc32_bzip2(char *p, unsigned int length)
-{
-  uint32 crc32;
-  unsigned int i;
+uint32 calculate_crc32_bzip2(char *p, unsigned int length) {
+    uint32 crc32;
+    unsigned int i;
 
-  crc32 = 0xFFFFFFFFL;
+    crc32 = 0xFFFFFFFFL;
 
-  if (!crc_tab32_normal_inited) {
-      crc_tab32_normal_inited =  true;
-      init_crc32_normal_tab(crc_tab32_normal, P_32_NORMAL);
-  }
-  for (i=0; i < length; i++)
-	{
-	  crc32 = update_crc32_norm(crc32,*p++);
-	}
+    if (!crc_tab32_normal_inited) {
+        crc_tab32_normal_inited = true;
+        init_crc32_normal_tab(crc_tab32_normal, P_32_NORMAL);
+    }
+    for (i = 0; i < length; i++) {
+        crc32 = update_crc32_norm(crc32, *p++);
+    }
 
-  /* One's complement = Xor with FFFFFFFF */
-  return ~crc32;
+    /* One's complement = Xor with FFFFFFFF */
+    return ~crc32;
 }
 
 
@@ -648,23 +653,21 @@ uint32 calculate_crc32_bzip2(char *p, unsigned int length)
 //   RefOut : False
 //   XorOut : 00000000
 //   Check  : 0376E6E7
-uint32 calculate_crc32_mpeg2(char *p, unsigned int length)
-{
-  uint32 crc32;
-  unsigned int i;
+uint32 calculate_crc32_mpeg2(char *p, unsigned int length) {
+    uint32 crc32;
+    unsigned int i;
 
-  crc32 = 0xFFFFFFFFL;
+    crc32 = 0xFFFFFFFFL;
 
-  if (!crc_tab32_normal_inited) {
-      crc_tab32_normal_inited =  true;
-      init_crc32_normal_tab(crc_tab32_normal, P_32_NORMAL);
-  }
-  for (i=0; i < length; i++)
-	{
-	  crc32 = update_crc32_norm(crc32,*p++);
-	}
+    if (!crc_tab32_normal_inited) {
+        crc_tab32_normal_inited = true;
+        init_crc32_normal_tab(crc_tab32_normal, P_32_NORMAL);
+    }
+    for (i = 0; i < length; i++) {
+        crc32 = update_crc32_norm(crc32, *p++);
+    }
 
-  return crc32;
+    return crc32;
 }
 
 
@@ -679,24 +682,22 @@ uint32 calculate_crc32_mpeg2(char *p, unsigned int length)
 //   XorOut : FFFFFFFF
 //   Check  : 765E7680
 //   LCheck : 377A6011
-uint32 calculate_crc32_posix(char *p, unsigned int length)
-{
-  uint32 crc32;
-  unsigned int i;
+uint32 calculate_crc32_posix(char *p, unsigned int length) {
+    uint32 crc32;
+    unsigned int i;
 
-  crc32 = 0L;
+    crc32 = 0L;
 
-  if (!crc_tab32_normal_inited) {
-      crc_tab32_normal_inited =  true;
-      init_crc32_normal_tab(crc_tab32_normal, P_32_NORMAL);
-  }
-  for (i=0; i < length; i++)
-	{
-	  crc32 = update_crc32_norm(crc32,*p++);
-	}
+    if (!crc_tab32_normal_inited) {
+        crc_tab32_normal_inited = true;
+        init_crc32_normal_tab(crc_tab32_normal, P_32_NORMAL);
+    }
+    for (i = 0; i < length; i++) {
+        crc32 = update_crc32_norm(crc32, *p++);
+    }
 
-  /* One's complement = Xor with FFFFFFFF */
-  return ~crc32;
+    /* One's complement = Xor with FFFFFFFF */
+    return ~crc32;
 }
 
 static bool crc_tab32k_init = false;
@@ -711,22 +712,20 @@ static bool crc_tab32k_init = false;
 //   RefOut : False?
 //   XorOut : 00000000?
 //   Check  : not sure
-uint32 calculate_crc32_k(char *p, unsigned int length)
-{
-  uint32 crc32;
-  unsigned int i;
+uint32 calculate_crc32_k(char *p, unsigned int length) {
+    uint32 crc32;
+    unsigned int i;
 
-  crc32 = 0L;
-  if (!crc_tab32k_init) {
-      crc_tab32k_init = true;
-      init_crc32_normal_tab(crc_tab32K, P_32K); /* Not sure */
-  }
-  for (i=0; i < length; i++)
-	{
-	  crc32 = update_crc32_k(crc32,*p++);
-	}
+    crc32 = 0L;
+    if (!crc_tab32k_init) {
+        crc_tab32k_init = true;
+        init_crc32_normal_tab(crc_tab32K, P_32K); /* Not sure */
+    }
+    for (i = 0; i < length; i++) {
+        crc32 = update_crc32_k(crc32, *p++);
+    }
 
-  return crc32;
+    return crc32;
 }
 
 
@@ -742,22 +741,20 @@ static bool crc_tab32q_init = false;
 //   RefOut : False
 //   XorOut : 00000000
 //   Check  : 3010BF7F
-uint32 calculate_crc32_q(char *p, unsigned int length)
-{
-  uint32 crc32;
-  unsigned int i;
+uint32 calculate_crc32_q(char *p, unsigned int length) {
+    uint32 crc32;
+    unsigned int i;
 
-  crc32 = 0L;
-  if (!crc_tab32q_init) {
-      crc_tab32q_init = false;
-      init_crc32_normal_tab(crc_tab32Q, P_32Q);
-  }
-  for (i = 0; i < length; i++)
-	{
-	  crc32 = update_crc32_q(crc32,*p++);
-	}
+    crc32 = 0L;
+    if (!crc_tab32q_init) {
+        crc_tab32q_init = false;
+        init_crc32_normal_tab(crc_tab32Q, P_32Q);
+    }
+    for (i = 0; i < length; i++) {
+        crc32 = update_crc32_q(crc32, *p++);
+    }
 
-  return crc32;
+    return crc32;
 }
 
 static bool crc_tabxfer_normal_inited = false;
@@ -772,22 +769,20 @@ static bool crc_tabxfer_normal_inited = false;
 //   RefOut : False
 //   XorOut : 00000000
 //   Check  : BD0BE338
-uint32 calculate_crc32_xfer(char *p, unsigned int length)
-{
-  uint32 crc32;
-  unsigned int i;
+uint32 calculate_crc32_xfer(char *p, unsigned int length) {
+    uint32 crc32;
+    unsigned int i;
 
-  crc32 = 0L;
-  if (!crc_tabxfer_normal_inited) {
-      crc_tabxfer_normal_inited = true;
-      init_crc32_normal_tab(crc_tabxfer_normal, P_32_XFER);
-  }
-  for (i = 0; i < length; i++)
-	{
-	  crc32 = update_crc32_xfer(crc32,*p++);
-	}
+    crc32 = 0L;
+    if (!crc_tabxfer_normal_inited) {
+        crc_tabxfer_normal_inited = true;
+        init_crc32_normal_tab(crc_tabxfer_normal, P_32_XFER);
+    }
+    for (i = 0; i < length; i++) {
+        crc32 = update_crc32_xfer(crc32, *p++);
+    }
 
-  return crc32;
+    return crc32;
 }
 
 

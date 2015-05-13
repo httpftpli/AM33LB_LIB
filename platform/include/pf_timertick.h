@@ -35,6 +35,7 @@ extern "C"
     extern unsigned int TimerTickGet(void);
     extern unsigned long long TimerTickGet64(void);
     extern unsigned int TimerTickTimeGet(void);
+    extern unsigned long long TimerTickTimeGetUs(void);
     extern void Sysdelay(unsigned int mSec);
     extern int StartTimer(unsigned int mSec);
     extern unsigned int IsTimerElapsed(unsigned int timerindex);
@@ -45,12 +46,16 @@ extern "C"
 
 
 #define withintimedo(TIMENAME,time) \
-            for(unsigned int TIMENAME=TimerTickGet();\
-                TimerTickGet()<=(time+TIMENAME);\
+            for(unsigned long long TIMENAME=TimerTickGet64();\
+                TimerTickGet64()<=(time+TIMENAME);\
                 )
 #define everytimedo(TIMENAME,time)\
-                static unsigned int TIMENAME=0;\
-                for(;TIMENAME<=TimerTickGet();TIMENAME=TimerTickGet()+time )
+                static unsigned long long TIMENAME=0;\
+                for(;TIMENAME<=TimerTickGet64();TIMENAME=TimerTickGet64()+time )
+
+#define delaytimedo_once(TIMENAME,time)\
+                static unsigned long long TIMENAME=TimerTickGet64();\
+                for(;TIMENAME+(time) <=TimerTickGet64();TIMENAME=-1ULL) 
 
 
 //#define DEFINE_TASKLET(NAME) \

@@ -190,7 +190,7 @@ static inline struct list_head * list_n(const struct list_head *head,unsigned in
     const struct list_head *p = head->next;
     for (int i=0;i<n;i++) {
         p=p->next;
-        if (p=head) {
+        if (p==head) {
             break ;
         }
     }
