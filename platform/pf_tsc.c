@@ -233,6 +233,7 @@ static void StepEnable(void) {
 
 
 void tsEnalbe(void) {
+    atomicClear(&g_touched);
     tsenable = 1;
 }
 
