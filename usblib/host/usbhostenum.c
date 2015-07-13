@@ -4060,9 +4060,12 @@ USBHCDMain(unsigned int ulIndex, unsigned int ulInstance)
              g_sUSBHCD[ulIndex].EventInfo.ulInstance = ulIndex;
              g_sUSBHCD[ulIndex].pClassDrivers[g_sUSBHCD[ulIndex].iEventDriver]->pfnIntHandler(
                   &g_sUSBHCD[ulIndex].EventInfo);
+
+             //////////   add by lfl
              //add by lfl
              //USBHCDInit(ulIndex, g_pHCDPool, 128);
              //add by lfl finish
+             //////////   add by lfl
 
              break;
         }
@@ -4238,7 +4241,8 @@ USBHCDControlTransfer(unsigned int ulIndex, tUSBRequest *pSetupPacket,
                                         | INT_EVENT_DISCONNECT|INT_EVENT_BABBLE_FAULT))
         {
             USBHCDTxAbort(ulIndex, 0);
-            USBHCDRxAbort(ulIndex, 0);
+            USBHCDRxAbort(ulIndex, 0); //add by lfl
+
             g_sUSBHEP0State[ulIndex].eState = EP0_STATE_IDLE; //add by lfl
             retStatus = 0;
             break;

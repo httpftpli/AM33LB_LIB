@@ -93,6 +93,10 @@
 #define  MODULE_USE_3GPSW   1
 #endif
 
+#ifndef  MODULE_USE_MAINBOX
+#define  MODULE_USE_MAINBOX   0
+#endif
+
 
 #ifndef USE_TASK_DELAYDO
 #define  USE_TASK_DELAYDO   1
@@ -261,6 +265,9 @@
 #define INT_PRIORITY_UART5        (INT_PRIORITY_USER_NORMAL-16)
 #endif
 
+#ifndef INT_PRIORITY_MB0
+#define INT_PRIORITY_MB0         (INT_PRIORITY_USER_NORMAL-16)
+#endif
 
 //config FRAMEBUFFER memory
 #ifndef FRAMEBUFFER_SIZE

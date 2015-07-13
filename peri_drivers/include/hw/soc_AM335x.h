@@ -163,6 +163,8 @@ extern "C" {
 
 
 #define SOC_EPWM_MODULE_FREQ                 100 
+
+#define SOC_MAINBOX_0                        (0x480C8000)     
  
 #ifdef __cplusplus
 }

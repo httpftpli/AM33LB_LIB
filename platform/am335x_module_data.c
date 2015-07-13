@@ -82,6 +82,7 @@ extern __weak  void isr_uart_for_keyboard(unsigned int intnum);
 extern __weak  void isr_mcspi(unsigned int intnum);
 extern __weak  void isr_dmtimer(unsigned int num);
 extern __weak  void isr_uart_for_9bit(unsigned int intNum);
+extern __weak  void isr_mailbox(unsigned int intNum);
 
 
 #ifdef AM335X_ADC_TSC
@@ -172,6 +173,9 @@ MODULE modulelist[128] = {
 #endif
 #if  MODULE_USE_3GPSW ==  1
 [MODULE_ID_3GPSW]  = { .index = 0, .baseAddr = 0,             .INTNum = { 0, 0, 0 },              .INTPriority = { 0, 0, 0 },                .isr = { 0, 0, 0 },         .moduleClk = &cpgmac0ModClock },
+#endif
+#if  MODULE_USE_MAINBOX ==1
+[MODULE_ID_MB] = { .index = 0, .baseAddr = SOC_MAINBOX_0,     .INTNum = {SYS_INT_MBINT0, 0, 0 },  .INTPriority = { INT_PRIORITY_SPI1, 0, 0 },.isr = { isr_mailbox, 0, 0 },  .moduleClk = &mailbox0ModClock },
 #endif
 };
 

@@ -3,7 +3,7 @@
  *
  *  \brief  DCAN APIs.
  *
- *   This file contains the device abstraction layer APIs for 
+ *   This file contains the device abstraction layer APIs for
  *   Dual Controller Area Network(DCAN).
  */
 
@@ -11,6 +11,7 @@
 #include "hw_types.h"
 #include "dcan.h"
 #include "soc_AM335x.h"
+#include "debug.h"
 
 /*******************************************************************************
 *                       INTERNAL MACRO DEFINITIONS
@@ -29,7 +30,7 @@
 *                        API FUNCTION DEFINITIONS
 *******************************************************************************/
 /**
- * \brief   This API will enable the DCAN peripheral in Initialization mode. 
+ * \brief   This API will enable the DCAN peripheral in Initialization mode.
  *
  * \param   baseAdd       Base Address of the DCAN Module Registers.
  *
@@ -44,20 +45,20 @@ void DCANInitModeSet(unsigned int baseAdd)
     /* Set the Init field of DCAN_CTL register */
     HWREG(baseAdd + DCAN_CTL) |= DCAN_CTL_INIT;
 
-    /* Wait for Init bit to set */ 
+    /* Wait for Init bit to set */
     while(!(HWREG(baseAdd + DCAN_CTL) & DCAN_CTL_INIT));
 }
 
 /**
- * \brief   This API will enable the DCAN peripheral in Normal mode of 
+ * \brief   This API will enable the DCAN peripheral in Normal mode of
  *          operation.
  *
  * \param   baseAdd       Base Address of the DCAN Module Registers.
  *
  * \return  None.
  *
- * \note    By calling this API, the DCAN module exits Initialization mode 
- *          and communication on CAN bus is started. 
+ * \note    By calling this API, the DCAN module exits Initialization mode
+ *          and communication on CAN bus is started.
  *
  **/
 void DCANNormalModeSet(unsigned int baseAdd)
@@ -70,7 +71,7 @@ void DCANNormalModeSet(unsigned int baseAdd)
 }
 
 /**
- * \brief   This API will write the CAN Bit-Timing values to the 
+ * \brief   This API will write the CAN Bit-Timing values to the
  *          DCAN_BTR register.
  *
  * \param   baseAdd       Base Address of the DCAN Module Registers.
@@ -78,10 +79,10 @@ void DCANNormalModeSet(unsigned int baseAdd)
  *
  * \return  None.
  *
- * \note   To configure CAN bit timing the DCAN peripheral should be in 
- *         initialization mode and CPU should have access to the DCAN 
- *         configuration registers. 
- *         8 MHz is the minimum CAN clock frequency required to operate 
+ * \note   To configure CAN bit timing the DCAN peripheral should be in
+ *         initialization mode and CPU should have access to the DCAN
+ *         configuration registers.
+ *         8 MHz is the minimum CAN clock frequency required to operate
  *         the DCAN at a bit rate of 1MBits/s.
  *
  **/
@@ -99,7 +100,7 @@ void DCANBitTimingConfig(unsigned int baseAdd, unsigned int btrValue)
  * \return  None.
  *
  * \note    To perform software reset the DCAN peripheral should be enabled in
- *          initialization mode. 
+ *          initialization mode.
  *
  **/
 void DCANReset(unsigned int baseAdd)
@@ -151,7 +152,7 @@ void DCANIntDisable(unsigned int baseAdd, unsigned int intFlags)
 }
 
 /**
- * \brief   This API will enable/disable the auto re-transmission of 
+ * \brief   This API will enable/disable the auto re-transmission of
  *          unsuccessful messages of DCAN peripheral.
  *
  * \param   baseAdd       Base Address of the DCAN Module Registers.
@@ -174,11 +175,11 @@ void DCANAutoReTransmitControl(unsigned int baseAdd, unsigned int autoReTxn)
 }
 
 /**
- * \brief   This API will enable/disable the CPU write access to the 
+ * \brief   This API will enable/disable the CPU write access to the
  *          configuration  registers of DCAN peripheral.
  *
  * \param   baseAdd       Base Address of the DCAN Module Registers.
- * \param   regConfig     Enable/disable write access to configuration 
+ * \param   regConfig     Enable/disable write access to configuration
  *                        registers.
  *
  *    'regConfig' can take the following values \n
@@ -188,11 +189,11 @@ void DCANAutoReTransmitControl(unsigned int baseAdd, unsigned int autoReTxn)
  * \return  None.
  *
  * \note    If the user wants to enable write access to configuration registers,
- *          then DCAN peripheral should be in initialization mode before doing 
+ *          then DCAN peripheral should be in initialization mode before doing
  *          so.
  *
  **/
-void DCANConfigRegWriteAccessControl(unsigned int baseAdd, 
+void DCANConfigRegWriteAccessControl(unsigned int baseAdd,
                                      unsigned int regConfig)
 {
     /* Clear the CCE field of DCAN_CTL register */
@@ -210,7 +211,7 @@ void DCANConfigRegWriteAccessControl(unsigned int baseAdd,
  *
  *    'testMode' can take the following values \n
  *    DCAN_TEST_MODE_ENABLE - Enable test mode of DCAN peripheral \n
- *    DCAN_TEST_MODE_DISABLE - Disable test mode and enable normal mode 
+ *    DCAN_TEST_MODE_DISABLE - Disable test mode and enable normal mode
  *                             of DCAN peripheral \n
  *
  * \return  None.
@@ -219,23 +220,23 @@ void DCANConfigRegWriteAccessControl(unsigned int baseAdd,
 void DCANTestModeControl(unsigned int baseAdd, unsigned int testMode)
 {
     /* Clear the Test field of DCAN_CTL register */
-    HWREG(baseAdd + DCAN_CTL) &= ~DCAN_CTL_TEST;    
+    HWREG(baseAdd + DCAN_CTL) &= ~DCAN_CTL_TEST;
 
     /* Set the Test field with the user sent value */
     HWREG(baseAdd + DCAN_CTL) |= (testMode & DCAN_CTL_TEST);
 }
 
 /**
- * \brief   This API will enable/disable the Auto-bus-on feature of DCAN 
+ * \brief   This API will enable/disable the Auto-bus-on feature of DCAN
  *          peripheral.
  *
  * \param   baseAdd       Base Address of the DCAN Module Registers.
  * \param   busControl    Auto-bus-on mode setting.
  *
  *    'busControl' can take the following values \n
- *    DCAN_AUTO_BUS_ON_ENABLE - Enable Auto-bus-on feature of DCAN peripheral \n 
- *    DCAN_AUTO_BUS_ON_DISABLE - Disable Auto-bus-on feature of DCAN 
- *                               peripheral \n 
+ *    DCAN_AUTO_BUS_ON_ENABLE - Enable Auto-bus-on feature of DCAN peripheral \n
+ *    DCAN_AUTO_BUS_ON_DISABLE - Disable Auto-bus-on feature of DCAN
+ *                               peripheral \n
  *
  * \return  None.
  *
@@ -281,12 +282,12 @@ void DCANParityControl(unsigned int baseAdd, unsigned int paritySet)
  *    'enableLine' can take the following values \n
  *    DCAN_INT_LINE0 - Enable Interrupt line 0 \n
  *    DCAN_INT_LINE1 - Enable Interrupt line 1 \n
- * 
+ *
  * \return  None.
  *
- * \note    The Error and Status change interrupts can only be routed to 
- *          DCANINT0 line and message object interrupts can be routed to 
- *          both lines. Hence DCANINT0 line has to be enabled if error and 
+ * \note    The Error and Status change interrupts can only be routed to
+ *          DCANINT0 line and message object interrupts can be routed to
+ *          both lines. Hence DCANINT0 line has to be enabled if error and
  *          status change interrupts have to be serviced.
  *
  **/
@@ -316,7 +317,7 @@ void DCANIntLineDisable(unsigned int baseAdd, unsigned int disableLine)
 }
 
 /**
- * \brief   This API will enable the DMA request line for Interface 
+ * \brief   This API will enable the DMA request line for Interface
  *          registers(IF[1:3]) of the DCAN peripheral.
  *
  * \param   baseAdd       Base Address of the DCAN Module Registers.
@@ -333,8 +334,8 @@ void DCANIntLineDisable(unsigned int baseAdd, unsigned int disableLine)
 void DCANDmaRequestLineEnable(unsigned int baseAdd, unsigned int ifRegFlags)
 {
     /* Enable the DMA request lines */
-    HWREG(baseAdd + DCAN_CTL) |= (ifRegFlags & 
-                                 (DCAN_CTL_DE1 | DCAN_CTL_DE2 | DCAN_CTL_DE3)); 
+    HWREG(baseAdd + DCAN_CTL) |= (ifRegFlags &
+                                 (DCAN_CTL_DE1 | DCAN_CTL_DE2 | DCAN_CTL_DE3));
 }
 
 /**
@@ -355,7 +356,7 @@ void DCANDmaRequestLineEnable(unsigned int baseAdd, unsigned int ifRegFlags)
 void DCANDmaRequestLineDisable(unsigned int baseAdd, unsigned int ifRegFlags)
 {
     /* Disable the DMA request lines */
-    HWREG(baseAdd + DCAN_CTL) &= ~(ifRegFlags & 
+    HWREG(baseAdd + DCAN_CTL) &= ~(ifRegFlags &
                                   (DCAN_CTL_DE1 | DCAN_CTL_DE2 | DCAN_CTL_DE3));
 }
 
@@ -395,22 +396,22 @@ unsigned int DCANIntRegStatusGet(unsigned int baseAdd, unsigned int intLnFlag)
  *          DCAN_LST_ERRCODE_BIT1_ERR - Bit1 error detected in LEC field \n
  *          DCAN_LST_ERRCODE_BIT0_ERR - Bit0 error detected in LEC field \n
  *          DCAN_LST_ERRCODE_CRC_ERR - CRC error detected in LEC field \n
- *          DCAN_NO_EVENT_ON_CAN_BUS - No event generated on CAN bus since 
+ *          DCAN_NO_EVENT_ON_CAN_BUS - No event generated on CAN bus since
  *                                     last read of DCAN_ES register \n
  *          DCAN_TXD_MSG_SUCCESSFULLY - DCAN transmitted message successfully \n
  *          DCAN_RXD_MSG_SUCCESSFULLY - DCAN received message successfully \n
  *          DCAN_CORE_IN_ERR_PASSIVE - DCAN core in error passive state \n
- *          DCAN_ERR_WARN_STATE_RCHD - Atleast one of the counters have reached 
+ *          DCAN_ERR_WARN_STATE_RCHD - Atleast one of the counters have reached
  *                                     error warning limit \n
  *          DCAN_MOD_IN_BUS_OFF_STATE - DCAN in bus off state \n
  *          DCAN_PARITY_ERR_DETECTED - Parity error detected \n
  *          DCAN_INITIATED_SYSTEM_WKUP - DCAN initiated system wakeup \n
  *          DCAN_IN_LOCAL_PWR_DWN_MODE - DCAN in local power down mode \n
  *
- * \note    Reading the error and status register will clear/set certain bits 
- *          in the error and status register. For more information please refer 
- *          the DCAN Technical Reference Manual(TRM). 
- *          For debug support, the auto clear functionality of error and status 
+ * \note    Reading the error and status register will clear/set certain bits
+ *          in the error and status register. For more information please refer
+ *          the DCAN Technical Reference Manual(TRM).
+ *          For debug support, the auto clear functionality of error and status
  *          register is disabled when in debug/suspend mode.
  *
  **/
@@ -434,7 +435,7 @@ unsigned int DCANErrAndStatusRegInfoGet(unsigned int baseAdd)
  * \return  This API returns the status of DCAN_ERRC register.
  *
  **/
-unsigned int DCANErrCntrRegStatusGet(unsigned int baseAdd, 
+unsigned int DCANErrCntrRegStatusGet(unsigned int baseAdd,
                                      unsigned int cntrFlags)
 {
     /* Return the status of DCAN_ERRC register to the caller */
@@ -456,17 +457,17 @@ unsigned int DCANErrCntrRegStatusGet(unsigned int baseAdd,
  *
  * \return  None.
  *
- * \note    Before calling the API 'DCANTestModesEnable' ensure to enable DCAN 
+ * \note    Before calling the API 'DCANTestModesEnable' ensure to enable DCAN
  *          in test mode by using the API 'DCANTestModeControl'.
- *          When internal loop-back mode is active, if external loopback is 
- *          enabled then external loopback will be ignored. 
+ *          When internal loop-back mode is active, if external loopback is
+ *          enabled then external loopback will be ignored.
  *
  **/
 void DCANTestModesEnable(unsigned int baseAdd, unsigned int tstMode)
 {
     /* Set test mode fields of DCAN_TEST register with the user sent value */
-    HWREG(baseAdd + DCAN_TEST) |= (tstMode & 
-                                  (DCAN_TEST_RDA | DCAN_TEST_EXL | 
+    HWREG(baseAdd + DCAN_TEST) |= (tstMode &
+                                  (DCAN_TEST_RDA | DCAN_TEST_EXL |
                                    DCAN_TEST_LBACK | DCAN_TEST_SILENT));
 }
 
@@ -487,7 +488,7 @@ void DCANTestModesEnable(unsigned int baseAdd, unsigned int tstMode)
  * \return  None.
  *
  * \note    Usage of this API is only valid if DCAN is enabled in test mode.
- *          DCAN can be enabled in test mode by using the API 
+ *          DCAN can be enabled in test mode by using the API
  *          'DCANTestModeControl'.
  *
  **/
@@ -495,7 +496,7 @@ void DCANTestModesDisable(unsigned int baseAdd, unsigned int tstMode)
 {
     /* Clear the mode fields of DCAN_TEST register with the user sent value */
     HWREG(baseAdd + DCAN_TEST) &= ~(tstMode &
-                                   (DCAN_TEST_RDA | DCAN_TEST_EXL | 
+                                   (DCAN_TEST_RDA | DCAN_TEST_EXL |
                                     DCAN_TEST_LBACK | DCAN_TEST_SILENT));
 }
 
@@ -562,17 +563,17 @@ unsigned int DCANRxPinStatusGet(unsigned int baseAdd)
  * \return  Returns the status of DCAN_PERR register.
  *
  *          User can use the below macros to check the status \n
- *          DCAN_PARITY_ERR_MSG_NUM - Message object number where parity 
+ *          DCAN_PARITY_ERR_MSG_NUM - Message object number where parity
  *                                    error is detected \n
- *          DCAN_PARITY_ERR_WRD_NUM - Word number where parity error is 
+ *          DCAN_PARITY_ERR_WRD_NUM - Word number where parity error is
  *                                    detected \n
  *
  **/
-unsigned int DCANParityErrCdRegStatusGet(unsigned int baseAdd, 
+unsigned int DCANParityErrCdRegStatusGet(unsigned int baseAdd,
                                          unsigned int statFlg)
 {
     /* Return the status of Parity error code register */
-    return(HWREG(baseAdd + DCAN_PERR) & statFlg); 
+    return(HWREG(baseAdd + DCAN_PERR) & statFlg);
 }
 
 /**
@@ -666,7 +667,7 @@ unsigned int DCANTxRqstStatusGet(unsigned int baseAdd, unsigned int msgNum)
 
 unsigned int DCANFreeMsgObjGet(unsigned int baseAdd,unsigned int begin)
 {
-    ASSERT (begin%8 ==0);
+    ASSERT (begin%8 ==1);
     unsigned int index = begin;
     unsigned int regNum;
     unsigned int offSet;
@@ -700,7 +701,7 @@ unsigned int DCANFreeMsgObjGet(unsigned int baseAdd,unsigned int begin)
 unsigned int DCANNewDataXStatusGet(unsigned int baseAdd)
 {
     /* Return the status from DCAN_NWDAT_X register */
-    return(HWREG(baseAdd + DCAN_NWDAT_X) & NEW_DATA_X_MASK); 
+    return(HWREG(baseAdd + DCAN_NWDAT_X) & NEW_DATA_X_MASK);
 }
 
 /**
@@ -708,7 +709,7 @@ unsigned int DCANNewDataXStatusGet(unsigned int baseAdd)
  *          Where n = 12,34,56,78.
  *
  * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   msgNum              Message object number whose NewDat status is 
+ * \param   msgNum              Message object number whose NewDat status is
  *                              to be returned.
  *
  * \return  Returns the New data status from DCAN_NWDAT(n) register.
@@ -731,7 +732,7 @@ unsigned int DCANNewDataStatusGet(unsigned int baseAdd, unsigned int msgNum)
 }
 
 /**
- * \brief   This API will return the lowest message object number whose new 
+ * \brief   This API will return the lowest message object number whose new
  *          data status is set from DCAN_NWDAT(n) register.
  *          Where n = 12,34,56,78.
  *
@@ -759,7 +760,7 @@ unsigned int DCANNewDataStatGet(unsigned int baseAdd)
 
         if((HWREG(baseAdd + DCAN_NWDAT(regNum)) & (1 << offSet)))
         {
-            break; 
+            break;
         }
         index++;
     }
@@ -858,18 +859,18 @@ unsigned int DCANMsgValidStatusGet(unsigned int baseAdd, unsigned int msgNum)
 }
 
 /**
- * \brief   This API will configure which Interrupt line will be used to 
+ * \brief   This API will configure which Interrupt line will be used to
  *          service interrupts from message objects.
  *
  * \param   baseAdd             Base Address of the DCAN Module Registers.
  * \param   intLine             Interrupt line to be configured.
- * \param   msgNum              Message object number whose IntMux is to be 
+ * \param   msgNum              Message object number whose IntMux is to be
  *                              configured.
  *
  * 'intLine' can take the following values \n
- *    DCAN_INT0_ACTIVE - DCANINT0 line is active if corresponding 
+ *    DCAN_INT0_ACTIVE - DCANINT0 line is active if corresponding
  *                       IntPnd flag is set \n
- *    DCAN_INT1_ACTIVE - DCANINT1 line is active if corresponding 
+ *    DCAN_INT1_ACTIVE - DCANINT1 line is active if corresponding
  *                       IntPnd flag is one \n
  *
  * \return  None.
@@ -926,7 +927,7 @@ void DCANMsgObjInvalidate(unsigned int baseAdd, unsigned int regNum)
  * \brief   This API will set the fields of DCAN_IFCMD register.
  *
  * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   cmdFlags            Fields of the DCAN_IFCMD register which are 
+ * \param   cmdFlags            Fields of the DCAN_IFCMD register which are
  *                              to be set.
  * \param   objNum              Message object number to be configured.
  * \param   regNum              Interface register number used.
@@ -940,9 +941,9 @@ void DCANMsgObjInvalidate(unsigned int baseAdd, unsigned int regNum)
  *    DCAN_ACCESS_CTL_BITS - Access control bits \n
  *    DCAN_ACCESS_ARB_BITS - Access Arbitration bits \n
  *    DCAN_ACCESS_MSK_BITS - Access the mask bits \n
- *    DCAN_MSG_WRITE - Transfer direction is from IF registers to 
+ *    DCAN_MSG_WRITE - Transfer direction is from IF registers to
  *                     message RAM \n
- *    DCAN_MSG_READ - Transfer direction is from message RAM to 
+ *    DCAN_MSG_READ - Transfer direction is from message RAM to
  *                    IF registers \n
  *
  * 'regNum' can take the following values \n
@@ -959,14 +960,14 @@ void DCANCommandRegSet(unsigned int baseAdd, unsigned int cmdFlags,
     while(DCANIFBusyStatusGet(baseAdd, IFnum));
 
     /* Clear the DCAN_IFCMD register fields */
-    HWREG(baseAdd + DCAN_IFCMD(IFnum)) &= ~(DCAN_IFCMD_DMAACTIVE | 
-                                             DCAN_IFCMD_DATAA | 
-                                             DCAN_IFCMD_DATAB | 
-                                             DCAN_IFCMD_TXRQST_NEWDAT | 
+    HWREG(baseAdd + DCAN_IFCMD(IFnum)) &= ~(DCAN_IFCMD_DMAACTIVE |
+                                             DCAN_IFCMD_DATAA |
+                                             DCAN_IFCMD_DATAB |
+                                             DCAN_IFCMD_TXRQST_NEWDAT |
                                              DCAN_IFCMD_CLRINTPND |
-                                             DCAN_IFCMD_CONTROL | 
+                                             DCAN_IFCMD_CONTROL |
                                              DCAN_IFCMD_ARB |
-                                             DCAN_IFCMD_MASK | 
+                                             DCAN_IFCMD_MASK |
                                              DCAN_IFCMD_MESSAGENUMBER |
                                              DCAN_IFCMD_WR_RD);
 
@@ -974,16 +975,16 @@ void DCANCommandRegSet(unsigned int baseAdd, unsigned int cmdFlags,
     while(DCANIFBusyStatusGet(baseAdd, IFnum));
 
     /* Set the DCAN_IFCMD register fields represented by cmdFlags */
-    HWREG(baseAdd + DCAN_IFCMD(IFnum)) |= ((cmdFlags & 
-                                           (DCAN_IFCMD_DMAACTIVE | 
-                                            DCAN_IFCMD_DATAA | 
-                                            DCAN_IFCMD_DATAB | 
+    HWREG(baseAdd + DCAN_IFCMD(IFnum)) |= ((cmdFlags &
+                                           (DCAN_IFCMD_DMAACTIVE |
+                                            DCAN_IFCMD_DATAA |
+                                            DCAN_IFCMD_DATAB |
                                             DCAN_IFCMD_TXRQST_NEWDAT |
                                             DCAN_IFCMD_CLRINTPND |
                                             DCAN_IFCMD_CONTROL |
                                             DCAN_IFCMD_ARB |
                                             DCAN_IFCMD_MASK |
-                                            DCAN_IFCMD_WR_RD)) | 
+                                            DCAN_IFCMD_WR_RD)) |
                                             (objNum & DCAN_IFCMD_MESSAGENUMBER));
 }
 
@@ -1011,7 +1012,7 @@ void DCANIFArbSet(unsigned baseAdd,unsigned int IFnum,unsigned int arb){
 
 
 
- 
+
 /**
  * \brief   This API will read the data bytes from the IF Data registers.
  *
@@ -1048,16 +1049,16 @@ unsigned short  DCANIFDlcRead(unsigned int baseAdd,unsigned int ifNUM){
 
 
 /**
- * \brief   This API will enable the Message object interrupts of the DCAN 
+ * \brief   This API will enable the Message object interrupts of the DCAN
  *          peripheral.
  *
  * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   intFlags            Enable the message object interrupts 
+ * \param   intFlags            Enable the message object interrupts
  *                              represented by intFlags.
  * \param   regNum              Interface register number used.
  *
  * 'intFlags' can take the following values \n
- *    DCAN_TRANSMIT_INT - Enable the transmit interrupt \n 
+ *    DCAN_TRANSMIT_INT - Enable the transmit interrupt \n
  *    DCAN_RECEIVE_INT - Enable the receive interrupt \n
  *
  * 'regNum' can take the following values \n
@@ -1143,14 +1144,14 @@ void DCANIFFifoEndOfBlockControl(unsigned int baseAdd,unsigned int regNum,
  *    DCAN_ID_MSK_29_BIT - 29 bit identifier mask is used \n
  *
  * 'msgDir' can take the following values \n
- *    DCAN_MSK_MSGDIR_ENABLE - Message direction bit is used for 
+ *    DCAN_MSK_MSGDIR_ENABLE - Message direction bit is used for
  *                             acceptance filtering \n
- *    DCAN_MSK_MSGDIR_DISABLE - Message direction bit has no effect on 
+ *    DCAN_MSK_MSGDIR_DISABLE - Message direction bit has no effect on
  *                              acceptance filtering \n
- * 
+ *
  * 'extId' can take the following values \n
  *    DCAN_MSK_EXT_ID_ENABLE - The IDE bit is used for acceptance filtering \n
- *    DCAN_MSK_EXT_ID_DISABLE - The IDE bit is not used for acceptance 
+ *    DCAN_MSK_EXT_ID_DISABLE - The IDE bit is not used for acceptance
  *                              filtering \n
  *
  * 'regNum' can take the following values \n
@@ -1168,18 +1169,18 @@ void DCANMsgObjectMskConfig(unsigned int baseAdd, unsigned int idMsk,
     while(DCANIFBusyStatusGet(baseAdd, regNum));
 
     /* Write to the DCAN_IFMSK register */
-    HWREG(baseAdd + DCAN_IFMSK(regNum)) = ((idMsk & DCAN_IF1MSK_MSK) | 
-                                           (msgDir & DCAN_IFMSK_MDIR) | 
+    HWREG(baseAdd + DCAN_IFMSK(regNum)) = ((idMsk & DCAN_IF1MSK_MSK) |
+                                           (msgDir & DCAN_IFMSK_MDIR) |
                                            (extId & DCAN_IFMSK_MXTD));
 }
 
 /**
- * \brief   This API will configure IF3 register set so that it is 
+ * \brief   This API will configure IF3 register set so that it is
  *          automatically updated with the received value in message RAM.
  *          Where n = 12,34,56,78.
  *
  * \param   baseAdd             Base Address of the DCAN Module Registers.
- * \param   msgNum              Message object number for which IF3 register 
+ * \param   msgNum              Message object number for which IF3 register
  *                              set has to be updated.
  *
  * \return  None.
@@ -1204,7 +1205,7 @@ void DCANIF3RegUpdateEnableSet(unsigned int baseAdd, unsigned int msgNum)
 /**
  * \brief   This API will set the observation flag bits in the IF3 observation
  *          register which are used to determine which data sections of the IF3
- *          interface register set have to be read in order to complete a DMA 
+ *          interface register set have to be read in order to complete a DMA
  *          read cycle.
  *
  * \param   baseAdd             Base Address of the DCAN Module Registers.
@@ -1223,8 +1224,8 @@ void DCANIF3RegUpdateEnableSet(unsigned int baseAdd, unsigned int msgNum)
 void DCANIF3ObservationFlagSet(unsigned int baseAdd, unsigned int obsFlags)
 {
     /* Set the appropriate flags in the DCAN_IF3OBS register */
-    HWREGB(baseAdd + DCAN_IF3OBS) |= (obsFlags & (DCAN_IF3OBS_MASK | 
-                                      DCAN_IF3OBS_ARB | DCAN_IF3OBS_CTRL | 
+    HWREGB(baseAdd + DCAN_IF3OBS) |= (obsFlags & (DCAN_IF3OBS_MASK |
+                                      DCAN_IF3OBS_ARB | DCAN_IF3OBS_CTRL |
                                       DCAN_IF3OBS_DATAA | DCAN_IF3OBS_DATAB));
 }
 
@@ -1250,14 +1251,14 @@ void DCANIF3ObservationFlagSet(unsigned int baseAdd, unsigned int obsFlags)
 void DCANIF3ObservationFlagClear(unsigned int baseAdd, unsigned int obsFlags)
 {
     /* Set the appropriate flags in the DCAN_IF3OBS register */
-    HWREGB(baseAdd + DCAN_IF3OBS) &= ~(obsFlags & (DCAN_IF3OBS_MASK | 
-                                       DCAN_IF3OBS_ARB | DCAN_IF3OBS_CTRL | 
+    HWREGB(baseAdd + DCAN_IF3OBS) &= ~(obsFlags & (DCAN_IF3OBS_MASK |
+                                       DCAN_IF3OBS_ARB | DCAN_IF3OBS_CTRL |
                                        DCAN_IF3OBS_DATAA| DCAN_IF3OBS_DATAB));
 }
 
 /**
  * \brief   This API will return observation flag status from the DCAN_IF3OBS
- *          register. 
+ *          register.
  *
  * \param   baseAdd             Base Address of the DCAN Module Registers.
  *
@@ -1401,7 +1402,7 @@ void DCANClrIntPnd(unsigned int baseAdd, unsigned int regNum)
  *          using this API.
  *
  **/
-void DCANNewDataControl(unsigned int baseAdd, unsigned int newDat, 
+void DCANNewDataControl(unsigned int baseAdd, unsigned int newDat,
                         unsigned int regNum)
 {
     /* Clear the NewDat bit of DCAN_IFMCTL register */
@@ -1415,7 +1416,7 @@ void DCANNewDataControl(unsigned int baseAdd, unsigned int newDat,
 void DCANIFAccMaskControl(unsigned int baseAdd,unsigned int IFnum,
                           BOOL  uMask)
 {
-   
+
     unsigned int val =  HWREG(baseAdd + DCAN_IFMCTL(IFnum));
     val &= ~(1 << DCAN_IFMCTL_UMASK_SHIFT);
     val |= !!uMask << DCAN_IFMCTL_UMASK_SHIFT ;
@@ -1439,8 +1440,8 @@ void DCANIFAccMaskControl(unsigned int baseAdd,unsigned int IFnum,
  *
  * \return  None.
  *
- * \note    If TxRqst/NewDat is set by using the API 'DCANCommandRegSet' then 
- *          TxRqst/NewDat will be set to '1' independent of the value set 
+ * \note    If TxRqst/NewDat is set by using the API 'DCANCommandRegSet' then
+ *          TxRqst/NewDat will be set to '1' independent of the value set
  *          using this API.
  *
  **/
@@ -1458,7 +1459,7 @@ void DCANTransmitRequestControl(unsigned int baseAdd, unsigned int txRqst,
 
 
 /**
- * \brief   This function will update the sampling point based on time 
+ * \brief   This function will update the sampling point based on time
  *          segment values \n
  *
  * \return  Updated sample point value \n
@@ -1559,7 +1560,7 @@ static unsigned int CANbitTimeCalculator(struct _dcan_hw_params *btc,
         {
             errVal = BIT_RATE_ERR_MAX;
         }
-        else 
+        else
         {
             errVal = BIT_RATE_ERR_WARN;
         }

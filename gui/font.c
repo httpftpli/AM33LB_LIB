@@ -81,7 +81,7 @@ unsigned int g_fontFlag = 0x03;
 
 unsigned int  initFont(unsigned int addr) {
    unsigned int ret = 0x03;
-   const TCHAR *fontname[3];
+   const TCHAR *fontname[8];
    fontname[0] = _TEXT("0:/1_16.FNT");
    fontname[1] = _TEXT("0:/1_20.FNT");
    fontname[2] = _TEXT("0:/1_20_C.FNT");
