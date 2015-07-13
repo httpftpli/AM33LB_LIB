@@ -4052,21 +4052,23 @@ USBHCDMain(unsigned int ulIndex, unsigned int ulInstance)
         }
         case HCD_BABBLE_ERROR:
         {
-             USBHCDTerm(ulIndex);
+             /*USBHCDTerm(ulIndex);
              USBHCDDeviceDisconnected(ulIndex, ulInstance);
              UsbPhyOff(ulIndex);
              USBReset(g_USBInstance[ulIndex].uiSubBaseAddr);
              g_sUSBHCD[ulIndex].EventInfo.ulEvent = USB_EVENT_BABBLE_ERROR;
              g_sUSBHCD[ulIndex].EventInfo.ulInstance = ulIndex;
              g_sUSBHCD[ulIndex].pClassDrivers[g_sUSBHCD[ulIndex].iEventDriver]->pfnIntHandler(
-                  &g_sUSBHCD[ulIndex].EventInfo);
+                  &g_sUSBHCD[ulIndex].EventInfo); */
 
              //////////   add by lfl
              //add by lfl
-             //USBHCDInit(ulIndex, g_pHCDPool, 128);
+             USBHCDDeviceDisconnected(ulIndex, ulInstance);
+             USBReset(g_USBInstance[ulIndex].uiSubBaseAddr);
+             UsbPhyOff(ulIndex);
+             UsbPhyOn(ulIndex);
+             USBHCDInitInternal(ulIndex,  g_sUSBHCD[ulIndex].pvPool, g_sUSBHCD[ulIndex].ulPoolSize );
              //add by lfl finish
-             //////////   add by lfl
-
              break;
         }
 

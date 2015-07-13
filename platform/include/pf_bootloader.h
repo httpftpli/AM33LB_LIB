@@ -83,5 +83,6 @@ extern void appdecrypt(void *dat, unsigned int len);
 extern BURN_RET  burnAppFormBuf(void *appBuf,unsigned int appLen );
 extern BURN_RET  burnBootFormBuf(void *bootBuf,unsigned int bootLen);
 extern bool burnRunAPP();
+extern void eraseRunApp(void);
 
 #endif

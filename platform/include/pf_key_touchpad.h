@@ -35,21 +35,14 @@ typedef struct ts_sample {
     int timetick;
 } TS_SAMPLE;
 
-typedef struct {
-   int An;
-   int Bn;
-   int Cn;
-   int Dn;
-   int En;
-   int Fn;
-   int Divider;
-}MATRIX;
+
 
 typedef struct {
    unsigned int magic;   //0x55555555 flag  CALIBRATION data valid
    int  x[5], xfb[5];
    int  y[5], yfb[5];
-   MATRIX  matrix;
+   int  a[7];
+   unsigned int  xres,yres;
 } TS_CALIBRATION;
 
 

@@ -78,6 +78,7 @@ extern __weak  void isr_Gpio(unsigned int intnum);
 extern __weak  void isr_lcd(unsigned int num);
 extern __weak  void isr_ecap(unsigned int num);
 extern __weak  void isr_tsc(unsigned int intnum);
+extern __weak  void isr_uart_for_touche_keyboard(unsigned int intnum);
 extern __weak  void isr_uart_for_keyboard(unsigned int intnum);
 extern __weak  void isr_mcspi(unsigned int intnum);
 extern __weak  void isr_dmtimer(unsigned int num);
@@ -85,13 +86,9 @@ extern __weak  void isr_uart_for_9bit(unsigned int intNum);
 extern __weak  void isr_mailbox(unsigned int intNum);
 
 
-#ifdef AM335X_ADC_TSC
-#define IS_TSC isr_tsc
-#else
-#define IS_TSC isr_uart_for_keyboard
+#ifndef ISR_UART4
+#define ISR_UART4 0
 #endif
-
-
 
 MODULE modulelist[128] = {
 #if  MODULE_USE_EDMA ==  1
@@ -143,7 +140,7 @@ MODULE modulelist[128] = {
 [MODULE_ID_UART3] =  { .index = 1, .baseAddr = SOC_UART_3_REGS, .INTNum = { SYS_INT_UART3INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART3, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &uart3ModClock },
 #endif
 #if  MODULE_USE_UART4 ==  1
-[MODULE_ID_UART4] =  { .index = 1, .baseAddr = SOC_UART_4_REGS, .INTNum = { SYS_INT_UART4INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART4, 0, 0 }, .isr = { IS_TSC, 0, 0 }, .moduleClk = &uart4ModClock },
+[MODULE_ID_UART4] =  { .index = 1, .baseAddr = SOC_UART_4_REGS, .INTNum = { SYS_INT_UART4INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART4, 0, 0 }, .isr = { ISR_UART4, 0, 0 }, .moduleClk = &uart4ModClock },
 #endif
 #if  MODULE_USE_UART5 ==  1
 [MODULE_ID_UART5] =  { .index = 1, .baseAddr = SOC_UART_5_REGS, .INTNum = { SYS_INT_UART5INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART5, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &uart5ModClock },

@@ -15,6 +15,7 @@
 #include "utf8.h"
 #include "mmath.h"
 #include "lib_gui.h"
+#include <string.h>
 
 
 
@@ -28,10 +29,12 @@ GUI_FONT *fonts[8] = {
 #endif
 #if (ASCII_FIX_FONT24_IN_SOURCE==1)
    [4] = &GUI_FontCourierNew24,
+   [6] = &GUI_FontCourierNew24,
 #endif
 #if (ASCII_FONT20_IN_SOURCE==1)
    [1] =&GUI_Fontascii_20,
    [3] =&GUI_Fontascii_20,
+   [5] = &GUI_Fontascii_20,
 #endif
 };
 

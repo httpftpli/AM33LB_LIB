@@ -149,6 +149,13 @@ bool burnRunAPP() {
 }
 
 
+void eraseRunApp(void){
+   char buf[512];
+   memset(buf,0,sizeof buf);
+   MMCSDP_Write(mmcsdctr, buf, APP_RUN_FLAG_SECTOR, 1);
+}
+
+
 void reboot() {
     //((void (*)())0x402F0400)();
     *(unsigned int *)0x44E00F00 |= 0x01;

@@ -238,7 +238,7 @@ void UARTRcvRegistHander(UARTRCVHANDLER handler) {
 
 
 extern void (*keyhandler)(int keycode);
-void isr_uart_for_keyboard(unsigned int intNum) {
+void isr_uart_for_touche_keyboard(unsigned int intNum) {
     unsigned int baseaddr = modulelist[intNum].baseAddr;
     if (UARTIntPendingStatusGet(baseaddr) == UART_N0_INT_PENDING) return;
     unsigned int intval = UARTIntIdentityGet(baseaddr);
@@ -256,8 +256,13 @@ void isr_uart_for_keyboard(unsigned int intNum) {
                 if (keyhandler != NULL) keyhandler(g_keycode);
             }
             if (keyTouchpadMsg.tscval != 0xffffffff) {
+#ifdef TS_SWAP_XY
+                g_ts.y = g_tsRaw.y = keyTouchpadMsg.tscval & 0xffff;
+                g_ts.x = g_tsRaw.x = keyTouchpadMsg.tscval >> 16;
+#else
                 g_ts.x = g_tsRaw.x = keyTouchpadMsg.tscval & 0xffff;
                 g_ts.y = g_tsRaw.y = keyTouchpadMsg.tscval >> 16;
+#endif
                 ts_linear(&tsCalibration, (int *)&g_ts.x, (int *)&g_ts.y);
                 atomicSet(&g_touched);
             }
@@ -265,6 +270,35 @@ void isr_uart_for_keyboard(unsigned int intNum) {
             //if (keyTouchpadMsg.type & MSG_TYPE_KEYRESET) {
             //  atomicSet(&g_keyRest);
             //}
+        }
+    }
+    if (intval == UART_INTID_CHAR_TIMEOUT) {
+        unsigned int val = HWREG(baseaddr + 0x64);
+        for (int i = 0; i < val; i++) {
+            volatile unsigned char tempval1 = HWREGB(baseaddr + UART_RHR);
+        }
+    }
+}
+
+
+
+void isr_uart_for_keyboard(unsigned int intNum) {
+    unsigned int baseaddr = modulelist[intNum].baseAddr;
+    if (UARTIntPendingStatusGet(baseaddr) == UART_N0_INT_PENDING) return;
+    unsigned int intval = UARTIntIdentityGet(baseaddr);
+    if (intval == UART_INTID_RX_THRES_REACH) {
+        for (int i = 0; i < 8; i++) {
+            volatile unsigned char tempval = HWREGB(baseaddr + UART_RHR);
+            ((unsigned char *)&keyTouchpadMsg)[i] = tempval;
+            //UARTPutc(tempval);
+        }
+        if (isKeyTouchEvent(&keyTouchpadMsg)) {
+            /*if(keyTouchpadMsg.type & MSG_TYPE_KEY){*/
+            if (keyTouchpadMsg.keycode != 0xff && keyscancode2key != NULL) {
+                g_keycode = keyscancode2key(keyTouchpadMsg.keycode);
+                atomicSet(&g_keyPushed);
+                if (keyhandler != NULL) keyhandler(g_keycode);
+            }
         }
     }
     if (intval == UART_INTID_CHAR_TIMEOUT) {
