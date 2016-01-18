@@ -3,6 +3,7 @@
 #include "atomic.h"
 
 extern void TouchScreenInit();
+extern void  TouchScreenDeInit();
 extern void tsEnalbe(void);
 extern void tsDisable(void);
 //extern void TSCADCModuleClkConfig(void);

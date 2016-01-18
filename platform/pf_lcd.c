@@ -405,9 +405,15 @@ void lcdFbRestore(void *buf,uint32 x,uint32 y,uint32 width,uint32 height){
 }
 
 
-void LCDReset(){
-     moduleDisable(MODULE_ID_LCDC);
+static void  LCDReset(unsigned int baseAddr){
+    RasterDisable(baseAddr);
+    for (int i=0;i<500000;i++);
+    RasterSoftWareResetControlEnable(baseAddr,RASTER_CORE_RESET |RASTER_DMA_RESET|RASTER_LCD_MODULE_RESET);
+    for (int i=0;i<50000;i++);
+    RasterSoftWareResetControlDisable(baseAddr,RASTER_CORE_RESET |RASTER_DMA_RESET|RASTER_LCD_MODULE_RESET);
+    for (int i=0;i<50000;i++);
 }
+
 
 
 
@@ -449,6 +455,7 @@ void LCDRasterInit() {
    memset32(lcdCtrl.frameaddr[0], 0, pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width/4);
    memset32(lcdCtrl.frameaddr[1], 0, pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width/4);
    moduleEnable(MODULE_ID_LCDC);
+   LCDReset(baseaddr);
    RasterClocksEnable(baseaddr);
    RasterAutoUnderFlowEnable(baseaddr);
    RasterIntEnable(baseaddr, RASTER_END_OF_FRAME0_INT | RASTER_END_OF_FRAME1_INT );

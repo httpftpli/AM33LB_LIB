@@ -288,7 +288,7 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
  *        eara
  * @param [in] trigMode DMA trig mode
  * -- EDMA3_TRIG_MODE_MANUAL    manual trig
- * -- EDMA3_TRIG_MODE_EVENT     event trig 
+ * -- EDMA3_TRIG_MODE_EVENT     event trig
  * -- EDMA3_TRIG_MODE_IMMEDIATE  immediate trig
  * @param [in] chNum   DMA chanel \b EDMA3_CHA_XXX
  * @param [in] entryAddr fix address
@@ -297,9 +297,9 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
  * -- 1 fix address to consecutive memey
  * -- 0 consecutive memey to fix address
  * @param [in] entryBitWidth, should be 8,16,32
- * @param [in] blkSize    byte number every transfer 
+ * @param [in] blkSize    byte number every transfer
  * @param [in] nblks  transfer times
- * @param [in] handlerIndex handler index number when transfer 
+ * @param [in] handlerIndex handler index number when transfer
  *        finish
  * @return  always 1
  * @date    2013/6/19
@@ -356,7 +356,7 @@ unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
    paramSet->bCnt       = (unsigned short)blkSize / nbyte;
    paramSet->cCnt       = nblks;
    paramSet->opt        = (handlerIndex << 12) |(numberToFwid(entryBitWidth) << 8) |
-         (1 << 20) | (1 << !rwFlag) |(1 << 2); // A-B SYNC,ENABLE INT,32BIT WIDTH
+         (1 << 20)|(1 << 2);// | (1 << !rwFlag) ; // A-B SYNC,ENABLE INT,32BIT WIDTH
 
    paramSet->srcBIdx    = rwFlag ? 0 : nbyte;
    paramSet->srcCIdx    = rwFlag ? 0 : (unsigned short)blkSize;

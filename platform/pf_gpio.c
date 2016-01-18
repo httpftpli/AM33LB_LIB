@@ -197,6 +197,17 @@ void GPIOPinWr(unsigned int moduleId, unsigned int pinNumber, unsigned int value
 }
 
 
+unsigned int GPIOMultiplePinsRd(unsigned int moduleId,unsigned int mask){
+    unsigned int baseAddr = modulelist[moduleId].baseAddr;
+    return GPIOMultiplePinsRead(baseAddr,mask);
+}
+
+void GPIOMultiplePinsWr(unsigned int moduleId,unsigned int set,unsigned int clr){
+    unsigned int baseAddr = modulelist[moduleId].baseAddr;
+    GPIOMultiplePinsWrite(baseAddr,set,clr);
+}
+
+
 unsigned int GPIOPinRd(unsigned int moduleId,
                          unsigned int pinNumber){
     unsigned int baseAdd = modulelist[moduleId].baseAddr;

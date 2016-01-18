@@ -33,7 +33,7 @@ void hsMmcSdInit(mmcsdCtrlInfo *ctrl)
     {
         mdError("HS MMC/SD Reset failed");
     }
-    
+
     HSMMCSDIntrStatusClear(baseaddr,0xFFFFFFFF);
 
     /* Lines Reset */
@@ -42,7 +42,7 @@ void hsMmcSdInit(mmcsdCtrlInfo *ctrl)
     /* Set supported voltage list */
     HSMMCSDSupportedVoltSet(baseaddr, HS_MMCSD_SUPPORT_VOLT_1P8 |
                                            HS_MMCSD_SUPPORT_VOLT_3P0
-                             |HS_MMCSD_SUPPORT_VOLT_3P0);  
+                             |HS_MMCSD_SUPPORT_VOLT_3P0);
 
     HSMMCSDSystemConfig(baseaddr, HS_MMCSD_AUTOIDLE_ENABLE);
 
@@ -54,17 +54,17 @@ void hsMmcSdInit(mmcsdCtrlInfo *ctrl)
 
     /* Bus power on */
     status = HSMMCSDBusPower(baseaddr, HS_MMCSD_BUS_POWER_ON);
-   
+
     ASSERT(status ==0 );
 
-    /* Set the initialization frequency */  
+    /* Set the initialization frequency */
     HSMMCSDBusFreqSet(baseaddr, ctrl->ipClk, 400000, 0);
 
     HSMMCSDInitStreamSend(baseaddr);
 
     unsigned int intr = (HS_MMCSD_INTR_CMDCOMP | HS_MMCSD_INTR_CMDTIMEOUT |
                             HS_MMCSD_INTR_DATATIMEOUT | HS_MMCSD_INTR_TRNFCOMP);
-    HSMMCSDIntrEnable(baseaddr, intr); 
+    HSMMCSDIntrEnable(baseaddr, intr);
     moduleIntConfigure(ctrl->moduleId);
 }
 
@@ -99,12 +99,12 @@ unsigned int hsMmcSdCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c)
     {
          cmd |= HS_MMCSD_CMD_TYPE_ABORT;
     }
-    
-    
+
+
     dataPresent = !!(c->flags & MMCSD_CMDFLAG_DATA);
     datadir = !!(c->flags & (1<<MMCSD_CMDFLAG_DATA_RW_SHIFT));
     blksize = dataPresent ? c->blksize : 0;
-    
+
     if (c->flags & MMCSD_CMDFLAG_RSP_NONE)
     {
         rspType = HS_MMCSD_NO_RESPONSE;
@@ -121,24 +121,24 @@ unsigned int hsMmcSdCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c)
     {
         rspType = HS_MMCSD_48BITS_RESPONSE;
     }
-    
+
     cmd = (c->idx<<MMCHS_CMD_INDX_SHIFT)|rspType
             |(datadir<<MMCHS_CMD_DDIR_SHIFT)
             |(dataPresent<<MMCHS_CMD_DP_SHIFT)
             |(ctrl->dmaEnable<<0)
             |(dataPresent<<MMCHS_CMD_MSBS_SHIFT)
-            |(dataPresent<<MMCHS_CMD_BCE_SHIFT); 
-              
+            |(dataPresent<<MMCHS_CMD_BCE_SHIFT);
+
     if(dataPresent){
         HSMMCSDIntrStatusClear(ctrl->memBase, MMCHS_STAT_CC |(1<< MMCHS_STAT_TC_SHIFT) | MMCHS_STAT_CTO);
         HSMMCSDDataTimeoutSet(ctrl->memBase, HS_MMCSD_DATA_TIMEOUT(27));
     }else{
         HSMMCSDIntrStatusClear(ctrl->memBase, MMCHS_STAT_CC | MMCHS_STAT_CTO);
     }
-        
+
     HSMMCSDCommandSend(ctrl->memBase, cmd, c->arg,
                        blksize,c->nblks);
-  
+
     status = ctrl->cmdStatusGet(ctrl);
     if(0 == status){
         return 0;
@@ -152,6 +152,15 @@ unsigned int hsMmcSdCmdSend(mmcsdCtrlInfo *ctrl, mmcsdCmd *c)
         (!dataPresent)&&(ctrl->xferStatusGet(ctrl)==0)) {
        return 0;
     }
+    /*static int mmcnt = 0 ;
+    if ((rspType == HS_MMCSD_48BITS_BUSY_RESPONSE)&& !dataPresent) {
+        while (1){
+            if (!HSMMCSDIsCmdBusy(ctrl->memBase)) {
+                break;
+            }
+            mmcnt++;
+        }
+    }*/
     return 1;
 }
 

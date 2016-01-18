@@ -256,6 +256,7 @@ extern unsigned int HSMMCSDDataGet(unsigned int baseAddr, void *data, unsigned i
 extern unsigned int HSMMCSDIsIntClockStable(unsigned int baseAddr, unsigned int retry);
 extern unsigned int HSMMCSDIsXferComplete(unsigned int baseAddr, unsigned int retry);
 extern unsigned int HSMMCSDIsCmdComplete(unsigned int baseAddr, unsigned int retry);
+extern unsigned int HSMMCSDIsCmdBusy(unsigned int baseAddr);
 extern unsigned int HSMMCSDIntrStatusGet(unsigned int baseAddr, unsigned int flag);
 extern void HSMMCSDDataTimeoutSet(unsigned int baseAddr, unsigned int timeout);
 extern void HSMMCSDIntrStatusDisable(unsigned int baseAddr, unsigned int flag);

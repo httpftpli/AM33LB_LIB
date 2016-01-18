@@ -52,7 +52,7 @@
 *                        API FUNCTION DEFINITIONS
 *******************************************************************************/
 
-unsigned int HSMMCSDBaseAddrToIndex(unsigned int addr){  
+unsigned int HSMMCSDBaseAddrToIndex(unsigned int addr){
   switch(addr){
   case SOC_MMCHS_0_REGS :
     return 0;
@@ -189,7 +189,7 @@ void  HSMMCSDBusDDRSet(unsigned int baseAddr,unsigned int ddr){
  * \param   baseAddr      Base Address of the MMC/SD controller Registers.
  * \param   width         SD/MMC bus width
  *
- * width can take the values \n 
+ * width can take the values \n
  *     HS_MMCSD_BUS_WIDTH_8BIT \n
  *     HS_MMCSD_BUS_WIDTH_4BIT \n
  *     HS_MMCSD_BUS_WIDTH_1BIT \n
@@ -201,13 +201,13 @@ void HSMMCSDBusWidthSet(unsigned int baseAddr, unsigned int width)
 {
     switch (width)
     {
-        case HS_MMCSD_BUS_WIDTH_8BIT: 
+        case HS_MMCSD_BUS_WIDTH_8BIT:
             HWREG(baseAddr + MMCHS_CON) |= MMCHS_CON_DW8;
         break;
 
         case HS_MMCSD_BUS_WIDTH_4BIT:
             HWREG(baseAddr + MMCHS_CON) &= ~MMCHS_CON_DW8;
-            HWREG(baseAddr + MMCHS_HCTL) |= 
+            HWREG(baseAddr + MMCHS_HCTL) |=
                     (MMCHS_HCTL_DTW_4_BITMODE << MMCHS_HCTL_DTW_SHIFT);
         break;
 
@@ -226,10 +226,10 @@ void HSMMCSDBusWidthSet(unsigned int baseAddr, unsigned int width)
  *
  * \param    membase It holds the mmcsd control basemen.
  *
- * \param   buswidth 
- *          isddr 
- *   
- * 
+ * \param   buswidth
+ *          isddr
+ *
+ *
  *
  * \return  None.
  *
@@ -249,7 +249,7 @@ void HSMMCSDBusWidthSetDdr(unsigned int membase, unsigned short busWidth,char is
  * \param   baseAddr      Base Address of the MMC/SD controller Registers.
  * \param   volt          SD/MMC bus voltage
  *
- * volt can take the values \n 
+ * volt can take the values \n
  *     HS_MMCSD_BUS_VOLT_1P8 \n
  *     HS_MMCSD_BUS_VOLT_3P0 \n
  *     HS_MMCSD_BUS_VOLT_3P3 \n
@@ -369,7 +369,7 @@ unsigned int HSMMCSDIsIntClockStable(unsigned int baseAddr, unsigned int retry)
  * \param   baseAddr      Base Address of the MMC/SD controller Registers.
  * \param   volt          Supported bus voltage
  *
- * volt can take the values (or a combination of)\n 
+ * volt can take the values (or a combination of)\n
  *     HS_MMCSD_SUPPORT_VOLT_1P8 \n
  *     HS_MMCSD_SUPPORT_VOLT_3P0 \n
  *     HS_MMCSD_SUPPORT_VOLT_3P3 \n
@@ -417,7 +417,7 @@ void HSMMCSDDataTimeoutSet(unsigned int baseAddr, unsigned int timeout)
 {
     HWREG(baseAddr + MMCHS_SYSCTL) &= ~(MMCHS_SYSCTL_DTO);
     HWREG(baseAddr + MMCHS_SYSCTL) |= timeout;
-}    
+}
 
 /**
  * \brief   Set output bus frequency
@@ -466,7 +466,7 @@ void HSMMCSDBusFreqSet(unsigned int baseAddr, unsigned int freq_in,
         /* Enable clock to the card */
         HWREG(baseAddr + MMCHS_SYSCTL) |= MMCHS_SYSCTL_CEN;
     }
-}    
+}
 
 /**
  * \brief   Sends INIT stream to the card
@@ -563,7 +563,7 @@ void HSMMCSDIntrSigEnable(unsigned int baseAddr,unsigned int sig){
 }
 
 /**
- * \brief   Gets the status bits from the controller 
+ * \brief   Gets the status bits from the controller
  *
  * \param   baseAddr    Base Address of the MMC/SD controller Registers.
  * \param   flag        Specific status required;
@@ -580,7 +580,7 @@ unsigned int HSMMCSDIntrStatusGet(unsigned int baseAddr, unsigned int flag)
 }
 
 /**
- * \brief   Clear the status bits from the controller 
+ * \brief   Clear the status bits from the controller
  *
  * \param   baseAddr    Base Address of the MMC/SD controller Registers.
  * \param   flag        Specific status required;
@@ -597,8 +597,8 @@ void HSMMCSDIntrStatusClear(unsigned int baseAddr, unsigned int flag)
 }
 
 /**
- * \brief   Get status bits from the controller and Clear the 
- *          status bits 
+ * \brief   Get status bits from the controller and Clear the
+ *          status bits
  *
  * \param   baseAddr    Base Address of the MMC/SD controller Registers.
  * \param   mask        Specific status required;
@@ -606,7 +606,7 @@ void HSMMCSDIntrStatusClear(unsigned int baseAddr, unsigned int flag)
  * flag can take the following (or combination of) values \n
  * HS_MMCSD_STAT_xxx
  *
- * \return   status bit 
+ * \return   status bit
  *
  **/
 unsigned int HSMMCSDIntrStatusGetAndClear(unsigned int baseAddr,unsigned int mask){
@@ -667,12 +667,20 @@ unsigned int HSMMCSDIsXferComplete(unsigned int baseAddr, unsigned int retry)
     return status;
 }
 
+
+unsigned int HSMMCSDIsCmdBusy(unsigned int baseAddr)
+{
+
+    return  !((HWREG(baseAddr + MMCHS_PSTATE) & 1<<MMCHS_PSTATE_DLEV_SHIFT));
+
+}
+
 /**
  * \brief    Set the block length/size for data transfer
  *
  * \param    baseAddr    Base Address of the MMC/SD controller Registers
  * \param    blklen      Command to be passed to the controller/card
- * 
+ *
  * \note: blklen should be within the limits specified by the controller/card
  *
  * \return   none
@@ -690,7 +698,7 @@ void HSMMCSDBlkLenSet(unsigned int baseAddr, unsigned int blklen)
  * \param   cmd         Command to be passed to the controller/card
  * \param   cmdArg      argument for the command
  * \param   data        data pointer, if it is a data command, else must be null
- * \param   blksize     len of block 
+ * \param   blksize     len of block
  * \param   nblk        number of blocks (multiple of BLEN)
  *
  * \note: Please use HS_MMCSD_CMD(cmd, type, restype, rw) to form command
@@ -698,9 +706,9 @@ void HSMMCSDBlkLenSet(unsigned int baseAddr, unsigned int blklen)
  * \return   none
  **/
 void HSMMCSDCommandSend(unsigned int baseAddr, unsigned int cmd,
-                        unsigned int cmdarg, unsigned int blksize, unsigned int nblk) { 
-   
-                          
+                        unsigned int cmdarg, unsigned int blksize, unsigned int nblk) {
+
+
    if(cmd & MMCHS_CMD_DP){
       HWREG(baseAddr + MMCHS_BLK) = (nblk << 16) | (blksize << 0);
    }

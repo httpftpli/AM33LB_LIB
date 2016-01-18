@@ -386,7 +386,8 @@ extern void RasterClocksEnable(unsigned int baseAddr);
 extern unsigned int LCDVersionGet(void);
 extern void RasterContextSave(unsigned int baseAddr, RASTERCONTEXT *contextPtr);
 extern void RasterContextRestore(unsigned int baseAddr, RASTERCONTEXT *contextPtr);
-
+extern void RasterSoftWareResetControlEnable(unsigned int baseAddr, unsigned int flag);
+extern void RasterSoftWareResetControlDisable(unsigned int baseAddr, unsigned int flag);
 extern void RasterStandbyModeConfig(unsigned int baseAddr, unsigned int flag);
 extern void RasterIdleModeConfig(unsigned int baseAddr, unsigned int flag);
 

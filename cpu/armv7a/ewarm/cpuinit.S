@@ -139,13 +139,13 @@ Entry:
 ;
 ; Clear the BSS section here.
 ;
-         LDR   r0, =SFB(.bss)                  ; Start address of BSS
-         LDR   r1, =SFE(.bss)                  ; End address of BSS
-         MOV   r2, #0
-loop_zi_copy:
-         STR   r2, [r0], #4                    ; Clear one word in BSS
-         CMP   r0, r1
-         BLE   loop_zi_copy                    ; Clear till BSS end
+;         LDR   r0, =SFB(.bss)                  ; Start address of BSS
+;         LDR   r1, =SFE(.bss)                  ; End address of BSS
+;         MOV   r2, #0
+;loop_zi_copy:
+;         STR   r2, [r0], #4                    ; Clear one word in BSS
+;         CMP   r0, r1
+;        BLE   loop_zi_copy                    ; Clear till BSS end
 
 ;
 ; Enter the start_boot function. The execution still happens in system mode.

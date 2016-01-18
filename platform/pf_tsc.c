@@ -280,6 +280,11 @@ void TouchScreenInit() {
 }
 
 
+void  TouchScreenDeInit(){
+    moduleDisable(MODULE_ID_ADCTSC);
+}
+
+
 //! @}
 
 
