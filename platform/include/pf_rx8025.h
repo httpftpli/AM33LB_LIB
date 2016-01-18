@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-extern BOOL Rx8025Init();
+extern uint32 Rx8025Init();
 extern BOOL Rx8025Set24Hour(BOOL hour24);
 extern BOOL Rx8025SetTime(unsigned char hour,
                           unsigned char minute,unsigned char second);

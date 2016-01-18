@@ -13,10 +13,13 @@
 
 
 #include "list.h"
+#include "type.h"
 
 typedef struct {
     void (*fun)(void);
-    unsigned long long delay;
+    unsigned long long ___delay;
+    bool runOnce;
+    uint32 timespan;
     struct list_head list;
 }TASKLET;
 
@@ -41,21 +44,24 @@ extern "C"
     extern unsigned int IsTimerElapsed(unsigned int timerindex);
     extern void  StopTimer(unsigned int timerindex);
 #if USE_TASK_DELAYDO == 1
-    extern bool taskdelaydo(unsigned int delay, void (*fun)(void));
+    extern TASKLET* taskdelaydo(unsigned int delay, void (*fun)(void),bool runOnce,uint32 timespan);
+    extern void taskdelaydoDel(TASKLET *task);
 #endif
 
 
-#define withintimedo(TIMENAME,time) \
-            for(unsigned long long TIMENAME=TimerTickGet64();\
-                TimerTickGet64()<=(time+TIMENAME);\
+#define withintimedo(time) \
+            for(unsigned long long DECLARE_VAR_NAME_UNIQUE(TIMENAME)=TimerTickGet64();\
+                TimerTickGet64()<=(time+DECLARE_VAR_NAME_UNIQUE(TIMENAME));\
                 )
-#define everytimedo(TIMENAME,time)\
-                static unsigned long long TIMENAME=0;\
-                for(;TIMENAME<=TimerTickGet64();TIMENAME=TimerTickGet64()+time )
+#define everytimedo(time)\
+                static unsigned long long DECLARE_VAR_NAME_UNIQUE(TIMENAME)=0;\
+                for(;DECLARE_VAR_NAME_UNIQUE(TIMENAME)<=TimerTickGet64();\
+                  DECLARE_VAR_NAME_UNIQUE(TIMENAME)=TimerTickGet64()+time )
 
 #define delaytimedo_once(TIMENAME,time)\
-                static unsigned long long TIMENAME=TimerTickGet64();\
-                for(;TIMENAME+(time) <=TimerTickGet64();TIMENAME=-1ULL) 
+                static unsigned long long DECLARE_VAR_NAME_UNIQUE(TIMENAME)=TimerTickGet64();\
+                for(;DECLARE_VAR_NAME_UNIQUE(TIMENAME)+(time) <=TimerTickGet64()\
+                  ;DECLARE_VAR_NAME_UNIQUE(TIMENAME)=-1ULL)
 
 
 //#define DEFINE_TASKLET(NAME) \

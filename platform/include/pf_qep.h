@@ -55,11 +55,11 @@ extern void QEPRegistHandler(unsigned int moduleId,void (*handler)(unsigned int 
 extern int QEPGetVelocity(unsigned int moduleId);
 extern void QEPVelocityDetectStart(unsigned int moduleId,unsigned int timeResolution_us);
 extern void QEPInit(unsigned int moduleId,unsigned int inputmode,unsigned int intFlag);
-extern void QEPSetPos(unsigned int moduleId,unsigned int pos,unsigned int setEvent);
+extern void QEPSetPos(unsigned int moduleId, int pos,unsigned int setEvent);
 extern void QEPSwapQuadInput(unsigned int moduleId);
 extern void QEPSetPosFactor(unsigned int factor);
 extern void QEPSetPosCompare(unsigned int moduleId, int compare);
-extern unsigned int QEPReadPos(unsigned int moduleId);
+extern int QEPReadPos(unsigned int moduleId);
 extern unsigned int QEPReadDir(unsigned int moduleId);
 extern int QEPCalcuLatchVelocity(unsigned int moduleId);//pulse*factor/s
 extern void QEPSetPosCompareCurrent(unsigned int moduleId);

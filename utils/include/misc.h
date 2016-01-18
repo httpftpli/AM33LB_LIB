@@ -19,6 +19,8 @@ extern void strToWstr(wchar *wstr,char *str);
 
 extern void wtrToStr(char *str,wchar *wstr);
 
+extern void strtrim(char *desstr, char *srcstr);
+
 
 
 #endif

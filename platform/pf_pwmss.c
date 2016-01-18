@@ -87,6 +87,12 @@ void PWMSSInit(void){
 
 }
 
+
+void pwmStop(unsigned int moduleId) {
+    unsigned int addr= modulelist[moduleId].baseAddr;
+    EHRPWMConfigureAQActionOnA(addr,0,0,0,0,0,0,0);
+}
+
 static unsigned int freqafterprescale;
 
 void pwmInitForSimplePwm(unsigned int moduleId,unsigned int pwmFreq,unsigned int duty,bool outputAorB){
@@ -97,6 +103,7 @@ void pwmInitForSimplePwm(unsigned int moduleId,unsigned int pwmFreq,unsigned int
    unsigned int prd = 25000000/pwmFreq;
    unsigned int index= modulelist[moduleId].index;
    PWMSSTBClkDisable(index);
+   pwmStop(moduleId);
    EHRPWMTimebaseClkConfig(addr,freqafterprescale,inputfreq);//25mhz after prescaled
    /* Configure the period of the output waveform */
    EHRPWMPWMOpFreqSet(addr,freqafterprescale,(unsigned int)pwmFreq,
@@ -123,20 +130,33 @@ void pwmInitForSimplePwm(unsigned int moduleId,unsigned int pwmFreq,unsigned int
     } else {
         EHRPWMConfigureAQActionOnB(addr,0,0,0,0,0,0,0);
     }
+    /*select ET int source*/
+    EHRPWMETIntSourceSelect(addr, EHRPWM_ETSEL_INTSEL_TBCTREQUCMPAINC);
 
     /* Bypass dead band sub-module */
-    EHRPWMDBOutput(SOC_EPWM_2_REGS, EHRPWM_DBCTL_OUT_MODE_BYPASS);
+    EHRPWMDBOutput(addr, EHRPWM_DBCTL_OUT_MODE_BYPASS);
 
     /* Disable Chopper sub-module */
-    EHRPWMChopperDisable(SOC_EPWM_2_REGS);
+    EHRPWMChopperDisable(addr);
 
     /* Disable trip events */
-    EHRPWMTZTripEventDisable(SOC_EPWM_2_REGS,(bool)EHRPWM_TZ_ONESHOT);
-    EHRPWMTZTripEventDisable(SOC_EPWM_2_REGS,(bool)EHRPWM_TZ_CYCLEBYCYCLE);
+    EHRPWMTZTripEventDisable(addr,(bool)EHRPWM_TZ_ONESHOT);
+    EHRPWMTZTripEventDisable(addr,(bool)EHRPWM_TZ_CYCLEBYCYCLE);
 
     /* Disable High resolution capability */
-    EHRPWMHRDisable(SOC_EPWM_2_REGS);
+    EHRPWMHRDisable(addr);
     PWMSSTBClkEnable(index);
+    moduleIntConfigure(moduleId);
+}
+
+
+void pwmOnePlusIntCtr(unsigned int moduleId,bool enable){
+    unsigned int baseAddr = modulelist[moduleId].baseAddr;
+    if(enable){
+        EHRPWMETIntEnable(baseAddr);
+    }else{
+        EHRPWMETIntDisable(baseAddr);
+    }
 }
 
 
@@ -152,10 +172,6 @@ void pwmStart(unsigned int moduleId){
                                EHRPWM_AQSFRC_ACTSFB_DONOTHING);
 }
 
-void pwmStop(unsigned int moduleId) {
-    unsigned int addr= modulelist[moduleId].baseAddr;
-    EHRPWMConfigureAQActionOnA(addr,0,0,0,0,0,0,0);
-}
 
 
 void pwmSetFreqDuty(unsigned int moduleId,unsigned int freq,unsigned int duty){
@@ -171,6 +187,23 @@ void pwmSetFreqDuty(unsigned int moduleId,unsigned int freq,unsigned int duty){
 }
 
 
+static void (*pwmssinthandler)(unsigned int moduleid,unsigned int intSource);
+
+
+void pwmRegistIntHandler(void (*handler)(unsigned int moduleid,unsigned int intSource)){
+    pwmssinthandler = handler;
+}
+
+
+#define PWMSS_INT_SOURCE_PRD    0
+#define PWMSS_INT_SOURCE_CMP    1
+
+void isr_pwmss(unsigned int intnum){
+    unsigned int baseAddr= modulelist[intnum].baseAddr;
+    if (pwmssinthandler!=NULL) {
+        pwmssinthandler(intnum,PWMSS_INT_SOURCE_PRD);
+    }
+}
 
 
 

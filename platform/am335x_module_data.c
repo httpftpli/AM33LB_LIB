@@ -84,6 +84,7 @@ extern __weak  void isr_mcspi(unsigned int intnum);
 extern __weak  void isr_dmtimer(unsigned int num);
 extern __weak  void isr_uart_for_9bit(unsigned int intNum);
 extern __weak  void isr_mailbox(unsigned int intNum);
+extern __weak  void isr_pwmss(unsigned int intnum);
 
 
 #ifndef ISR_UART4
@@ -101,9 +102,9 @@ MODULE modulelist[128] = {
 [MODULE_ID_eCAP2] = { .index = 2, .baseAddr = SOC_ECAP_2_REGS, .INTNum = { SYS_INT_eCAP2INT, 0, 0 },  .INTPriority = { INT_PRIORITY_eCAP2, 0, 0 }, .isr = { isr_ecap, 0, 0 }, .moduleClk = &epwmss2ModClock },
 #endif
 #if  MODULE_USE_EPWM ==  1
-[MODULE_ID_ePWM0] = { .index = 0, .baseAddr = SOC_EPWM_0_REGS, .INTNum = { SYS_INT_ePWM0INT, 0, 0 },  .INTPriority = { 0, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &epwmss0ModClock },
-[MODULE_ID_ePWM1] = { .index = 1, .baseAddr = SOC_EPWM_1_REGS, .INTNum = { SYS_INT_ePWM0INT, 0, 0 },  .INTPriority = { 0, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &epwmss1ModClock },
-[MODULE_ID_ePWM2] = { .index = 2, .baseAddr = SOC_EPWM_2_REGS, .INTNum = { SYS_INT_ePWM0INT, 0, 0 },  .INTPriority = { 0, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &epwmss2ModClock },
+[MODULE_ID_ePWM0] = { .index = 0, .baseAddr = SOC_EPWM_0_REGS, .INTNum = { SYS_INT_ePWM0INT, 0, 0 },  .INTPriority = { INT_PRIORITY_ePWM0, 0, 0 }, .isr = { isr_pwmss, 0, 0 }, .moduleClk = &epwmss0ModClock },
+[MODULE_ID_ePWM1] = { .index = 1, .baseAddr = SOC_EPWM_1_REGS, .INTNum = { SYS_INT_ePWM1INT, 0, 0 },  .INTPriority = { INT_PRIORITY_ePWM1, 0, 0 }, .isr = { isr_pwmss, 0, 0 }, .moduleClk = &epwmss1ModClock },
+[MODULE_ID_ePWM2] = { .index = 2, .baseAddr = SOC_EPWM_2_REGS, .INTNum = { SYS_INT_ePWM2INT, 0, 0 },  .INTPriority = { INT_PRIORITY_ePWM2, 0, 0 }, .isr = { isr_pwmss, 0, 0 }, .moduleClk = &epwmss2ModClock },
 #endif
 #if  MODULE_USE_GPIO ==  1
 [MODULE_ID_GPIO0] = { .index = 0, .baseAddr = SOC_GPIO_0_REGS, .INTNum = { SYS_INT_GPIOINT0A, 0, 0 }, .INTPriority = { INT_PRIORITY_GPIO0, 0, 0 }, .isr = { isr_Gpio, 0, 0 }, .moduleClk = &gpio0ModClock },
@@ -125,10 +126,10 @@ MODULE modulelist[128] = {
 [MODULE_ID_MMCSD0] = { .index = 0, .baseAddr = SOC_MMCHS_0_REGS, .INTNum = { SYS_INT_MMCSD0INT, 0, 0 }, .INTPriority = { INT_PRIORITY_MMCSD0, 0, 0 }, .isr = { isr_HSMMCSD, 0, 0 }, .moduleClk = &mmcsd0ModClock },
 [MODULE_ID_MMCSD1] = { .index = 1, .baseAddr = SOC_MMCHS_1_REGS, .INTNum = { SYS_INT_MMCSD1INT, 0, 0 }, .INTPriority = { INT_PRIORITY_MMCSD1, 0, 0 }, .isr = { isr_HSMMCSD, 0, 0 } },
 #if  MODULE_USE_ADCTSC ==  1
-[MODULE_ID_ADCTSC] = { .index = 0, .baseAddr = SOC_ADC_TSC_0_REGS, .INTNum = { SYS_INT_ADC_TSC_GENINT, 0, 0 }, .INTPriority = { INT_PRIORITY_ADCTSC, 0, 0 }, .isr = { IS_TSC, 0, 0 }, .moduleClk = &adcTscModClock },
+[MODULE_ID_ADCTSC] = { .index = 0, .baseAddr = SOC_ADC_TSC_0_REGS, .INTNum = { SYS_INT_ADC_TSC_GENINT, 0, 0 }, .INTPriority = { INT_PRIORITY_ADCTSC, 0, 0 }, .isr = { isr_tsc, 0, 0 }, .moduleClk = &adcTscModClock },
 #endif
 #if  MODULE_USE_UART0 ==  1
-[MODULE_ID_UART0] =  { .index = 1, .baseAddr = SOC_UART_0_REGS, .INTNum = { SYS_INT_UART0INT, 0, 0 }, .INTPriority = { 0, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &uart0ModClock },
+[MODULE_ID_UART0] =  { .index = 1, .baseAddr = SOC_UART_0_REGS, .INTNum = { SYS_INT_UART0INT, 0, 0 }, .INTPriority = {0, 0, 0 }, .isr = { isr_uart_for_keyboard, 0, 0 }, .moduleClk = &uart0ModClock },
 #endif
 #if  MODULE_USE_UART1 ==  1
 [MODULE_ID_UART1] =  { .index = 1, .baseAddr = SOC_UART_1_REGS, .INTNum = { SYS_INT_UART1INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART1, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &uart1ModClock },

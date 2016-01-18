@@ -46,7 +46,11 @@
 
 #define STATIC_ASSERT(A)  static_assert(A, #A)
 
-#define NOT_IN_IRQ() ASSERT(__not_in_irq())
+#ifdef NDEBUG
+#define NOT_IN_IRQ() 
+#else
+#define NOT_IN_IRQ()  ASSERT(__not_in_irq())
+#endif
 
 static inline bool __not_in_irq(){
     #pragma section="CSTACK"

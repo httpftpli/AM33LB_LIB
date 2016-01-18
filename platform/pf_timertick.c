@@ -35,6 +35,7 @@
 
 
 static unsigned long long tick = 0;
+static unsigned long long tickus = 0;
 static void (*timertickhandle)(unsigned long long tick) = NULL;
 
 
@@ -43,10 +44,16 @@ typedef struct __softtimer {
     unsigned int enable;
 } SOFTTIMER;
 
-volatile  SOFTTIMER softtimer[16];
+volatile SOFTTIMER softtimer[16];
 
 
 unsigned int softtimerenable;
+
+
+static unsigned int timerFreq;
+static unsigned int cnt;
+static bool istimertickinited = false;
+
 
 #if USE_TASK_DELAYDO == 1
 static void taskpool_init(void);
@@ -66,6 +73,7 @@ static unsigned int timerFindFree() {
 static void dmtimertimetickhandler(unsigned int tc, unsigned int intFlag) {
     if (intFlag & DMTIMER_INT_FLAG_OVF) {
         tick++;
+        tickus += timerFreq / 1000;
 #if USE_TASK_DELAYDO == 1
         taskdelay_walk();
 #endif
@@ -87,10 +95,10 @@ static void dmtimertimetickhandler(unsigned int tc, unsigned int intFlag) {
  * @see
  */
 unsigned int TimerTickGet(void) {
-    return (unsigned int)tick;
+    return(unsigned int)tick;
 }
 
-unsigned long long TimerTickGet64(void){
+unsigned long long TimerTickGet64(void) {
     return tick;
 }
 
@@ -137,7 +145,7 @@ int StartTimer(unsigned int mSec) {
  *  StartTimer()
  * @see
  */
-void  StopTimer(unsigned int timerindex) {
+void StopTimer(unsigned int timerindex) {
     softtimer[timerindex].enable = 0;
 }
 
@@ -184,19 +192,17 @@ unsigned int IsTimerElapsed(unsigned int timerindex) {
  * @pre
  * @see
  */
-static  unsigned int timerFreq;
-static  unsigned int cnt;
-static bool istimertickinited = false;
+
 void TimerTickConfigure(unsigned int moduleId) {
     moduleEnable(moduleId);
     unsigned int baseaddr = modulelist[moduleId].baseAddr;
     DMTimerReset(baseaddr);
     DMTimerModeConfigure(baseaddr, DMTIMER_AUTORLD_NOCMP_ENABLE);
-    DMTimerIntEnable(baseaddr,  DMTIMER_INT_OVF_EN_FLAG);
+    DMTimerIntEnable(baseaddr, DMTIMER_INT_OVF_EN_FLAG);
     //DMTimerPreScalerClkEnable(baseaddr, 2); //CLK_M_OSC =24M
     //PERCALE : 2^(2+1)=8
     //clkin = 24/8 = 3
-    unsigned int  inclk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
+    unsigned int inclk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
     timerFreq = inclk;
     cnt = 0xfffffffe - inclk / 1000;  //1ms
     DMTimerReloadSet(baseaddr, cnt);
@@ -223,7 +229,7 @@ void TimerTickRegistHandler(void (*pfnHandler)(unsigned long long tick)) {
 void TimerTickPeriodSet(unsigned int moduleId, unsigned int microsecond) {
 
     unsigned int cnt = 0xffffffe - microsecond * 3;
-    unsigned int  inclk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
+    unsigned int inclk = modulelist[moduleId].moduleClk->fClk[0]->clockSpeedHz;
     timerFreq = inclk;
     ASSERT(inclk / 1000 * microsecond <= 0xfffffffe);
     cnt = 0xfffffffe - inclk / 1000 * microsecond;
@@ -247,12 +253,12 @@ void TimerTickStop(void) {
 
 unsigned int TimerTickTimeGet(void) {
     unsigned int baseaddr = modulelist[TIMER_TIMERTICK].baseAddr;
-    return DMTimerCounterGet(baseaddr);
+    return DMTimerCounterGet(baseaddr)-cnt;
 }
 
 unsigned long long TimerTickTimeGetUs(void) {
     unsigned int baseaddr = modulelist[TIMER_TIMERTICK].baseAddr;
-    return   TimerTickGet()*1000 + (DMTimerCounterGet(baseaddr) - cnt)/(timerFreq/1000000);
+    return TimerTickGet() * 1000 + (DMTimerCounterGet(baseaddr) - cnt) / (timerFreq / 1000000);
 }
 
 
@@ -279,27 +285,25 @@ void delayus(unsigned int uSec) {
         return;
     }
     ASSERT(istimertickinited);
-    ASSERT(uSec <= 1000);
-    unsigned int timernow = TimerTickTimeGet();
-    unsigned int timerend = timernow + timerFreq / 1000000 * uSec;
-    if (timerend < timernow) { //if overflow
-        timerend +=  cnt;
-    }
-    while (TimerTickTimeGet() != timerend);
+    NOT_IN_IRQ();
+    unsigned long long  timernow = tickus + TimerTickTimeGet();
+    unsigned long long  timerend = timernow + timerFreq / 1000000 * uSec;
+    while (TimerTickTimeGet()+tickus <= timerend);
 }
 
 
 #if USE_TASK_DELAYDO == 1
-static struct list_head tasklet_head,tasklet_head_free;
+static struct list_head tasklet_once_head,tasklet_every_head,tasklet_head_free;
 static TASKLET taskpool[100];
 
 
 static void taskpool_init(void) {
-    INIT_LIST_HEAD(&tasklet_head);
+    INIT_LIST_HEAD(&tasklet_once_head);
+    INIT_LIST_HEAD(&tasklet_every_head);
     INIT_LIST_HEAD(&tasklet_head_free);
     for (int i = 0; i < lenthof(taskpool); i++) {
         taskpool[i].fun = NULL;
-        taskpool[i].delay = 0;
+        taskpool[i].___delay = 0;
         taskpool[i].list.prev = &(taskpool[i].list);
         taskpool[i].list.next = &(taskpool[i].list);
     }
@@ -309,46 +313,85 @@ static void taskpool_init(void) {
 }
 
 
-bool taskdelaydo(unsigned int delay, void (*fun)(void)) {
+TASKLET* taskdelaydo(unsigned int delay, void (*fun)(void), bool runOnce, uint32 timespan) {
     struct list_head *literal;
-    struct list_head *insert = &tasklet_head;
+    struct list_head *insert = &tasklet_once_head;
     IntMasterIRQDisable();
     if (list_empty(&tasklet_head_free)) {
-        IntMasterIRQEnable();
-        return  false;
+        while (1);
     }
     unsigned long long delay64 = TimerTickGet64() + delay;
-    list_for_each(literal, &tasklet_head) {
+    list_for_each(literal, &tasklet_once_head) {
         TASKLET *task = list_entry(literal, TASKLET, list);
         insert = &(task->list);
-        if (delay64 <= task->delay) {
+        if (delay64 <= task->___delay) {
             insert = insert->prev;
             break;
         }
     }
     TASKLET *taskfree = list_first_entry(&tasklet_head_free, TASKLET, list);
-    taskfree->delay = delay64;
+    taskfree->___delay = delay64;
     taskfree->fun = fun;
+    taskfree->runOnce = runOnce;
+    taskfree->timespan = timespan;
     list_move(&taskfree->list, insert);
     IntMasterIRQEnable();
-    return true;
+    return taskfree;
+}
+
+void taskdelaydoDel(TASKLET *task) {
+    NOT_IN_IRQ();
+    TASKLET *t;
+    struct list_head *p,*n;
+    IntMasterIRQDisable();
+    list_for_each_safe(p, n, &tasklet_once_head) {
+        t = list_entry(p, TASKLET, list);
+        if (t == task) {
+            list_move(p, &tasklet_head_free);
+            IntMasterIRQEnable();
+            return;
+        }
+    }
+    list_for_each_safe(p, n, &tasklet_every_head) {
+        t = list_entry(p, TASKLET, list);
+        if (t == task) {
+            list_move(p, &tasklet_head_free);
+            IntMasterIRQEnable();
+            return;
+        }
+    }
+    IntMasterIRQEnable();
 }
 
 
 static void taskdelay_walk() {
-    struct list_head *p,*n;
-    list_for_each_safe(p, n, &tasklet_head) {
+    struct list_head *p, *n;
+    list_for_each_safe(p, n, &tasklet_once_head) {
         TASKLET *task = list_entry(p, TASKLET, list);
-        if (task->delay <= TimerTickGet64()) {
+        if (task->___delay <= TimerTickGet64()) {
+            if (task->fun != NULL) {
+                task->fun();
+            }
+            IntMasterIRQDisable();
             list_del(p);
-            list_add(p, &tasklet_head_free);
+            if (task->runOnce) {
+                list_add(p, &tasklet_head_free);
+            } else {
+                task->___delay = task->timespan;
+                list_add(p, &tasklet_every_head);
+            }
+            IntMasterIRQEnable();
+        } else {
+            break;
+        }
+    }
+    list_for_each(p, &tasklet_every_head) {
+        TASKLET *task = list_entry(p, TASKLET, list);
+        if (task->___delay-- == 0) {
+            task->___delay = task->timespan;
             if (task->fun != NULL) {
                 (task->fun)();
             }
-            task->fun = NULL;
-            task->delay = 0;
-        } else {
-            break;
         }
     }
 }

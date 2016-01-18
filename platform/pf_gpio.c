@@ -191,6 +191,16 @@ void GPIODirGet(unsigned  int moduleId,unsigned int pinNumber){
 }
 
 
+void GPIODirSet1(unsigned int moduleId,unsigned int mask,unsigned int pinDirection)
+{
+    unsigned int baseAdd = modulelist[moduleId].baseAddr;
+    uint32 oe = HWREG(baseAdd + GPIO_OE);
+    oe &= ~mask;
+    oe |= mask & pinDirection;
+    HWREG(baseAdd + GPIO_OE) = oe;
+}
+
+
 void GPIOPinWr(unsigned int moduleId, unsigned int pinNumber, unsigned int value) {
     unsigned int baseAdd = modulelist[moduleId].baseAddr;
     __GPIOPinWrite(baseAdd,pinNumber,value);

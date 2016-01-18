@@ -110,3 +110,11 @@ bool fileFixNameReplace(wchar_t *name,const wchar *fixname){
     return true;
 }
 
+void filePrename(wchar_t *prename,const wchar *name){
+    wcscpy(prename,name);
+    wchar_t *point = wcsrchr(prename,L'.');
+    if (point!=NULL) {
+        *point = 0;
+    }
+}
+

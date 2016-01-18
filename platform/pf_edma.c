@@ -288,7 +288,7 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
  *        eara
  * @param [in] trigMode DMA trig mode
  * -- EDMA3_TRIG_MODE_MANUAL    manual trig
- * -- EDMA3_TRIG_MODE_EVENT     event trig 
+ * -- EDMA3_TRIG_MODE_EVENT     event trig
  * -- EDMA3_TRIG_MODE_IMMEDIATE  immediate trig
  * @param [in] chNum   DMA chanel \b EDMA3_CHA_XXX
  * @param [in] entryAddr fix address
@@ -297,9 +297,9 @@ unsigned int EDMARequestXfer2D( unsigned int trigMode,
  * -- 1 fix address to consecutive memey
  * -- 0 consecutive memey to fix address
  * @param [in] entryBitWidth, should be 8,16,32
- * @param [in] blkSize    byte number every transfer 
+ * @param [in] blkSize    byte number every transfer
  * @param [in] nblks  transfer times
- * @param [in] handlerIndex handler index number when transfer 
+ * @param [in] handlerIndex handler index number when transfer
  *        finish
  * @return  always 1
  * @date    2013/6/19
@@ -341,10 +341,7 @@ unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
 
    EDMA3MapChToEvtQ(EDMA_INST_BASE, chtype, chNum, evtqueue);
 
-   /*if QDMA disable the channel to aviod trig when set paRam*/
-   if (EDMA3_TRIG_MODE_IMMEDIATE == trigMode) {
-      EDMA3DisableTransfer(EDMA_INST_BASE, chNum, EDMA3_TRIG_MODE_IMMEDIATE);
-   }
+   EDMA3DisableTransfer(EDMA_INST_BASE, chNum, trigMode);
 
    paramSet = (EDMA3CCPaRAMEntry *)(EDMA_INST_BASE + EDMA3CC_OPT(paramid));
 
@@ -356,7 +353,7 @@ unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
    paramSet->bCnt       = (unsigned short)blkSize / nbyte;
    paramSet->cCnt       = nblks;
    paramSet->opt        = (handlerIndex << 12) |(numberToFwid(entryBitWidth) << 8) |
-         (1 << 20) | (1 << !rwFlag) |(1 << 2); // A-B SYNC,ENABLE INT,32BIT WIDTH
+         (1 << 20) | (1 << 2);// | (1 << !rwFlag); // A-B SYNC,ENABLE INT,32BIT WIDTH
 
    paramSet->srcBIdx    = rwFlag ? 0 : nbyte;
    paramSet->srcCIdx    = rwFlag ? 0 : (unsigned short)blkSize;
@@ -367,6 +364,73 @@ unsigned int EDMARequestXferWithBufferEntry(unsigned int trigMode,
 
    EDMA3EnableTransfer(EDMA_INST_BASE, chNum, trigMode);
 
+   if (EDMA3_TRIG_MODE_IMMEDIATE == trigMode) {
+      EDMA3SetQdmaTrigWord(EDMA_INST_BASE, chNum, 0);
+      paramSet->opt  = paramSet->opt; //trig qdma
+   }
+
+   return 1;
+}
+
+
+#define EDMAREQUEST_FLAG_EVENTENABLE    1<<0 
+
+unsigned int EDMARequestXferWithBufferEntryEx(unsigned int trigMode,
+                                            unsigned int chNum,
+                                            unsigned int entryAddr,
+                                            unsigned int bufAddr,
+                                            unsigned int rwFlag,
+                                            unsigned int entryBitWidth,
+                                            unsigned int blkSize,
+                                            unsigned int nblks,
+                                            unsigned int handlerIndex,
+                                            unsigned int flag) {
+   unsigned int paramid, chtype;
+   volatile EDMA3CCPaRAMEntry *paramSet;
+
+   ASSERT(handlerIndex < 64);
+   //entryAddr should 5bit allign;
+   ASSERT((entryAddr&0x1fUL) == 0);
+   ASSERT((entryBitWidth == 8) || (entryBitWidth == 16) || (entryBitWidth == 32));
+   ASSERT(blkSize%(entryBitWidth/8)==0);
+
+   if (EDMA3_0_NUM_TC == ++evtqueue) {
+      evtqueue = 0;
+   }
+
+   if (EDMA3_TRIG_MODE_QDMA == trigMode) {
+      chtype = EDMA3_CHANNEL_TYPE_QDMA;
+      paramid = 64+chNum % 8;
+   } else {
+      chtype = EDMA3_CHANNEL_TYPE_DMA;
+      paramid = chNum;
+   }
+
+   EDMA3MapChToEvtQ(EDMA_INST_BASE, chtype, chNum, evtqueue);
+
+   EDMA3DisableTransfer(EDMA_INST_BASE, chNum, trigMode);
+
+   paramSet = (EDMA3CCPaRAMEntry *)(EDMA_INST_BASE + EDMA3CC_OPT(paramid));
+
+   paramSet->srcAddr    = rwFlag ? entryAddr : bufAddr;
+   paramSet->dstAddr    = rwFlag ? bufAddr:  entryAddr;
+
+   unsigned int nbyte = entryBitWidth / 8;
+   paramSet->aCnt       = nbyte;
+   paramSet->bCnt       = (unsigned short)blkSize / nbyte;
+   paramSet->cCnt       = nblks;
+   paramSet->opt        = (handlerIndex << 12) |(numberToFwid(entryBitWidth) << 8) |
+         (1 << 20) | (1 << 2);// | (1 << !rwFlag); // A-B SYNC,ENABLE INT,32BIT WIDTH
+
+   paramSet->srcBIdx    = rwFlag ? 0 : nbyte;
+   paramSet->srcCIdx    = rwFlag ? 0 : (unsigned short)blkSize;
+   paramSet->destBIdx   = rwFlag ? nbyte : 0;
+   paramSet->destCIdx   = rwFlag ? (unsigned short)blkSize : 0;
+   paramSet->bCntReload = 0x0;
+   paramSet->linkAddr   = 0xffff;
+   if (flag & EDMAREQUEST_FLAG_EVENTENABLE) {
+       EDMA3EnableTransfer(EDMA_INST_BASE, chNum, trigMode);
+   }
    if (EDMA3_TRIG_MODE_IMMEDIATE == trigMode) {
       EDMA3SetQdmaTrigWord(EDMA_INST_BASE, chNum, 0);
       paramSet->opt  = paramSet->opt; //trig qdma

@@ -3,7 +3,7 @@
 
 #include "pf_rx8025.h"
 
-extern BOOL RTCInit(void);
+extern uint32 RTCInit(void);
 extern void RTCReadBcd(unsigned short *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
              unsigned char *minute, unsigned char *second);

@@ -19,7 +19,7 @@
 #include "debug.h"
 
 
-const unsigned int POSORIGIN = 0;
+const unsigned int POSORIGIN = 0x80000000;
 //unittime us;unitposition um;positionFactor 0.1um,capTimeFactor ns;
 unsigned int unitPosition,positionFactor = 1,capTimeFactor;
 
@@ -89,15 +89,15 @@ void QEPSwapQuadInput(unsigned int moduleId) {
  *   正交模式，如果用于正交编码器，选此模式
  * - QEP_MODE_DERECTION 直接计数模式
  * - QEP_MODE_UPCOUNT 向上计数测频模式
- * - QEP_MODE_DOWNCOUNT 向下计数测频模式 
- * - QEP_SWAP_AB 
+ * - QEP_MODE_DOWNCOUNT 向下计数测频模式
+ * - QEP_SWAP_AB
  * @return    NONE
  * @date    2013/7/9
  * @note
  * @code
  * @endcode
  * @pre
- *  
+ *
  * @see
  */
 
@@ -116,7 +116,7 @@ void QEPInit(unsigned int moduleId, unsigned int inputmode,unsigned int intFlag)
    }else{
        HWREGH(baseAddr + EQEP_QDECCTL) &= ~(1 << 10);
    }
-   unitPosition = positionFactor * 2; 
+   unitPosition = positionFactor * 2;
    capTimeFactor = 1000 * 1000 * 8 / infreq;
    //Capture Control:enable; clock prescaler:CAPCLK = SYSCLKOUT/128 ;Unit position:QCLK/2
    HWREGH(baseAddr + EQEP_QCAPCTL) = 1 << 15 | 7 << 4 | 1 << 0;
@@ -155,12 +155,12 @@ void  QEPSetStrobe(unsigned int moduleId,bool strobePluseRevers,bool interrupt){
 /**
  * @brief qep 初始化
  * @param [in] moduleId   \b MODULE_ID_eQEPX
- * @param [in] flag  
+ * @param [in] flag
  * - QEP_INDEX_RISE_LATCH
- * - QEP_INDEX_FALL_LATCH 
+ * - QEP_INDEX_FALL_LATCH
  * - QEP_INDEX_RISE_INIT_POS
  * - QEP_INDEX_FALL_INIT_POS
- * @param [in] indexPluseRevers 
+ * @param [in] indexPluseRevers
  * @param [in] interrupt
  * @return    NONE
  * @date    2013/7/9
@@ -168,7 +168,7 @@ void  QEPSetStrobe(unsigned int moduleId,bool strobePluseRevers,bool interrupt){
  * @code
  * @endcode
  * @pre
- *  
+ *
  * @see
  */
 
@@ -176,12 +176,12 @@ void  QEPSetIndex(unsigned int moduleId, unsigned int flag,bool indexPluseRevers
    unsigned int baseAddr = modulelist[moduleId].baseAddr;
    HWREGH(baseAddr + EQEP_QDECCTL) |= !!indexPluseRevers << 6;
    //set index latch edge
-   HWREGH(baseAddr + EQEP_QEPCTL) &= ~(0x03 << 4); 
+   HWREGH(baseAddr + EQEP_QEPCTL) &= ~(0x03 << 4);
    HWREGH(baseAddr + EQEP_QEPCTL) |= ((unsigned char)flag & 0x03) << 4;
-   //set index init position   
-   HWREGH(baseAddr + EQEP_QEPCTL) &= ~(0x03 << 8); 
-   HWREGH(baseAddr + EQEP_QEPCTL) |= ((unsigned char )(flag>>8) & 0x03) << 8;  
-   //set interrupt 
+   //set index init position
+   HWREGH(baseAddr + EQEP_QEPCTL) &= ~(0x03 << 8);
+   HWREGH(baseAddr + EQEP_QEPCTL) |= ((unsigned char )(flag>>8) & 0x03) << 8;
+   //set interrupt
    if (interrupt) {
        HWREGH(baseAddr + EQEP_QCLR)  |= 1 << 10;
        HWREGH(baseAddr + EQEP_QEINT) |= 1 << 10;
@@ -213,10 +213,11 @@ void  QEPSetIndex(unsigned int moduleId, unsigned int flag,bool indexPluseRevers
  * @pre
  * @see
  */
-void QEPSetPos(unsigned int moduleID, unsigned int pos, unsigned int setEvent) {
+void QEPSetPos(unsigned int moduleID,  int pos, unsigned int setEvent) {
    unsigned int baseAddr = modulelist[moduleID].baseAddr;
    ASSERT(positionFactor != 0);
-   HWREG(baseAddr + EQEP_QPOSINIT) = POSORIGIN + pos / positionFactor;
+   long long postemp = pos;
+   HWREG(baseAddr + EQEP_QPOSINIT) = (unsigned int)(POSORIGIN + postemp / positionFactor);
    unsigned short ctrl = HWREGH(baseAddr + EQEP_QEPCTL);
    if (setEvent & QEP_SETPOS_IMMED) {
       ctrl |= 1 << 7;
@@ -246,9 +247,10 @@ void QEPSetPos(unsigned int moduleID, unsigned int pos, unsigned int setEvent) {
  * @pre
  * @see
  */
-unsigned int QEPReadPos(unsigned int moduleId) {
+int QEPReadPos(unsigned int moduleId) {
    unsigned int baseAddr = modulelist[moduleId].baseAddr;
-   return (HWREG(baseAddr + EQEP_QPOSCNT) - POSORIGIN) * positionFactor;
+   long long tmp = HWREG(baseAddr + EQEP_QPOSCNT);
+   return (int)((tmp- POSORIGIN) * positionFactor);
 }
 
 
@@ -394,7 +396,7 @@ void isr_qep(unsigned intnum) {
    //clear interrupt status
    HWREGH(baseaddr + EQEP_QCLR) = stat;
    //masked by interrupt enable  value
-   stat &= HWREGH(baseaddr + EQEP_QEINT); 
+   stat &= HWREGH(baseaddr + EQEP_QEINT);
    if (stat & 1 << 11) { //UTO  calculate velocity
       velocity[index] = QEPCalcuLatchVelocity(intnum);
    }

@@ -269,6 +269,19 @@
 #define INT_PRIORITY_MB0         (INT_PRIORITY_USER_NORMAL-16)
 #endif
 
+
+#ifndef INT_PRIORITY_ePWM0
+#define INT_PRIORITY_ePWM0       (INT_PRIORITY_USER_NORMAL-19)
+#endif
+
+#ifndef INT_PRIORITY_ePWM1
+#define INT_PRIORITY_ePWM1       (INT_PRIORITY_USER_NORMAL-20)
+#endif
+
+#ifndef INT_PRIORITY_ePWM2
+#define INT_PRIORITY_ePWM2       (INT_PRIORITY_USER_NORMAL-21)
+#endif
+
 //config FRAMEBUFFER memory
 #ifndef FRAMEBUFFER_SIZE
 #define FRAMEBUFFER_SIZE    8*1024*1024  //must 1M bytpe algined
