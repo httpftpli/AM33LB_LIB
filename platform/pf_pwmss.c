@@ -160,16 +160,6 @@ void pwmOnePlusIntCtr(unsigned int moduleId,bool enable){
 }
 
 
-void pwmOnePlusIntCtr(unsigned int moduleId,bool enable){
-    unsigned int baseAddr = modulelist[moduleId].baseAddr;
-    if(enable){
-        EHRPWMETIntEnable(baseAddr);
-    }else{
-        EHRPWMETIntDisable(baseAddr);
-    }
-}
-
-
 void pwmStart(unsigned int moduleId){
     unsigned int addr= modulelist[moduleId].baseAddr;
     EHRPWMConfigureAQActionOnA(addr,

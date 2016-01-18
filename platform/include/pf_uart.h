@@ -23,9 +23,9 @@ extern void UART0ModuleClkConfig(void);
 extern void uartSend9Bit(unsigned int moduleId,unsigned short data);
 extern bool uartRcv9bit(unsigned int moduleId,unsigned short *pdat,unsigned int timeoutMs);
 extern bool UARTSendNoBlock(unsigned int moduleId, void *buf, size_t len);
-extern void uartSendDma(uint32 moduleId, void *buf, uint32 size);
-extern void uartRcvDma(uint32 moduleId,void *buf,unsigned int size);
-extern void uartSendDmaNoBlock(uint32 moduleId, void *buf, uint32 size,bool *flag);
-extern void uartRcvDmaNoBlock(uint32 moduleId,void *buf,unsigned int size);
+extern void uartSendDma(unsigned int moduleId, void *buf, unsigned int size);
+extern void uartRcvDma(unsigned int moduleId,void *buf,unsigned int size);
+extern void uartSendDmaNoBlock(unsigned int moduleId, void *buf, unsigned int size,bool *flag);
+extern void uartRcvDmaNoBlock(unsigned int moduleId,void *buf,unsigned int size);
 
 #endif
