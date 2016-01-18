@@ -43,6 +43,18 @@ static void StepEnable(void);
 
 //static void ts_linear_scale(int *x, int *y, int swap_xy);
 
+
+static void tscadcdataclear(void) {
+    unsigned int wordsLeftX = TSCADCFIFOWordCountRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_0);
+    unsigned int wordsLeftY = TSCADCFIFOWordCountRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_1);
+    for (int i = 0; i < wordsLeftX; i++) {
+         TSCADCFIFOADCDataRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_0);
+    }
+    for (int i = 0; i < wordsLeftY; i++) {
+         TSCADCFIFOADCDataRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_1);
+    }
+}
+
 void isr_tsc(unsigned int intnum) {
     unsigned int wordsLeftX, wordsLeftY, error = 0, samplefinish = 0;
     volatile int dump;
@@ -52,24 +64,22 @@ void isr_tsc(unsigned int intnum) {
     static volatile TS_SAMPLE preTsSampleRaw = { 0, 0 };
 
     status = TSCADCIntStatus(SOC_ADC_TSC_0_REGS);
-    TSCADCIntStatusClear(SOC_ADC_TSC_0_REGS, status);
     if (status & TSCADC_PEN_UP_EVENT_INT) {
         preTsSampleRaw.x = 0;
     }
     if (status & TSCADC_FIFO1_THRESHOLD_INT) {
         samplefinish = 1;
     }
+    if (status & TSCADC_FIFO1_OVER_RUN_INT) {
+        tscadcdataclear();
+        StepEnable();
+    }
     if (1 == samplefinish) {
         wordsLeftX = TSCADCFIFOWordCountRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_0);
         wordsLeftY = TSCADCFIFOWordCountRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_1);
         if ((wordsLeftX != wordsLeftY) || (wordsLeftY != SAMPLES)) {
             error = 1;
-            for (int i = 0; i < wordsLeftX; i++) {
-                dump = TSCADCFIFOADCDataRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_0);
-            }
-            for (int i = 0; i < wordsLeftY; i++) {
-                dump = TSCADCFIFOADCDataRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_1);
-            }
+            tscadcdataclear();
         } else {
             for (int i = 0; i < wordsLeftX; i++) {
                 arr_x[i] = TSCADCFIFOADCDataRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_0);
@@ -78,8 +88,12 @@ void isr_tsc(unsigned int intnum) {
                 arr_y[i] = TSCADCFIFOADCDataRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_1);
             }
         }
+    }
+    TSCADCIntStatusClear(SOC_ADC_TSC_0_REGS, status);
+    if (1 == samplefinish){
         StepEnable();
     }
+
     if ((1 == tsenable) && (0 == error) && (1 == samplefinish)) {
         bubbleSortAscend(arr_x, SAMPLES);
         bubbleSortAscend(arr_y, SAMPLES);
@@ -275,7 +289,7 @@ void TouchScreenInit() {
     TSCADCFIFOIRQThresholdLevelConfig(baseaddr, TSCADC_FIFO_1, SAMPLES);
     TSCADCModuleStateSet(baseaddr, TSCADC_MODULE_ENABLE);
     StepEnable();
-    TSCADCEventInterruptEnable(baseaddr, TSCADC_FIFO1_THRESHOLD_INT | TSCADC_PEN_UP_EVENT_INT); //|TSCADC_PEN_UP_EVENT_INT|TSCADC_SYNC_PEN_EVENT_INT
+    TSCADCEventInterruptEnable(baseaddr, TSCADC_FIFO1_OVER_RUN_INT | TSCADC_FIFO1_THRESHOLD_INT | TSCADC_PEN_UP_EVENT_INT); //|TSCADC_PEN_UP_EVENT_INT|TSCADC_SYNC_PEN_EVENT_INT
     moduleIntConfigure(MODULE_ID_ADCTSC);
 }
 

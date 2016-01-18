@@ -87,6 +87,12 @@ void PWMSSInit(void){
 
 }
 
+
+void pwmStop(unsigned int moduleId) {
+    unsigned int addr= modulelist[moduleId].baseAddr;
+    EHRPWMConfigureAQActionOnA(addr,0,0,0,0,0,0,0);
+}
+
 static unsigned int freqafterprescale;
 
 void pwmInitForSimplePwm(unsigned int moduleId,unsigned int pwmFreq,unsigned int duty,bool outputAorB){
@@ -97,6 +103,7 @@ void pwmInitForSimplePwm(unsigned int moduleId,unsigned int pwmFreq,unsigned int
    unsigned int prd = 25000000/pwmFreq;
    unsigned int index= modulelist[moduleId].index;
    PWMSSTBClkDisable(index);
+   pwmStop(moduleId);
    EHRPWMTimebaseClkConfig(addr,freqafterprescale,inputfreq);//25mhz after prescaled
    /* Configure the period of the output waveform */
    EHRPWMPWMOpFreqSet(addr,freqafterprescale,(unsigned int)pwmFreq,
@@ -139,6 +146,17 @@ void pwmInitForSimplePwm(unsigned int moduleId,unsigned int pwmFreq,unsigned int
     /* Disable High resolution capability */
     EHRPWMHRDisable(addr);
     PWMSSTBClkEnable(index);
+    moduleIntConfigure(moduleId);
+}
+
+
+void pwmOnePlusIntCtr(unsigned int moduleId,bool enable){
+    unsigned int baseAddr = modulelist[moduleId].baseAddr;
+    if(enable){
+        EHRPWMETIntEnable(baseAddr);
+    }else{
+        EHRPWMETIntDisable(baseAddr);
+    }
 }
 
 
@@ -164,10 +182,6 @@ void pwmStart(unsigned int moduleId){
                                EHRPWM_AQSFRC_ACTSFB_DONOTHING);
 }
 
-void pwmStop(unsigned int moduleId) {
-    unsigned int addr= modulelist[moduleId].baseAddr;
-    EHRPWMConfigureAQActionOnA(addr,0,0,0,0,0,0,0);
-}
 
 
 void pwmSetFreqDuty(unsigned int moduleId,unsigned int freq,unsigned int duty){

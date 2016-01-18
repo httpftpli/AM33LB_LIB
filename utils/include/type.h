@@ -62,6 +62,11 @@ typedef struct {unsigned short x,y;} POINT_32;
 
 
 
+#define DECLARE_VAR_NAME__(NAME,line) NAME##line
+#define DECLARE_VAR_NAME_(NAME,line) DECLARE_VAR_NAME__(NAME,line)
+#define DECLARE_VAR_NAME_UNIQUE(NAME)  DECLARE_VAR_NAME_(NAME,__LINE__)
+
+
 /**
 * container_of - cast a member of a structure out to the containing structure
 * @ptr:     the pointer to the member.

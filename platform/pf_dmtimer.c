@@ -2,16 +2,16 @@
  *  \file   pf_dmtimer.c
  *
  *  \brief
- *  \author  lfl 
+ *  \author  lfl
  *  \addtogroup TIMER
  *  \# include "pf_dmtimer.h"
- *  
+ *
  *  定时器动流程，调用 dmtimerInitForMatch 或
  *  dmtimerInitForOverFlow 或 dmtimerInitForTimer
  *  初始化定时器 , 然后调用dmtimerStart
  *  启动定时器，根据初始化是的参数FLAG决定定时器工作在单词定时模式(oneshort)还是连续定时模式(reload)。
  *  @{
- *   
+ *
  */
 
 
@@ -29,11 +29,11 @@
 
 static DMTIMERHANDLER dmtimerhandler[7];
 
-void isr_dmtimer(unsigned int num){ 
+void isr_dmtimer(unsigned int num){
    unsigned int addr = modulelist[num].baseAddr;
    unsigned int index = modulelist[num].index;
    unsigned int val = DMTimerIntStatusGet(addr);
-   DMTimerIntStatusClear(addr,val );
+   DMTimerIntStatusClear(addr,val);
    unsigned int tc = DMTimerCounterGet(addr);
    if (dmtimerhandler[index]) {
       dmtimerhandler[index](tc,val);
@@ -42,25 +42,25 @@ void isr_dmtimer(unsigned int num){
 
 
 /**
- * @briefb 
+ * @briefb
  *         注册dmtimer中断回调函数，类型是DMTIMERHANDLER
- *  
+ *
  * DMTIMERHANDLER的第一个参数是当前定时器的值，第二个参数是中断标记如下值的位组合:
- * 
- * - DMTIMER_INT_FLAG_CAP -- 捕获中断 
- * - DMTIMER_INT_FLAG_OVF -- 溢出中断 
- * - DMTIMER_INT_FLAG_MATCH -- 匹配中断 
- * @param [in] moduleId  
- * @param [in] handler 
- * @return   NONE        
+ *
+ * - DMTIMER_INT_FLAG_CAP -- 捕获中断
+ * - DMTIMER_INT_FLAG_OVF -- 溢出中断
+ * - DMTIMER_INT_FLAG_MATCH -- 匹配中断
+ * @param [in] moduleId
+ * @param [in] handler
+ * @return   NONE
  * @date    2013/8/1
- * @note 
- * @pre 
+ * @note
+ * @pre
  * @see DMTIMERHANDLER
  */
 void dmtimerRegistHandler(unsigned int moduleId, DMTIMERHANDLER handler){
    unsigned int index = modulelist[moduleId].index;
-   dmtimerhandler[index] = handler; 
+   dmtimerhandler[index] = handler;
 }
 
 
@@ -69,55 +69,55 @@ void dmtimerRegistHandler(unsigned int moduleId, DMTIMERHANDLER handler){
 
 /**
  * @brief 定时开始
- * @param [in] moduleId 定时器模块ID 
- * @return   none        
+ * @param [in] moduleId 定时器模块ID
+ * @return   none
  * @date    2013/8/11
  * @note
  * @code
  * @endcode
- * @pre 
- * 调用 dmtimerInitForMatch 或 dmtimerInitForOverFlow 或 
- * dmtimerInitForTimer 初始化定时器 
- * @see 
+ * @pre
+ * 调用 dmtimerInitForMatch 或 dmtimerInitForOverFlow 或
+ * dmtimerInitForTimer 初始化定时器
+ * @see
  */
 void dmtimerStart(unsigned int moduleId){
    DMTimerEnable(modulelist[moduleId].baseAddr);
 }
- 
+
 
 /**
  * @brief 初始化定时器作为匹配使用
- * @param [in] moduleId 定时器模块ID 
- * @param [in] TCval 
+ * @param [in] moduleId 定时器模块ID
+ * @param [in] TCval
  *        定时器TC初始值，当定时器为设置为reload模式时，reload
  *        后的值也是该值
  * @param [in] matchVal  定时器配置值
  * @param [in] flag
- * - DMTIMER_FLAG_LOADMODE_ONESHORT  -- 
+ * - DMTIMER_FLAG_LOADMODE_ONESHORT  --
  *   ONESHORT模式，定时器溢出后自动停止,如果没有设定此标记就是AUTORELOAD模式,AUTORELOAD模式，当定时器溢出后自动载入初始值继续开始
  *   \n\r
- * - DMTIMER_FLAG_INTENABLE_OVERFLOW -- 使能溢出中断      
- * - DMTIMER_FLAG_INTENABLE_MATCH  -- 使能匹配中断 
+ * - DMTIMER_FLAG_INTENABLE_OVERFLOW -- 使能溢出中断
+ * - DMTIMER_FLAG_INTENABLE_MATCH  -- 使能匹配中断
  * - DMTIMER_FLAG_OUTPUTTRIG_NO -- 引脚不输出
- * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW -- 
+ * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW --
  *   当溢出时引脚输出
- * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW_AND_MATCH  -- 
+ * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW_AND_MATCH  --
  *   当溢出或者匹配时是引脚输出 \n\r
- * - DMTIMER_FLAG_OUTPUTPHASE_POSITIVEPULSE --  
+ * - DMTIMER_FLAG_OUTPUTPHASE_POSITIVEPULSE --
  *   引脚输出正脉冲 \n\r
- * - DMTIMER_FLAG_OUTPUTPHASE_NEGATIVEPULSE -- 
+ * - DMTIMER_FLAG_OUTPUTPHASE_NEGATIVEPULSE --
  *   引脚输出负脉冲 \n\r
  * - DMTIMER_FLAG_OUTPUTPHASE_TOGGLE -- 引脚高低切换 \n\r
- * @return   none        
+ * @return   none
  * @date    2013/7/28
  * @note
  * @code
  * @endcode
- * @pre 
- * 如果定时器要硬件产生引脚输出，必须先配置IO 
- * MUX 
+ * @pre
+ * 如果定时器要硬件产生引脚输出，必须先配置IO
+ * MUX
  * @see dmtimerInitForOverFlow
- *  
+ *
  */
 void dmtimerInitForMatch(unsigned int moduleId, unsigned int TCval ,unsigned int matchVal, unsigned int flag) {
    moduleEnable(moduleId);
@@ -136,7 +136,7 @@ void dmtimerInitForMatch(unsigned int moduleId, unsigned int TCval ,unsigned int
    val |= (flag&(0x03<<10));
 
    val &= ~(0x1<<12);
-   val |= (flag&(0x01<<12));   
+   val |= (flag&(0x01<<12));
 
    HWREG(baseaddr + DMTIMER_TCLR) = val;
 
@@ -152,24 +152,24 @@ void dmtimerInitForMatch(unsigned int moduleId, unsigned int TCval ,unsigned int
 
 /**
  * @brief 初始化定时器作为溢出使用
- * @param [in] moduleId 定时器模块ID 
- * @param [in] TCval 
+ * @param [in] moduleId 定时器模块ID
+ * @param [in] TCval
  *        定时器TC初始值，当定时器为设置为reload模式时，reload
  *        后的值也是该值
  * @param [in] flag
- * - DMTIMER_FLAG_LOADMODE_ONESHORT  -- 
+ * - DMTIMER_FLAG_LOADMODE_ONESHORT  --
  *   ONESHORT模式，定时器溢出后自动停止,如果没有设定此标记就是AUTORELOAD模式,AUTORELOAD模式，当定时器溢出后自动载入初始值继续开始
  *   \n\r
- * - DMTIMER_FLAG_INTENABLE_OVERFLOW -- 使能溢出中断 
+ * - DMTIMER_FLAG_INTENABLE_OVERFLOW -- 使能溢出中断
  * - DMTIMER_FLAG_OUTPUTTRIG_NO -- 引脚不输出
- * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW -- 
+ * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW --
  *   当溢出时引脚输出
- * - DMTIMER_FLAG_OUTPUTPHASE_POSITIVEPULSE --  
+ * - DMTIMER_FLAG_OUTPUTPHASE_POSITIVEPULSE --
  *   引脚输出正脉冲 \n\r
- * - DMTIMER_FLAG_OUTPUTPHASE_NEGATIVEPULSE -- 
+ * - DMTIMER_FLAG_OUTPUTPHASE_NEGATIVEPULSE --
  *   引脚输出负脉冲 \n\r
  * - DMTIMER_FLAG_OUTPUTPHASE_TOGGLE -- 引脚高低切换 \n\r
- * @return   none        
+ * @return   none
  * @date    2013/7/28
  * @note
  * @code
@@ -193,22 +193,22 @@ void dmtimerInitForPwm(unsigned int moduleId, unsigned int THightUs ,unsigned in
 
 /**
  * @brief 初始化定时器作为溢出使用
- * @param [in] moduleId 定时器模块ID 
- * @param [in] timeUs 定时时间(单位us) 
+ * @param [in] moduleId 定时器模块ID
+ * @param [in] timeUs 定时时间(单位us)
  * @param [in] flag
- * - DMTIMER_FLAG_LOADMODE_ONESHORT  -- 
+ * - DMTIMER_FLAG_LOADMODE_ONESHORT  --
  *   ONESHORT模式，定时器溢出后自动停止,如果没有设定此标记就是AUTORELOAD模式,AUTORELOAD模式，当定时器溢出后自动载入初始值继续开始
  *   \n\r
- * - DMTIMER_FLAG_INTENABLE_OVERFLOW -- 使能溢出中断 
+ * - DMTIMER_FLAG_INTENABLE_OVERFLOW -- 使能溢出中断
  * - DMTIMER_FLAG_OUTPUTTRIG_NO -- 引脚不输出
- * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW -- 
+ * - DMTIMER_FLAG_OUTPUTTRIG_OVERFLOW --
  *   当溢出时引脚输出
- * - DMTIMER_FLAG_OUTPUTPHASE_POSITIVEPULSE --  
+ * - DMTIMER_FLAG_OUTPUTPHASE_POSITIVEPULSE --
  *   引脚输出正脉冲 \n\r
- * - DMTIMER_FLAG_OUTPUTPHASE_NEGATIVEPULSE -- 
+ * - DMTIMER_FLAG_OUTPUTPHASE_NEGATIVEPULSE --
  *   引脚输出负脉冲 \n\r
  * - DMTIMER_FLAG_OUTPUTPHASE_TOGGLE -- 引脚高低切换 \n\r
- * @return   none        
+ * @return   none
  * @date    2013/7/28
  * @note
  * @code
@@ -226,15 +226,15 @@ void dmtimerInitForTimer(unsigned int moduleId,unsigned int timeUs,unsigned int 
 /**
  * @brief 设置定时器定时时间
  * @param [in] moduleId 定时器模块ID
- * @param [in] timerUs  定时时间(单位us) 
- * @return none          
+ * @param [in] timerUs  定时时间(单位us)
+ * @return none
  * @date    2013/8/11
  * @note
  * @code
  * @endcode
- * @pre 
+ * @pre
  *  dmtimerInitForTimer
- * @see 
+ * @see
  */
 void dmtimerSetTime(unsigned int moduleId,unsigned int timerUs){
    unsigned int addr = modulelist[moduleId].baseAddr;
@@ -247,15 +247,15 @@ void dmtimerSetTime(unsigned int moduleId,unsigned int timerUs){
 
 /**
  * @brief 设置定时器TC值
- * @param [in] moduleId 定时器模块ID 
- * @param [in] tc  定时器32位TC值 
- * @return           
+ * @param [in] moduleId 定时器模块ID
+ * @param [in] tc  定时器32位TC值
+ * @return
  * @date    2013/8/11
  * @note
  * @code
  * @endcode
  * @pre
- * @see 
+ * @see
  */
 void dmtimerSetTc(unsigned int moduleId,unsigned int tc){
    unsigned int addr = modulelist[moduleId].baseAddr;

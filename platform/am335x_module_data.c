@@ -126,10 +126,10 @@ MODULE modulelist[128] = {
 [MODULE_ID_MMCSD0] = { .index = 0, .baseAddr = SOC_MMCHS_0_REGS, .INTNum = { SYS_INT_MMCSD0INT, 0, 0 }, .INTPriority = { INT_PRIORITY_MMCSD0, 0, 0 }, .isr = { isr_HSMMCSD, 0, 0 }, .moduleClk = &mmcsd0ModClock },
 [MODULE_ID_MMCSD1] = { .index = 1, .baseAddr = SOC_MMCHS_1_REGS, .INTNum = { SYS_INT_MMCSD1INT, 0, 0 }, .INTPriority = { INT_PRIORITY_MMCSD1, 0, 0 }, .isr = { isr_HSMMCSD, 0, 0 } },
 #if  MODULE_USE_ADCTSC ==  1
-[MODULE_ID_ADCTSC] = { .index = 0, .baseAddr = SOC_ADC_TSC_0_REGS, .INTNum = { SYS_INT_ADC_TSC_GENINT, 0, 0 }, .INTPriority = { INT_PRIORITY_ADCTSC, 0, 0 }, .isr = { IS_TSC, 0, 0 }, .moduleClk = &adcTscModClock },
+[MODULE_ID_ADCTSC] = { .index = 0, .baseAddr = SOC_ADC_TSC_0_REGS, .INTNum = { SYS_INT_ADC_TSC_GENINT, 0, 0 }, .INTPriority = { INT_PRIORITY_ADCTSC, 0, 0 }, .isr = { isr_tsc, 0, 0 }, .moduleClk = &adcTscModClock },
 #endif
 #if  MODULE_USE_UART0 ==  1
-[MODULE_ID_UART0] =  { .index = 1, .baseAddr = SOC_UART_0_REGS, .INTNum = { SYS_INT_UART0INT, 0, 0 }, .INTPriority = { 0, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &uart0ModClock },
+[MODULE_ID_UART0] =  { .index = 1, .baseAddr = SOC_UART_0_REGS, .INTNum = { SYS_INT_UART0INT, 0, 0 }, .INTPriority = {0, 0, 0 }, .isr = { isr_uart_for_keyboard, 0, 0 }, .moduleClk = &uart0ModClock },
 #endif
 #if  MODULE_USE_UART1 ==  1
 [MODULE_ID_UART1] =  { .index = 1, .baseAddr = SOC_UART_1_REGS, .INTNum = { SYS_INT_UART1INT, 0, 0 }, .INTPriority = { INT_PRIORITY_UART1, 0, 0 }, .isr = { 0, 0, 0 }, .moduleClk = &uart1ModClock },

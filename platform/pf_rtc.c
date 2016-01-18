@@ -31,21 +31,21 @@
 
 
 void isr_RTC(unsigned int intnum) {
-   UNUSED(intnum);
-   unsigned int calendarValue;
-   unsigned int timeValue;
-   timeValue = RTCTimeGet(SOC_RTC_0_REGS);
-   calendarValue = RTCCalendarGet(SOC_RTC_0_REGS);
-   mdDebug("calendar:");
-   mdDebugNum(calendarValue);
-   mdDebug("\r\n");
-   mdDebug("time:");
-   mdDebugNum(timeValue);
-   mdDebug("\r\n:");
+    UNUSED(intnum);
+    unsigned int calendarValue;
+    unsigned int timeValue;
+    timeValue = RTCTimeGet(SOC_RTC_0_REGS);
+    calendarValue = RTCCalendarGet(SOC_RTC_0_REGS);
+    mdDebug("calendar:");
+    mdDebugNum(calendarValue);
+    mdDebug("\r\n");
+    mdDebug("time:");
+    mdDebugNum(timeValue);
+    mdDebug("\r\n:");
 }
 
 
-static void RTCAM335XInit(unsigned int calendar,unsigned int time){
+static void RTCAM335XInit(unsigned int calendar, unsigned int time) {
     //RTCModuleClkConfig();
     moduleEnable(MODULE_ID_RTC);
     IntMasterIRQDisable();
@@ -53,14 +53,14 @@ static void RTCAM335XInit(unsigned int calendar,unsigned int time){
     RTC32KClkSourceSelect(SOC_RTC_0_REGS, RTC_INTERNAL_CLK_SRC_SELECT);
     RTC32KClkClockControl(SOC_RTC_0_REGS, RTC_32KCLK_ENABLE);
     RTCEnable(SOC_RTC_0_REGS);
-    delayus(500);
-    RTCCalendarSet(SOC_RTC_0_REGS,  calendar);
+    for (int i=0;i<10000;i++); //delay
+    RTCCalendarSet(SOC_RTC_0_REGS, calendar);
     RTCTimeSet(SOC_RTC_0_REGS, time);
     RTCRun(SOC_RTC_0_REGS);
     RTCIntTimerEnable(SOC_RTC_0_REGS, RTC_INT_EVERY_SECOND);
     RTCWriteProtectEnable(SOC_RTC_0_REGS);
     IntMasterIRQEnable();
- }
+}
 
 
 
@@ -79,21 +79,27 @@ static void RTCAM335XInit(unsigned int calendar,unsigned int time){
  * 初始化I2C0
  * @see
  */
-BOOL RTCInit(void){
-    unsigned char hour,minute,second,year,month,day;
-    BOOL r;
-    Rx8025Init();
-    r = Rx8025GetTime(&hour,&minute,&second);
-    if (FAIL==r) {
-       return r;
+
+#define RTC_FLAG_EXTERN_NONE      -1
+#define RTC_FLAG_EXTERN_POWERDROP -2
+#define RTC_FLAG_INTERN_ERR       -3
+uint32 RTCInit(void) {
+    unsigned char hour, minute, second, year, month, day;
+    uint32 r1, r2 = 1;
+    r1 = Rx8025Init();
+    if (r1 == 0) {
+        r2 = RTC_FLAG_EXTERN_NONE;
+    } else if (r1 == 2) {
+        r2 = RTC_FLAG_EXTERN_POWERDROP;
     }
-    r = Rx8025GetCalendar(&year,&month,&day);
-    if (FAIL==r) {
-       return r;
+    if (r1 != 0) {
+        Rx8025GetTime(&hour, &minute, &second);
+        Rx8025GetCalendar(&year, &month, &day);
     }
-    RTCAM335XInit(year<<YEAR_SHIFT | month<<MONTH_SHIFT | day<<DAY_SHIFT,
-                  hour<<HOUR_SHIFT | minute<< MINUTE_SHIFT | second<<SECOND_SHIFT);
-    return SUCCESS;
+
+    RTCAM335XInit(year << YEAR_SHIFT | month << MONTH_SHIFT | day << DAY_SHIFT,
+                  hour << HOUR_SHIFT | minute << MINUTE_SHIFT | second << SECOND_SHIFT);
+    return r2;
 }
 
 
@@ -115,28 +121,28 @@ BOOL RTCInit(void){
  * @see
  */
 void RTCReadBcd(unsigned short *year, unsigned char *month,
-             unsigned char  *day, unsigned char *hour,
-             unsigned char *minute, unsigned char *second) {
-   unsigned int time = RTCTimeGet(SOC_RTC_0_REGS); //FIRST READ TIME;
-   unsigned int can = RTCCalendarGet(SOC_RTC_0_REGS);
-   *year = ((can & YEAR_MASK) >> YEAR_SHIFT)+ 0x2000;
-   *month = (can & MONTH_MASK) >> MONTH_SHIFT;
-   *day = (can & DAY_MASK) >> DAY_SHIFT;
-   *hour = (time & HOUR_MASK) >> HOUR_SHIFT;
-   *minute = (time & MINUTE_MASK) >> MINUTE_SHIFT;
-   *second = (time & SECOND_MASK) >> SECOND_SHIFT;
+                unsigned char *day, unsigned char *hour,
+                unsigned char *minute, unsigned char *second) {
+    unsigned int time = RTCTimeGet(SOC_RTC_0_REGS); //FIRST READ TIME;
+    unsigned int can = RTCCalendarGet(SOC_RTC_0_REGS);
+    *year = ((can & YEAR_MASK) >> YEAR_SHIFT) + 0x2000;
+    *month = (can & MONTH_MASK) >> MONTH_SHIFT;
+    *day = (can & DAY_MASK) >> DAY_SHIFT;
+    *hour = (time & HOUR_MASK) >> HOUR_SHIFT;
+    *minute = (time & MINUTE_MASK) >> MINUTE_SHIFT;
+    *second = (time & SECOND_MASK) >> SECOND_SHIFT;
 }
 
 void RTCReadHex(unsigned short *year, unsigned char *month,
-             unsigned char  *day, unsigned char *hour,
-             unsigned char *minute, unsigned char *second) {
-   RTCReadBcd(year,month,day,hour,minute,second);
-   *year = bcd2hex_4(*year);
-   *month = bcd2hex_2(*month);
-   *day = bcd2hex_2(*day);
-   *hour = bcd2hex_2(*hour);
-   *minute = bcd2hex_2(*minute);
-   *second = bcd2hex_2(*second);
+                unsigned char *day, unsigned char *hour,
+                unsigned char *minute, unsigned char *second) {
+    RTCReadBcd(year, month, day, hour, minute, second);
+    *year = bcd2hex_4(*year);
+    *month = bcd2hex_2(*month);
+    *day = bcd2hex_2(*day);
+    *hour = bcd2hex_2(*hour);
+    *minute = bcd2hex_2(*minute);
+    *second = bcd2hex_2(*second);
 }
 
 /**
@@ -159,42 +165,42 @@ void RTCReadHex(unsigned short *year, unsigned char *month,
  * @see
  */
 BOOL RTCSetBcd(unsigned short year, unsigned char month,
-             unsigned char  day, unsigned char hour,
-             unsigned char minute, unsigned char second){
+               unsigned char day, unsigned char hour,
+               unsigned char minute, unsigned char second) {
     year = (unsigned char)year;
-    unsigned int time = hour<<HOUR_SHIFT |minute<<MINUTE_SHIFT | second<<SECOND_SHIFT;
+    unsigned int time = hour << HOUR_SHIFT | minute << MINUTE_SHIFT | second << SECOND_SHIFT;
     RTCWriteProtectDisable(SOC_RTC_0_REGS);
     IntMasterIRQDisable();
-    RTCTimeSet(SOC_RTC_0_REGS,time);
+    RTCTimeSet(SOC_RTC_0_REGS, time);
     IntMasterIRQEnable();
-    unsigned int can = day<<DAY_SHIFT|month<<MONTH_SHIFT|year<<YEAR_SHIFT;
+    unsigned int can = day << DAY_SHIFT | month << MONTH_SHIFT | year << YEAR_SHIFT;
     IntMasterIRQDisable();
-    RTCCalendarSet(SOC_RTC_0_REGS,can);
+    RTCCalendarSet(SOC_RTC_0_REGS, can);
     IntMasterIRQEnable();
     RTCWriteProtectEnable(SOC_RTC_0_REGS);
     BOOL ret;
-    ret = Rx8025SetCalendar(year,month,day);
-    if (FALSE == ret ) {
-       return ret;
+    ret = Rx8025SetCalendar(year, month, day);
+    if (FALSE == ret) {
+        return ret;
     }
     return Rx8025SetTime(hour, minute, second);
 }
 
 BOOL RTCSetHex(unsigned short year, unsigned char month,
-             unsigned char  day, unsigned char hour,
-             unsigned char minute, unsigned char second){
-    ASSERT(month<13);
-    ASSERT(day<32);
-    ASSERT(hour<25);
-    ASSERT(minute<61);
-    ASSERT(second<61);
-    year = hex2bcd_byte(year%100);
+               unsigned char day, unsigned char hour,
+               unsigned char minute, unsigned char second) {
+    ASSERT(month < 13);
+    ASSERT(day < 32);
+    ASSERT(hour < 25);
+    ASSERT(minute < 61);
+    ASSERT(second < 61);
+    year = hex2bcd_byte(year % 100);
     month = hex2bcd_byte(month);
     day = hex2bcd_byte(day);
     hour = hex2bcd_byte(hour);
     minute = hex2bcd_byte(minute);
     second = hex2bcd_byte(second);
-    return RTCSetBcd(year,month,day,hour,minute, second);
+    return RTCSetBcd(year, month, day, hour, minute, second);
 }
 
 

@@ -187,10 +187,18 @@ void bubbleSortAscend(int *buf, unsigned int nNum) {
 
 void list_sort_insert(struct list_head *new, struct list_head *list, int (*cmp)(const struct list_head *, const struct list_head *)) {
     struct list_head *literal, *n;
-    list_for_each_safe(literal, n, list) {
-        if (cmp(new, literal) || n == list) {
-            list_add(new, literal);
-            break;
+    if (list_empty(list)) {
+        list_add_tail(new, list);
+        return;
+    }
+    if (cmp(new, list->next)<0) { //fist elemet
+        list_add_tail(new,list->next); //add before fist elemet
+    }else{
+        list_for_each_safe(literal, n, list) {
+            if ((n == list) || cmp(new, n) < 0){
+                list_add(new,literal);
+                break;
+            }
         }
     }
 }
@@ -705,7 +713,7 @@ static bool crc_tab32k_init = false;
 //<crc-32-K> (new entry)
 //   Name   : "CRC-32K"
 //   Alias  : "CRC-32/KOOPMAN"
-//  Width  : 32
+//   Width  : 32
 //   Poly   : 741B8CD7
 //   Init   : 00000000?
 //   RefIn  : False?

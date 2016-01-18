@@ -377,7 +377,7 @@ void renderLocalEndEx(void *localfb, unsigned int x,unsigned int y,unsigned int 
 
 
 bool waitForRenderLocalEnd(unsigned int timeoutMs){
-    withintimedo(__rendend_timeout,timeoutMs){
+    withintimedo(timeoutMs){
         if(renderlocalcopyend) return true;
     }
     return  false;
