@@ -260,6 +260,7 @@ void TouchScreenInit() {
     MODULE *module = modulelist + MODULE_ID_ADCTSC;
     unsigned int baseaddr = module->baseAddr;
     moduleEnable(MODULE_ID_ADCTSC);
+    TSCADCModuleStateSet(baseaddr, TSCADC_MODULE_DISABLE);
     TSCADCConfigureAFEClock(baseaddr, module->moduleClk->fClk[0]->clockSpeedHz, 600000);
     /* Enable Transistor bias */
     TSCADCTSTransistorConfig(baseaddr, TSCADC_TRANSISTOR_ENABLE);
@@ -291,6 +292,145 @@ void TouchScreenInit() {
     StepEnable();
     TSCADCEventInterruptEnable(baseaddr, TSCADC_FIFO1_OVER_RUN_INT | TSCADC_FIFO1_THRESHOLD_INT | TSCADC_PEN_UP_EVENT_INT); //|TSCADC_PEN_UP_EVENT_INT|TSCADC_SYNC_PEN_EVENT_INT
     moduleIntConfigure(MODULE_ID_ADCTSC);
+}
+
+
+static void touchDetectStepConfigX(unsigned int stepSelc,unsigned char volt){
+    /* Configure ADC to Single ended operation mode */
+    TSCADCTSStepOperationModeControl(SOC_ADC_TSC_0_REGS,
+                                     TSCADC_SINGLE_ENDED_OPER_MODE, stepSelc);
+
+    /* Configure reference volatage and input to charge step*/
+    TSCADCTSStepConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_NEGATIVE_REF_VSSA,
+                       TSCADC_POSITIVE_INP_CHANNEL1, TSCADC_NEGATIVE_INP_ADCREFM,
+                       TSCADC_POSITIVE_REF_VDDA);
+
+    if(volt){
+        /* Configure the Analog Supply to Touch screen */
+        TSCADCTSStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_OFF,
+                                   TSCADC_XNPSW_PIN_ON, TSCADC_YPPSW_PIN_OFF,
+                                   stepSelc);
+
+        /* Configure the Analong Ground to Touch screen */
+        TSCADCTSStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_OFF,
+                                   TSCADC_YPNSW_PIN_OFF, TSCADC_YNNSW_PIN_OFF,
+                                   TSCADC_WPNSW_PIN_OFF, stepSelc);
+    }else{
+        /* Configure the Analog Supply to Touch screen */
+        TSCADCTSStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_OFF,
+                                   TSCADC_XNPSW_PIN_OFF, TSCADC_YPPSW_PIN_OFF,
+                                   stepSelc);
+
+        /* Configure the Analong Ground to Touch screen */
+        TSCADCTSStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_ON,
+                                   TSCADC_YPNSW_PIN_OFF, TSCADC_YNNSW_PIN_OFF,
+                                   TSCADC_WPNSW_PIN_OFF, stepSelc);
+    }
+
+    /* select fifo 0 */
+    TSCADCTSStepFIFOSelConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_FIFO_0);
+
+    /* Configure in One short hardware sync mode */
+    TSCADCTSStepModeConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_ONE_SHOT_SOFTWARE_ENABLED);
+
+    TSCADCTSStepAverageConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_SIXTEEN_SAMPLES_AVG);
+    TSCADCTSStepOpenDelayConfig(SOC_ADC_TSC_0_REGS, stepSelc, 0x90);
+    TSCADCTSStepSampleDelayConfig(SOC_ADC_TSC_0_REGS, stepSelc, 0);
+}
+
+
+static void touchDetectStepConfigY(unsigned int stepSelc,unsigned char volt){
+    /* Configure ADC to Single ended operation mode */
+    TSCADCTSStepOperationModeControl(SOC_ADC_TSC_0_REGS,
+                                     TSCADC_SINGLE_ENDED_OPER_MODE, stepSelc);
+
+    /* Configure reference volatage and input to charge step*/
+    TSCADCTSStepConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_NEGATIVE_REF_VSSA,
+                       TSCADC_POSITIVE_INP_CHANNEL4, TSCADC_NEGATIVE_INP_ADCREFM,
+                       TSCADC_POSITIVE_REF_VDDA);
+
+    if(volt){
+        /* Configure the Analog Supply to Touch screen */
+        TSCADCTSStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_OFF,
+                                   TSCADC_XNPSW_PIN_OFF, TSCADC_YPPSW_PIN_ON,
+                                   stepSelc);
+
+        /* Configure the Analong Ground to Touch screen */
+        TSCADCTSStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_OFF,
+                                   TSCADC_YPNSW_PIN_OFF, TSCADC_YNNSW_PIN_OFF,
+                                   TSCADC_WPNSW_PIN_OFF, stepSelc);
+    }else{
+        /* Configure the Analog Supply to Touch screen */
+        TSCADCTSStepAnalogSupplyConfig(SOC_ADC_TSC_0_REGS, TSCADC_XPPSW_PIN_OFF,
+                                   TSCADC_XNPSW_PIN_OFF, TSCADC_YPPSW_PIN_OFF,
+                                   stepSelc);
+
+        /* Configure the Analong Ground to Touch screen */
+        TSCADCTSStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_OFF,
+                                   TSCADC_YPNSW_PIN_ON, TSCADC_YNNSW_PIN_OFF,
+                                   TSCADC_WPNSW_PIN_OFF, stepSelc);
+    }
+
+    /* select fifo 0 */
+    TSCADCTSStepFIFOSelConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_FIFO_0);
+
+    /* Configure in One short hardware sync mode */
+    TSCADCTSStepModeConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_ONE_SHOT_SOFTWARE_ENABLED);
+
+    TSCADCTSStepAverageConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_SIXTEEN_SAMPLES_AVG);
+    TSCADCTSStepOpenDelayConfig(SOC_ADC_TSC_0_REGS, stepSelc, 0x90);
+    TSCADCTSStepSampleDelayConfig(SOC_ADC_TSC_0_REGS, stepSelc, 0);
+}
+
+
+
+bool TouchScreenTsPadDetect(){
+    MODULE *module = modulelist + MODULE_ID_ADCTSC;
+    unsigned int baseaddr = module->baseAddr;
+    moduleEnable(MODULE_ID_ADCTSC);
+    TSCADCModuleStateSet(baseaddr, TSCADC_MODULE_DISABLE);
+    TSCADCConfigureAFEClock(baseaddr, module->moduleClk->fClk[0]->clockSpeedHz, 600000);
+    /* Enable Transistor bias */
+    TSCADCTSTransistorConfig(baseaddr, TSCADC_TRANSISTOR_ENABLE);
+    /* Set 4 Wire touch screen  mode */
+    TSCADCTSModeConfig(baseaddr, TSCADC_GENERAL_PURPOSE_MODE);
+    //TSCADCStepIDTagConfig(baseaddr, 1);
+    /* Disable Write Protection of Step Configuration regs*/
+    TSCADCStepConfigProtectionDisable(baseaddr);
+    /* Touch Screen detection Configuration*/
+    //IdleStepConfig();
+    /* Configure the Charge step */
+    //TSchargeStepConfig();
+    //clear fifo;
+    unsigned short wordsLeftX = TSCADCFIFOWordCountRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_0);
+    for(int i=0;i<wordsLeftX;i++){
+        TSCADCFIFOADCDataRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_0);
+    }
+    //config step
+    touchDetectStepConfigX(0,1);
+    touchDetectStepConfigX(1,0);
+    touchDetectStepConfigY(2,1);
+    touchDetectStepConfigY(3,0);
+    touchDetectStepConfigX(4,1);
+    touchDetectStepConfigX(5,0);
+    touchDetectStepConfigY(6,1);
+    touchDetectStepConfigY(7,0);
+    touchDetectStepConfigY(8,0);
+    for(int i=0;i<9;i++){
+        TSCADCConfigureStepEnable(SOC_ADC_TSC_0_REGS, i, 1);
+    }
+    TSCADCModuleStateSet(baseaddr, TSCADC_MODULE_ENABLE);
+    //waite for adc convert finish;
+    while(TSCADCFIFOWordCountRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_0) < 8);
+    unsigned short tsval[8];
+    for(int i=0;i<8;i++){
+       tsval[i] = TSCADCFIFOADCDataRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_0);
+    }
+    if(tsval[0]>3800 && tsval[2]>3800 && tsval[1]<200 && tsval[3]<200 &&
+       tsval[4]>3800 && tsval[6]>3800 && tsval[5]<200 && tsval[7]<200){
+       return true;
+    }
+    return false;
 }
 
 

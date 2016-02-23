@@ -118,3 +118,12 @@ void filePrename(wchar_t *prename,const wchar *name){
     }
 }
 
+bool f_fileExit(const TCHAR *path){
+    FIL file;
+    if(f_open(&file,path,FA_OPEN_EXISTING)==FR_OK){
+      f_close(&file);
+      return true;
+    }
+    return false;
+}
+

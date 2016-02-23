@@ -204,7 +204,13 @@ void isr_lcd(unsigned int num) {
  * @see
  */
 void LCDBackLightCtr(unsigned char lightpwm) {
-   __lcd_back_ligth_ctr(lightpwm);
+    /*void (*f)(unsigned char);
+    unsigned int temp  =  *(unsigned int *)__lcd_back_ligth_ctr ;
+    f = (void (*)(unsigned char))temp;
+    f(lightpwm);*/
+
+    __lcd_back_ligth_ctr(lightpwm);
+
 }
 
 /**
@@ -455,7 +461,7 @@ void LCDRasterInit() {
    memset32(lcdCtrl.frameaddr[0], 0, pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width/4);
    memset32(lcdCtrl.frameaddr[1], 0, pixsize * lcdCtrl.panel->height * lcdCtrl.panel->width/4);
    moduleEnable(MODULE_ID_LCDC);
-   LCDReset(baseaddr);
+   //LCDReset(baseaddr);
    RasterClocksEnable(baseaddr);
    RasterAutoUnderFlowEnable(baseaddr);
    RasterIntEnable(baseaddr, RASTER_END_OF_FRAME0_INT | RASTER_END_OF_FRAME1_INT );

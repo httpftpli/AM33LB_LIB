@@ -11,6 +11,7 @@ extern unsigned long long f_getvolsize(const TCHAR *path);
 extern void wpathTowfilename(wchar_t *filename,const wchar_t *path);
 extern bool fileFixNameReplace(wchar_t *name,const wchar *fixname);
 extern void filePrename(wchar_t *prename,const wchar *name);
+extern bool f_fileExit(const TCHAR *path);
 
 #endif
 

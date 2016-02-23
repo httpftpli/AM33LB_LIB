@@ -2,6 +2,7 @@
 #include "clock.h"
 #include "module.h"
 #include "interrupt.h"
+#include "debug.h"
 
 
 
@@ -32,3 +33,11 @@ void moduleIntConfigure(unsigned int moduleID){
       IntSystemEnable(module->INTNum[i]);
    }
 }
+
+void moduleSetIsrHandler( unsigned int moduleId,unsigned int handlerIndex,void (*isr)(unsigned int)){
+   ASSERT(handlerIndex < 3);
+   MODULE *module = modulelist+moduleId;
+   ASSERT(module->INTNum[handlerIndex]!=0);
+   module->isr[handlerIndex] = isr;
+}
+
