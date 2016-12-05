@@ -249,7 +249,7 @@ extern unsigned int g_fontFlag;
 extern int getStringMetricWidth(const TEXTCHAR *string);
 extern int getStringMetricWidthEx(const TEXTCHAR *string,unsigned int len);
 extern int getStringMetricWidthEx_ucs2(const wchar *wcs,unsigned int len);
-extern unsigned int  initFont(unsigned int addr);
+extern unsigned int  initFont(void);
 extern char  getCurFontYSize();
 extern char getFontYSize(GUI_FONT *font);
 

@@ -27,6 +27,7 @@
 #include "string.h"
 #include "pf_key_touchpad.h"
 
+
 #define SAMPLES       8
 
 extern mmcsdCtrlInfo mmcsdctr[2];
@@ -64,15 +65,23 @@ void isr_tsc(unsigned int intnum) {
     static volatile TS_SAMPLE preTsSampleRaw = { 0, 0 };
 
     status = TSCADCIntStatus(SOC_ADC_TSC_0_REGS);
+    TSCADCIntStatusClear(SOC_ADC_TSC_0_REGS, status);
     if (status & TSCADC_PEN_UP_EVENT_INT) {
         preTsSampleRaw.x = 0;
+        tscadcdataclear();
+        //UARTprintf("pen up \n\r");
     }
     if (status & TSCADC_FIFO1_THRESHOLD_INT) {
         samplefinish = 1;
     }
+    if (status & TSCADC_SYNC_PEN_EVENT_INT) {
+        //preTsSampleRaw.x = 0;
+        //UARTprintf("pen down \n\r");
+    }
     if (status & TSCADC_FIFO1_OVER_RUN_INT) {
-        tscadcdataclear();
-        StepEnable();
+    }
+    if (status & TSCADC_END_OF_SEQUENCE_INT) {
+        samplefinish = 1;
     }
     if (1 == samplefinish) {
         wordsLeftX = TSCADCFIFOWordCountRead(SOC_ADC_TSC_0_REGS, TSCADC_FIFO_0);
@@ -89,11 +98,9 @@ void isr_tsc(unsigned int intnum) {
             }
         }
     }
-    TSCADCIntStatusClear(SOC_ADC_TSC_0_REGS, status);
     if (1 == samplefinish){
-        StepEnable();
+        //StepEnable();
     }
-
     if ((1 == tsenable) && (0 == error) && (1 == samplefinish)) {
         bubbleSortAscend(arr_x, SAMPLES);
         bubbleSortAscend(arr_y, SAMPLES);
@@ -118,9 +125,6 @@ void isr_tsc(unsigned int intnum) {
             //UARTprintf("x: %d  ; y: %d  ;", tsSampleRaw.x, tsSampleRaw.y);
             //UARTprintf("fbx: %d  ; fby: %d \n\r", msg.xpt, msg.ypt);
         }
-    }
-    if (status & TSCADC_PEN_UP_EVENT_INT) {
-        //UARTprintf("pen up \n\r");
     }
 }
 
@@ -161,7 +165,7 @@ static void TSchargeStepConfig(void) {
     TSCADCChargeStepAnalogGroundConfig(SOC_ADC_TSC_0_REGS, TSCADC_XNNSW_PIN_OFF,
                                        TSCADC_YPNSW_PIN_ON, TSCADC_YNNSW_PIN_ON,
                                        TSCADC_WPNSW_PIN_OFF);
-    TSCADCTSChargeStepOpenDelayConfig(SOC_ADC_TSC_0_REGS, 0x200);
+    TSCADCTSChargeStepOpenDelayConfig(SOC_ADC_TSC_0_REGS, 0x400);
 
     /* Configure ADC to Single ended operation mode */
     /*TSCADCChargeStepOperationModeControl(SOC_ADC_TSC_0_REGS,
@@ -204,7 +208,7 @@ static void StepConfigX(unsigned int stepSelc) {
     TSCADCTSStepFIFOSelConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_FIFO_0);
 
     /* Configure in One short hardware sync mode */
-    TSCADCTSStepModeConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_ONE_SHOT_HARDWARE_SYNC);
+    TSCADCTSStepModeConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_CONTINIOUS_HARDWARE_SYNC);
 
     TSCADCTSStepAverageConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_SIXTEEN_SAMPLES_AVG);
 }
@@ -234,7 +238,7 @@ static void StepConfigY(unsigned int stepSelc) {
     TSCADCTSStepFIFOSelConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_FIFO_1);
 
     /* Configure in One short hardware sync mode */
-    TSCADCTSStepModeConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_ONE_SHOT_HARDWARE_SYNC);
+    TSCADCTSStepModeConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_CONTINIOUS_HARDWARE_SYNC);
 
     TSCADCTSStepAverageConfig(SOC_ADC_TSC_0_REGS, stepSelc, TSCADC_SIXTEEN_SAMPLES_AVG);
 }
@@ -260,7 +264,6 @@ void TouchScreenInit() {
     MODULE *module = modulelist + MODULE_ID_ADCTSC;
     unsigned int baseaddr = module->baseAddr;
     moduleEnable(MODULE_ID_ADCTSC);
-    TSCADCModuleStateSet(baseaddr, TSCADC_MODULE_DISABLE);
     TSCADCConfigureAFEClock(baseaddr, module->moduleClk->fClk[0]->clockSpeedHz, 600000);
     /* Enable Transistor bias */
     TSCADCTSTransistorConfig(baseaddr, TSCADC_TRANSISTOR_ENABLE);
@@ -277,22 +280,29 @@ void TouchScreenInit() {
     TSchargeStepConfig();
     for (int i = 0; i < SAMPLES; i++) {
         StepConfigX(i);
-        TSCADCTSStepOpenDelayConfig(baseaddr, i, 0x90);
-        TSCADCTSStepSampleDelayConfig(baseaddr, i, 0);
+        TSCADCTSStepOpenDelayConfig(baseaddr, i, 0x90); 
+        TSCADCTSStepSampleDelayConfig(baseaddr, i, 10);  
     }
 
     for (int i = SAMPLES; i < (2 * SAMPLES); i++) {
         StepConfigY(i);
         TSCADCTSStepOpenDelayConfig(baseaddr, i, 0x90);
-        TSCADCTSStepSampleDelayConfig(baseaddr, i, 0);
+        TSCADCTSStepSampleDelayConfig(baseaddr, i, 10);
     }
 
-    TSCADCFIFOIRQThresholdLevelConfig(baseaddr, TSCADC_FIFO_1, SAMPLES);
+    //TSCADCFIFOIRQThresholdLevelConfig(baseaddr, TSCADC_FIFO_1, SAMPLES);
+    //TSCADCFIFOIRQThresholdLevelConfig(baseaddr, TSCADC_FIFO_0, SAMPLES);
     TSCADCModuleStateSet(baseaddr, TSCADC_MODULE_ENABLE);
     StepEnable();
-    TSCADCEventInterruptEnable(baseaddr, TSCADC_FIFO1_OVER_RUN_INT | TSCADC_FIFO1_THRESHOLD_INT | TSCADC_PEN_UP_EVENT_INT); //|TSCADC_PEN_UP_EVENT_INT|TSCADC_SYNC_PEN_EVENT_INT
+    TSCADCEventInterruptEnable(baseaddr,  TSCADC_END_OF_SEQUENCE_INT | TSCADC_PEN_UP_EVENT_INT | TSCADC_SYNC_PEN_EVENT_INT); // TSCADC_FIFO1_OVER_RUN_INT  | TSCADC_FIFO1_THRESHOLD_INT
     moduleIntConfigure(MODULE_ID_ADCTSC);
 }
+
+
+void  TouchScreenDeInit(){
+    moduleDisable(MODULE_ID_ADCTSC);
+}
+
 
 
 static void touchDetectStepConfigX(unsigned int stepSelc,unsigned char volt){
@@ -431,11 +441,6 @@ bool TouchScreenTsPadDetect(){
        return true;
     }
     return false;
-}
-
-
-void  TouchScreenDeInit(){
-    moduleDisable(MODULE_ID_ADCTSC);
 }
 
 

@@ -9,6 +9,7 @@
 void moduleEnable(unsigned int moduleId){
     MODULE  *module = &modulelist[moduleId];
     ModuleClock *moduleclk = module->moduleClk;
+    ASSERT(moduleclk!=NULL);
     enableModuleClock(moduleclk);
 }
 

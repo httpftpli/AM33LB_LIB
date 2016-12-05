@@ -2107,7 +2107,9 @@ FRESULT chk_mounted (	/* FR_OK(0): successful, !=0: any error occurred */
 	fmt = check_fs(fs, bsect = 0);		/* Load sector 0 and check if it is an FAT-VBR (in SFD) */
 	if (LD2PT(vol) && !fmt) fmt = 1;	/* Force non-SFD if the volume is forced partition */
 
-	//dai------------------------------------------------------------
+	
+
+        //dai------------------------------------------------------------
 	//判断第1个扇区是否是DBR
 	if(fmt==1)
 	{
@@ -2120,7 +2122,7 @@ FRESULT chk_mounted (	/* FR_OK(0): successful, !=0: any error occurred */
 			}
 		}
 	}
-	//--------------------------------------------------------------
+        //dai------------------------------------------------------------
 
 	if (fmt == 1) {						/* Not an FAT-VBR, the physical drive can be partitioned */
 		/* Check the partition listed in the partition table */

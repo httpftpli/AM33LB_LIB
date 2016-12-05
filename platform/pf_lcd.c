@@ -26,6 +26,7 @@
 #include "tft.h"
 #include "pf_lcd.h"
 #include "pf_edma.h"
+#include "pf_pwmss.h"
 #include "gpio_v2.h"
 #include "module.h"
 #include "mem.h"
@@ -204,13 +205,7 @@ void isr_lcd(unsigned int num) {
  * @see
  */
 void LCDBackLightCtr(unsigned char lightpwm) {
-    /*void (*f)(unsigned char);
-    unsigned int temp  =  *(unsigned int *)__lcd_back_ligth_ctr ;
-    f = (void (*)(unsigned char))temp;
-    f(lightpwm);*/
-
     __lcd_back_ligth_ctr(lightpwm);
-
 }
 
 /**

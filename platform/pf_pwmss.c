@@ -88,48 +88,31 @@ void PWMSSInit(void){
 }
 
 
-void pwmStop(unsigned int moduleId) {
-    unsigned int addr= modulelist[moduleId].baseAddr;
-    EHRPWMConfigureAQActionOnA(addr,0,0,0,0,0,0,0);
-}
-
 static unsigned int freqafterprescale;
+static bool pwmoutputaorb[3];
 
-void pwmInitForSimplePwm(unsigned int moduleId,unsigned int pwmFreq,unsigned int duty,bool outputAorB){
+void pwmSetFreqDuty(unsigned int moduleId,unsigned int freq,unsigned int duty);
+
+void pwmInitForSimplePwm(unsigned int moduleId,unsigned int pwmFreq,unsigned int duty,bool OutputAorB){
    ASSERT(duty<=100);
    unsigned int addr = modulelist[moduleId].baseAddr;
    unsigned int inputfreq = modulelist[moduleId].moduleClk->iClk[0]->clockSpeedHz;
    freqafterprescale = 25000000 ;
-   unsigned int prd = 25000000/pwmFreq;
    unsigned int index= modulelist[moduleId].index;
+   pwmoutputaorb[index] = OutputAorB;
    PWMSSTBClkDisable(index);
-   pwmStop(moduleId);
    EHRPWMTimebaseClkConfig(addr,freqafterprescale,inputfreq);//25mhz after prescaled
    /* Configure the period of the output waveform */
-   EHRPWMPWMOpFreqSet(addr,freqafterprescale,(unsigned int)pwmFreq,
+   /*EHRPWMPWMOpFreqSet(addr,freqafterprescale,(unsigned int)pwmFreq,
                        (unsigned int)EHRPWM_COUNT_UP,
-                       (bool)EHRPWM_SHADOW_WRITE_ENABLE);
+                       (bool)EHRPWM_SHADOW_WRITE_ENABLE);*/
      /* Disable synchronization*/
     EHRPWMTimebaseSyncDisable(addr);
     /* Disable syncout*/
     EHRPWMSyncOutModeSet(addr, EHRPWM_SYNCOUT_DISABLE);
      /* Configure the emulation behaviour*/
     EHRPWMTBEmulationModeSet(addr, EHRPWM_STOP_AFTER_NEXT_TB_INCREMENT);
-
-    /* Configure Counter compare cub-module */
-    /* Load Compare A value */
-    unsigned int cmpa = prd * duty / 100;
-    EHRPWMLoadCMPA(addr,cmpa,(bool)EHRPWM_SHADOW_WRITE_ENABLE,
-                   (unsigned int)EHRPWM_COMPA_LOAD_COUNT_EQUAL_PERIOD,
-                   (bool)EHRPWM_CMPCTL_OVERWR_SH_FL);
-
-    /* Configure Action qualifier */
-    //do nothing
-    if (outputAorB == true) {
-        EHRPWMConfigureAQActionOnA(addr,0,0,0,0,0,0,0);
-    } else {
-        EHRPWMConfigureAQActionOnB(addr,0,0,0,0,0,0,0);
-    }
+    pwmSetFreqDuty(moduleId,pwmFreq,duty);
     /*select ET int source*/
     EHRPWMETIntSourceSelect(addr, EHRPWM_ETSEL_INTSEL_TBCTREQUCMPAINC);
 
@@ -160,18 +143,6 @@ void pwmOnePlusIntCtr(unsigned int moduleId,bool enable){
 }
 
 
-void pwmStart(unsigned int moduleId){
-    unsigned int addr= modulelist[moduleId].baseAddr;
-    EHRPWMConfigureAQActionOnA(addr,
-                               EHRPWM_AQCTLB_ZRO_DONOTHING,
-                               EHRPWM_AQCTLB_PRD_EPWMXBTOGGLE,
-                               EHRPWM_AQCTLB_CAU_EPWMXBTOGGLE,
-                               EHRPWM_AQCTLB_CAD_DONOTHING,
-                               EHRPWM_AQCTLB_CBU_DONOTHING,
-                               EHRPWM_AQCTLB_CBD_DONOTHING,
-                               EHRPWM_AQSFRC_ACTSFB_DONOTHING);
-}
-
 
 
 void pwmSetFreqDuty(unsigned int moduleId,unsigned int freq,unsigned int duty){
@@ -181,9 +152,52 @@ void pwmSetFreqDuty(unsigned int moduleId,unsigned int freq,unsigned int duty){
     EHRPWMPWMOpFreqSet(addr,freqafterprescale,(unsigned int)freq,
                        (unsigned int)EHRPWM_COUNT_UP,
                        (bool)EHRPWM_SHADOW_WRITE_ENABLE);
+
     EHRPWMLoadCMPA(addr,cmpa,(bool)EHRPWM_SHADOW_WRITE_ENABLE,
                    (unsigned int)EHRPWM_COMPA_LOAD_COUNT_EQUAL_PERIOD,
                    (bool)EHRPWM_CMPCTL_OVERWR_SH_FL);
+    bool OutPutAorB = pwmoutputaorb[modulelist[moduleId].index];
+    if(duty==0){
+        if(OutPutAorB){
+        EHRPWMConfigureAQActionOnA(addr,
+                               EHRPWM_AQCTLB_ZRO_DONOTHING,
+                               EHRPWM_AQCTLA_PRD_DONOTHING,
+                               EHRPWM_AQCTLA_CAU_EPWMXALOW,
+                               EHRPWM_AQCTLB_CAD_DONOTHING,
+                               EHRPWM_AQCTLB_CBU_DONOTHING,
+                               EHRPWM_AQCTLB_CBD_DONOTHING,
+                               EHRPWM_AQSFRC_ACTSFB_DONOTHING);
+    }else{
+        EHRPWMConfigureAQActionOnB(addr,
+                               EHRPWM_AQCTLB_ZRO_DONOTHING,
+                               EHRPWM_AQCTLB_PRD_DONOTHING,
+                               EHRPWM_AQCTLB_CAU_EPWMXBLOW,
+                               EHRPWM_AQCTLB_CAD_DONOTHING,
+                               EHRPWM_AQCTLB_CBU_DONOTHING,
+                               EHRPWM_AQCTLB_CBD_DONOTHING,
+                               EHRPWM_AQSFRC_ACTSFB_DONOTHING);
+        }
+    }else{
+        if(OutPutAorB){
+        EHRPWMConfigureAQActionOnA(addr,
+                               EHRPWM_AQCTLB_ZRO_DONOTHING,
+                               EHRPWM_AQCTLA_PRD_EPWMXAHIGH,
+                               EHRPWM_AQCTLA_CAU_EPWMXALOW,
+                               EHRPWM_AQCTLB_CAD_DONOTHING,
+                               EHRPWM_AQCTLB_CBU_DONOTHING,
+                               EHRPWM_AQCTLB_CBD_DONOTHING,
+                               EHRPWM_AQSFRC_ACTSFB_DONOTHING);
+    }else{
+       EHRPWMConfigureAQActionOnB(addr,
+                               EHRPWM_AQCTLB_ZRO_DONOTHING,
+                               EHRPWM_AQCTLB_PRD_EPWMXBHIGH,
+                               EHRPWM_AQCTLB_CAU_EPWMXBLOW,
+                               EHRPWM_AQCTLB_CAD_DONOTHING,
+                               EHRPWM_AQCTLB_CBU_DONOTHING,
+                               EHRPWM_AQCTLB_CBD_DONOTHING,
+                               EHRPWM_AQSFRC_ACTSFB_DONOTHING);
+    }
+    }
 }
 
 

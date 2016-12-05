@@ -85,6 +85,7 @@ extern __weak  void isr_dmtimer(unsigned int num);
 extern __weak  void isr_uart_for_9bit(unsigned int intNum);
 extern __weak  void isr_mailbox(unsigned int intNum);
 extern __weak  void isr_pwmss(unsigned int intnum);
+extern __weak  void i2c_isr(unsigned int intnum);
 
 
 #ifndef ISR_UART4
@@ -160,13 +161,15 @@ MODULE modulelist[128] = {
 [MODULE_ID_GPMC]   = { .index = 0, .baseAddr = SOC_GPMC_0_REGS,   .moduleClk = &gpmcModClock },
 #endif
 #if  MODULE_USE_I2C ==  1
-[MODULE_ID_I2C0]   = { .index = 0, .baseAddr = SOC_I2C_0_REGS,    .moduleClk = &i2c0ModClock },
-[MODULE_ID_I2C1]   = { .index = 1, .baseAddr = SOC_I2C_1_REGS,    .moduleClk = &i2c1ModClock },
-[MODULE_ID_I2C2]   = { .index = 2, .baseAddr = SOC_I2C_2_REGS,    .moduleClk = &i2c2ModClock },
+[MODULE_ID_I2C0]   = { .index = 0, .baseAddr = SOC_I2C_0_REGS,  .INTNum = { SYS_INT_I2C0INT, 0, 0 },.INTPriority = { INT_PRIORITY_I2C0, 0, 0 },.isr = { i2c_isr, 0, 0 },  .moduleClk = &i2c0ModClock },
+[MODULE_ID_I2C1]   = { .index = 1, .baseAddr = SOC_I2C_1_REGS,  .INTNum = { SYS_INT_I2C1INT, 0, 0 },.INTPriority = { INT_PRIORITY_I2C1, 0, 0 },.isr = { i2c_isr, 0, 0 },  .moduleClk = &i2c1ModClock },
+[MODULE_ID_I2C2]   = { .index = 2, .baseAddr = SOC_I2C_2_REGS,  .INTNum = { SYS_INT_I2C2INT, 0, 0 },.INTPriority = { INT_PRIORITY_I2C2, 0, 0 },.isr = { i2c_isr, 0, 0 },  .moduleClk = &i2c2ModClock },
 #endif
 #if  MODULE_USE_SPI ==  1
 [MODULE_ID_SPI0]   = { .index = 0, .baseAddr = SOC_SPI_0_REGS, .INTNum = { SYS_INT_SPI0INT, 0, 0 }, .INTPriority = { INT_PRIORITY_SPI1, 0, 0 }, .isr = { isr_mcspi, 0, 0 }, .moduleClk = &spi0ModClock },
 [MODULE_ID_SPI1]   = { .index = 1, .baseAddr = SOC_SPI_1_REGS, .INTNum = { SYS_INT_SPI1INT, 0, 0 }, .INTPriority = { INT_PRIORITY_SPI1, 0, 0 }, .isr = { isr_mcspi, 0, 0 }, .moduleClk = &spi1ModClock },
+#endif
+#if  MODULE_USE_RTC ==  1
 [MODULE_ID_RTC]    = { .index = 0, .baseAddr = SOC_RTC_0_REGS, .INTNum = { 0, 0, 0 },              .INTPriority = { 0, 0, 0 },                .isr = { 0, 0, 0 },         .moduleClk = &rtcModClock },
 #endif
 #if  MODULE_USE_3GPSW ==  1

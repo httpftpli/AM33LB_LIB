@@ -16,6 +16,7 @@
 #include "mmath.h"
 #include "lib_gui.h"
 #include <string.h>
+#include <stdlib.h>
 
 
 
@@ -39,6 +40,8 @@ GUI_FONT *fonts[8] = {
 };
 
 
+
+#if FONT_EXTERN_FILE == 1
 static unsigned int loadFont(const TCHAR * filepath,  GUI_FONT  *font) {
    unsigned int re, br;
    FIL fontfile;
@@ -47,6 +50,8 @@ static unsigned int loadFont(const TCHAR * filepath,  GUI_FONT  *font) {
       return -1;
    }
    unsigned int filesize = fontfile.fsize;
+   font->p.pFontData = malloc(filesize+16);
+   ASSERT(font->p.pFontData!=NULL);
    re = f_read(&fontfile, (void *)font->p.pFontData,filesize, &br);
    if (FR_OK != re) {
       f_close(&fontfile);
@@ -58,11 +63,12 @@ static unsigned int loadFont(const TCHAR * filepath,  GUI_FONT  *font) {
    }
    if(!GUI_SIF_CreateFont(font->p.pFontData,font, GUI_SIF_TYPE_PROP)){
        f_close(&fontfile);
-       return -1; 
+      return -1; 
    }
    f_close(&fontfile);
    return filesize;
 }
+#endif
 
 
 /**
@@ -81,39 +87,30 @@ static unsigned int loadFont(const TCHAR * filepath,  GUI_FONT  *font) {
 
 unsigned int g_fontFlag = 0x03; 
 
-
-unsigned int  initFont(unsigned int addr) {
+unsigned int  initFont(void) {
    unsigned int ret = 0x03;
    const TCHAR *fontname[8];
    fontname[0] = _TEXT("0:/1_16.FNT");
    fontname[1] = _TEXT("0:/1_20.FNT");
    fontname[2] = _TEXT("0:/1_20_C.FNT");
    fontname[3] = _TEXT("0:/1_24_C.FNT");
-   font_16.p.pFontData = (void *) addr;
    unsigned int filesize = loadFont(fontname[0], &font_16);
    if(filesize!=-1L){
-       addr += filesize+8; 
        fonts[2] = &font_16;
        ret |= 0x04;
    }
-   font_20.p.pFontData = (void *) addr;
    filesize = loadFont(fontname[1], &font_20);
    if(filesize!=-1L){
-       addr += filesize+8;
        fonts[3] = &font_20; 
        ret |= 0x08;
    }
-   font_20_c.p.pFontData = (void *) addr;
    filesize = loadFont(fontname[2], &font_20_c);
    if(filesize!=-1L){
-       addr += filesize+8;
        fonts[5] = &font_20_c; 
        ret |= 0x10;
    }
-   font_24_c.p.pFontData = (void *) addr;
    filesize = loadFont(fontname[3], &font_24_c);
    if(filesize!=-1L){
-       addr += filesize+8;
        fonts[6] = &font_24_c; 
        ret |= 0x20;
    }

@@ -89,6 +89,10 @@
 #define  MODULE_USE_SPI   1
 #endif
 
+#ifndef  MODULE_USE_RTC
+#define  MODULE_USE_RTC   1
+#endif
+
 #ifndef  MODULE_USE_3GPSW
 #define  MODULE_USE_3GPSW   1
 #endif
@@ -142,6 +146,21 @@
 #define INT_PRIORITY_ADCTSC       (INT_PRIORITY_USER_NORMAL-1)
 #endif
 
+
+#ifndef INT_PRIORITY_I2C0
+#define INT_PRIORITY_I2C0       (INT_PRIORITY_USER_NORMAL-1)
+#endif
+
+
+#ifndef INT_PRIORITY_I2C1
+#define INT_PRIORITY_I2C1       (INT_PRIORITY_USER_NORMAL-1)
+#endif
+
+#ifndef INT_PRIORITY_I2C2
+#define INT_PRIORITY_I2C2       (INT_PRIORITY_USER_NORMAL-1)
+#endif
+
+
 #ifndef INT_PRIORITY_RTC
 #define INT_PRIORITY_RTC          (INT_PRIORITY_USER_NORMAL-5)
 #endif
@@ -185,6 +204,7 @@
 #ifndef INT_PRIORITY_TIMER7
 #define INT_PRIORITY_TIMER7       (INT_PRIORITY_USER_NORMAL-7)
 #endif
+
 
 #ifndef INT_PRIORITY_EQEP0
 #define INT_PRIORITY_EQEP0        (INT_PRIORITY_USER_NORMAL-8)
@@ -296,6 +316,8 @@
 #endif
 
 
+
+
 //config GPMC
 
 //config whitch cs to be usbed
@@ -375,6 +397,12 @@
 #ifndef ASCII_FIX_FONT24_IN_SOURCE 
 #define ASCII_FIX_FONT24_IN_SOURCE  0
 #endif
+
+
+#ifndef  FONT_EXTERN_FILE
+#define  FONT_EXTERN_FILE == 1
+#endif
+
 
 
 #define UCS16_CODEC  1

@@ -27,6 +27,7 @@
 #include "module.h"
 #include <time.h>
 #include "delay.h"
+#include "pf_rtc.h"
 
 
 
@@ -80,9 +81,6 @@ static void RTCAM335XInit(unsigned int calendar, unsigned int time) {
  * @see
  */
 
-#define RTC_FLAG_EXTERN_NONE      -1
-#define RTC_FLAG_EXTERN_POWERDROP -2
-#define RTC_FLAG_INTERN_ERR       -3
 uint32 RTCInit(void) {
     unsigned char hour, minute, second, year, month, day;
     uint32 r1, r2 = 1;

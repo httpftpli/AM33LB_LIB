@@ -14,6 +14,9 @@ extern unsigned int GPIOPinRd(unsigned int moduleId,unsigned int pinNumber);
 extern void GPIOPinTogle(unsigned int moduleId, unsigned int pinNumber);
 extern unsigned int GPIOMultiplePinsRd(unsigned int moduleId,unsigned int mask);
 extern void GPIOMultiplePinsWr(unsigned int moduleId,unsigned int set,unsigned int clr);
+extern void GPIOPinIntEnable(unsigned int moduleId,unsigned int pinNumber,unsigned int intTrigFlag);
+extern void GPIOPinIntDisable(unsigned int moduleId,unsigned int pinNumber,unsigned int intTrigFlag);
+  
 
 
 #endif

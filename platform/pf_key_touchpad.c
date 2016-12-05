@@ -104,7 +104,7 @@ TS_CALIBRATION tsCalibration = { .magic = 0, };
 void (*keyhandler)(int keycode) = NULL;
 void (*touchhandler)(void) = NULL;
 
-#define SAMPLES       8
+
 #define CALIBRATION_POINT_OFFSET  20
 
 extern mmcsdCtrlInfo mmcsdctr[2];
@@ -146,6 +146,21 @@ void registTouchHandler(void handler()) {
     touchhandler = handler;
 }
 
+
+
+
+void (*touchprocess)(void) = NULL;
+BOOL isTouched(){
+    if (touchprocess) {
+        touchprocess();
+    }
+    return atomicTestClear(&g_touched);
+}
+
+
+void touchRegistProcess( void (*process)(void)){
+    touchprocess = process;
+}
 
 
 void ts_linear(TS_CALIBRATION *cal, int *x, int *y) {
@@ -225,7 +240,7 @@ BOOL TouchCalibrate(BOOL force) {
                 atomicClear(&g_touched);
                 atomicClear(&g_keyPushed);
                 while (1) {
-                    if (atomicTest(&g_touched)) {
+                    if (isTouched()) {
                         break;
                     }
                     if (atomicTest(&g_keyPushed)) {
@@ -236,7 +251,7 @@ BOOL TouchCalibrate(BOOL force) {
                 atomicClear(&g_touched);
                 atomicClear(&g_keyPushed);
                 while (1) {
-                    if (atomicTest(&g_touched)
+                    if (isTouched()
                         && ((ABS(tsCalibrationTemp.x[i - 1] - g_tsRaw.x) > 800)
                             || (ABS(tsCalibrationTemp.y[i - 1] - g_tsRaw.y) > 800))) {
                         break;

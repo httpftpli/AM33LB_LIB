@@ -3,6 +3,11 @@
 
 #include "pf_rx8025.h"
 
+
+#define RTC_FLAG_EXTERN_NONE      -1
+#define RTC_FLAG_EXTERN_POWERDROP -2
+#define RTC_FLAG_INTERN_ERR       -3
+
 extern uint32 RTCInit(void);
 extern void RTCReadBcd(unsigned short *year, unsigned char *month,
              unsigned char  *day, unsigned char *hour,
