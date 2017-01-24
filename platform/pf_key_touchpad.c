@@ -122,7 +122,7 @@ BOOL isKeyTouchEvent(KEYTOUCHMSG *msg){
 }
 #else  //protcal new waji yujie
 BOOL isKeyTouchEvent(KEYTOUCHMSG *msg) {
-    if ((0xbb == msg->type) && (1 == msg->magic) && (0xd == msg->end)) {
+    if ((0xbb == msg->type) && ((1 == msg->magic) || (0x0f == msg->magic)) && (0xd == msg->end)) {
         return TRUE;
     }
     return FALSE;

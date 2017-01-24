@@ -26,7 +26,7 @@
 static unsigned int tsc2007I2cModule;
 
 static unsigned char tsc2007SlaveAddr;
-static unsigned int tsc2007Readfinish = 0;
+static unsigned int tsc2007Readfinish =1,tsc2007samplefinish=1;
 
 void tsc2007i2cHandler(unsigned int index, unsigned int flag);
 
@@ -49,8 +49,6 @@ bool tsc2007Init(unsigned int i2cModule, unsigned char addrA0A1) {
     return false;
 }
 
-
-static unsigned int tsc2007samplefinish = 0;
 static bool tsc2007Sample(unsigned char xyz1z2) {
     tsc2007samplefinish = 0;
     unsigned char data = xyz1z2;
@@ -76,19 +74,17 @@ static bool isTsc2007Pushed(void) {
 static void tsc2007i2cHandler(unsigned int index, unsigned int flag) {
     unsigned int addr = modulelist[tsc2007I2cModule].baseAddr;
     if (flag & I2C_IRQ_TRIG_STOP) {
-        if (I2CMasterIntRawStatusEx(addr, I2C_INT_RECV_READY)) {
-            unsigned char data0 = I2CMasterDataGet(addr);
-            unsigned char data1 = I2CMasterDataGet(addr);
-            if (sampleData) {
+      if(tsc2007Readfinish==0){
+          unsigned char data0 = I2CMasterDataGet(addr);
+          unsigned char data1 = I2CMasterDataGet(addr);
+          if (sampleData) {
                 *sampleData = (unsigned short)data0 << 4 | data1 >> 4;
                 tsc2007Readfinish = 1;
-            }
-        }
-
-    }
-    if (I2CMasterIntRawStatusEx(addr, I2C_INT_TRANSMIT_READY)) {
-        tsc2007samplefinish = 1;
-    }
+          }
+      }else if(tsc2007samplefinish==0 ){
+          tsc2007samplefinish = 1;
+      }
+    }    
 }
 
 
@@ -108,9 +104,12 @@ static void tsc2007i2cHandler(unsigned int index, unsigned int flag) {
 #define READ_Z2_FINISH       12
 #define TOUCH_DEBOUNCE       13
 #define COMM_ERR             14
+#define SAMPLE_X_FINISH      15
+#define CHECK_TOUCH          16
 
 
 static unsigned short x,y,z1,z2;
+
 
 void tsc2007TouchProcess(void) {
     if (tsc2007SlaveAddr == 0) {
@@ -118,8 +117,9 @@ void tsc2007TouchProcess(void) {
     }
     static unsigned long long timemark;
     static int stat = NO_TOUCH;
+    unsigned int Rz;
     NOT_IN_IRQ();
-    everytimedo(2){
+    //everytimedo(2){
     switch (stat) {
     case NO_TOUCH:
         if (isTsc2007Pushed()) {
@@ -133,7 +133,7 @@ void tsc2007TouchProcess(void) {
         } else {
             if (TimerTickGet64() - timemark > 10) {
                 timemark = TimerTickGet64();
-                stat = SAMPLE_X;
+                stat = SAMPLE_Z1;
             }
         }
         break;
@@ -204,22 +204,24 @@ void tsc2007TouchProcess(void) {
             if (!tsc2007Sample(TSC2007_CMD_SAMPLE_X)) {
                 stat = COMM_ERR;
             }else{
+                timemark = TimerTickGet64();
                 stat = READ_X;
             }
         }
-        break;
+        break;           
     case READ_X:
-        if (!isTsc2007Pushed()) {
+        if (TimerTickGet64()-timemark>=10) {
             stat = NO_TOUCH;
         } else {
             if (tsc2007samplefinish == 1) {
                 tsc2007Read(&x);
+                timemark = TimerTickGet64();
                 stat = READ_X_FINISH;
             }
         }
         break;
     case READ_X_FINISH:
-        if (!isTsc2007Pushed()) {
+        if (TimerTickGet64()-timemark>=10) {
             stat = NO_TOUCH;
         } else {
             if (tsc2007Readfinish == 1) {
@@ -234,33 +236,45 @@ void tsc2007TouchProcess(void) {
             if (!tsc2007Sample(TSC2007_CMD_SAMPLE_Y)) {
                 stat = COMM_ERR;
             }else{
+                timemark = TimerTickGet64();
                 stat = READ_Y;
             }
         }
         break;
     case READ_Y:
-        if (!isTsc2007Pushed()) {
+        if (TimerTickGet64()-timemark>10) {
             stat = NO_TOUCH;
         } else {
             if (tsc2007samplefinish == 1) {
                 tsc2007Read(&y);
+                timemark = TimerTickGet64();
                 stat = READ_Y_FINISH;
             }
         }
         break;
     case READ_Y_FINISH:
-        if (!isTsc2007Pushed()) {
+        if (TimerTickGet64()-timemark>10) {
             stat = NO_TOUCH;
         } else {
-            if (tsc2007Readfinish == 1) {
+            if (tsc2007Readfinish == 1) {              
+               stat = CHECK_TOUCH;              
+            }
+        }
+        break;
+    case CHECK_TOUCH:
+        if (!isTsc2007Pushed()) {
+            stat = NO_TOUCH;
+        }else{
+              Rz = (x*z2/z1-x);
+              if(Rz < 6000){
                 g_ts.x = g_tsRaw.x = x;
                 g_ts.y = g_tsRaw.y = y;
                 ts_linear(&tsCalibration, (int *)&(g_ts.x), (int *)&(g_ts.y));
                 *(unsigned int *)&g_touched = 1;
-                stat = SAMPLE_X;
-            }
+              }
+              stat = SAMPLE_Z1;
         }
-        break;
+        break;             
     case COMM_ERR:
         //return i2cModule
         I2CInit(tsc2007I2cModule, 100000, NULL, 0); 
@@ -268,10 +282,8 @@ void tsc2007TouchProcess(void) {
     default:
         break;
     }
-    }
+    //}
 }
-
-
 
 
 
